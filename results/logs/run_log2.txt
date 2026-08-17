@@ -1,0 +1,77 @@
+18:12:20 INFO    [1/4] Loading TOFU and selecting prompt format
+18:12:25 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+18:12:27 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 2.6s
+18:12:28 INFO      format chat      mean entity log-prob  -0.2853  OK
+18:12:28 INFO      format plain_qa  mean entity log-prob  -0.2068  OK
+18:12:28 INFO      format bare      mean entity log-prob  -0.2032  OK
+18:12:28 INFO      selected format: bare
+18:12:28 INFO      evaluating 16 layers
+18:12:30 INFO      190/400 examples have a usable entity span (dropped: {'too_many_words': 149, 'suspicious_short_span': 61})
+18:12:30 INFO      sampling=even: 100 examples, 47 (47%) from the second half of the split (unseen by retain95)
+18:12:30 INFO      100 examples tokenised and ready
+18:12:30 INFO    [2/4] Stage 1: retain90 -> full (baseline, computed once)
+18:12:30 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.bfloat16, device=cuda:0)
+18:12:31 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 1.4s
+18:12:34 INFO    Captured hidden states for 100 examples across 16 layers
+18:12:34 INFO        captured from retain90 in 4.3s -- cuda:0: 4.98 GB allocated, 5.11 GB reserved, 18.09 GB free of 42.28 GB (57% used)
+18:13:25 INFO        patched into full in 50.9s
+18:13:25 INFO      max dS1 = 9.8558; 99/100 examples have at least one KE layer
+18:13:25 INFO    [3/4] Stage 2: four source models
+18:13:25 INFO      full      computing...
+18:13:28 INFO    Captured hidden states for 100 examples across 16 layers
+18:13:28 INFO        captured from full in 2.8s -- cuda:0: 4.98 GB allocated, 5.53 GB reserved, 17.67 GB free of 42.28 GB (58% used)
+18:14:16 INFO        patched into full in 48.1s
+18:14:16 INFO        UDS=0.0000 over 99/100 examples (1 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]
+18:14:16 INFO      retain99  computing...
+18:14:16 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain99 (dtype=torch.bfloat16, device=cuda:0)
+18:14:18 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain99 in 1.6s
+18:14:20 INFO    Captured hidden states for 100 examples across 16 layers
+18:14:20 INFO        captured from retain99 in 4.4s -- cuda:0: 7.45 GB allocated, 7.58 GB reserved, 15.61 GB free of 42.28 GB (63% used)
+18:15:09 INFO        patched into full in 48.1s
+18:15:09 INFO        UDS=0.0960 over 99/100 examples (1 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]
+18:15:09 INFO      retain95  computing...
+18:15:09 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain95 (dtype=torch.bfloat16, device=cuda:0)
+18:15:10 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain95 in 1.5s
+18:15:13 INFO    Captured hidden states for 100 examples across 16 layers
+18:15:13 INFO        captured from retain95 in 4.3s -- cuda:0: 9.92 GB allocated, 10.05 GB reserved, 13.15 GB free of 42.28 GB (69% used)
+18:16:01 INFO        patched into full in 48.0s
+18:16:01 INFO        UDS=0.4472 over 99/100 examples (1 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]
+18:16:01 INFO      retain90  computing...
+18:16:04 INFO    Captured hidden states for 100 examples across 16 layers
+18:16:04 INFO        captured from retain90 in 2.8s -- cuda:0: 9.92 GB allocated, 10.47 GB reserved, 12.73 GB free of 42.28 GB (70% used)
+18:16:52 INFO        patched into full in 48.2s
+18:16:52 INFO        UDS=1.0000 over 99/100 examples (1 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]
+18:16:53 INFO    Freed full -- cuda:0: 7.45 GB allocated, 7.47 GB reserved, 15.73 GB free of 42.28 GB (63% used)
+18:16:55 INFO    Freed retain90 -- cuda:0: 4.98 GB allocated, 5.02 GB reserved, 18.18 GB free of 42.28 GB (57% used)
+18:16:56 INFO    Freed retain99 -- cuda:0: 2.51 GB allocated, 2.56 GB reserved, 20.63 GB free of 42.28 GB (51% used)
+18:16:57 INFO    Freed retain95 -- cuda:0: 0.03 GB allocated, 0.03 GB reserved, 23.16 GB free of 42.28 GB (45% used)
+18:16:57 INFO    [4/4] Comparing against the paper
+==========================================================================
+UDS Table 2 validation  |  size=1B  run=table2_1B_20260815_181220
+==========================================================================
+
+[FITS] strategy=all_resident  peak weights=7.41 GB  headroom=22.18 GB
+  1B at 2.47 GB/model x 3 resident = 7.41 GB, within 29.60 GB usable (42.3 GB total minus 30% safety margin).
+
+
+==========================================================================
+RESULTS
+==========================================================================
+Stage-2 source  expected  observed      diff
+--------------------------------------------------------------------------
+full               0.002     0.000     0.002
+retain99           0.153     0.096     0.057
+retain95           0.496     0.447     0.049
+retain90             1.0     1.000     0.000
+
+monotonic: True
+within tolerance: 4/4
+
+PASS: monotonic and every split within tolerance
+
+Saved to results/gpu_runs/table2_1B_20260815_181220
+
+NOTE: reproducing Table 2 is strong evidence the implementation is
+correct, but it is not the same as running the authors' own code on
+shared inputs. is_validated_against_reference remains False.
+==========================================================================

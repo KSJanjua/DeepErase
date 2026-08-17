@@ -1,0 +1,155 @@
+16:54:24 INFO    [1/6] Preparing evaluation data
+16:54:24 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+16:54:24 INFO      reference annotations: 367 examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+16:54:24 INFO      100 depth examples tokenised
+16:54:31 INFO    Loaded 1200 breadth items across tiers ['B0', 'B1', 'R']
+16:54:31 INFO      1200 breadth items
+16:54:31 INFO    [2/6] Measuring reference models (anchors both axes)
+16:54:31 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+16:54:34 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 2.3s
+16:56:04 INFO      full leakage=0.771 retention=0.797
+16:56:04 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.bfloat16, device=cuda:0)
+16:56:05 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 1.3s
+16:57:35 INFO      retain90 leakage=0.524 retention=0.807
+16:57:35 INFO      calibration: floor=0.524 ceiling=0.771 range=0.248
+16:57:35 INFO    [3/6] Depth Stage-1 baseline (retain90 -> full)
+16:57:37 INFO    Captured hidden states for 100 examples across 16 layers
+16:58:12 INFO      98/100 examples have a Knowledge-Encoding layer
+16:58:14 INFO    Freed full -- cuda:0: 2.51 GB allocated, 2.53 GB reserved, 25.12 GB free of 42.28 GB (41% used)
+16:58:15 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.03 GB reserved, 27.63 GB free of 42.28 GB (35% used)
+16:58:15 INFO    [4/6] Unlearning with ga
+16:58:15 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda)
+16:58:16 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 1.2s
+16:58:48 INFO      baseline before training: utility=0.7975 forget_nll=1.6019
+16:58:49 INFO      epoch 0 step 0  loss=-1.7187  forget_nll=1.7411
+16:58:52 INFO      epoch 0 step 20  loss=-1.6202  forget_nll=1.6198
+16:59:23 INFO      epoch 0: utility=0.8025 (floor 0.7177) forget_nll=1.6565  keep
+16:59:28 INFO      epoch 1 step 40  loss=-1.9259  forget_nll=1.9258
+17:00:00 INFO      epoch 1: utility=0.7925 (floor 0.7177) forget_nll=1.7021  keep
+17:00:04 INFO      epoch 2 step 60  loss=-1.7302  forget_nll=1.7323
+17:00:37 INFO      epoch 2: utility=0.7900 (floor 0.7177) forget_nll=1.7511  keep
+17:00:39 INFO      epoch 3 step 80  loss=-1.5942  forget_nll=1.5929
+17:01:13 INFO      epoch 3: utility=0.7950 (floor 0.7177) forget_nll=1.8023  keep
+17:01:15 INFO      epoch 4 step 100  loss=-1.9472  forget_nll=1.9504
+17:01:18 INFO      epoch 4 step 120  loss=-1.7793  forget_nll=1.7778
+17:01:50 INFO      epoch 4: utility=0.7900 (floor 0.7177) forget_nll=1.8550  keep
+17:01:54 INFO      epoch 5 step 140  loss=-2.1272  forget_nll=2.1325
+17:02:26 INFO      epoch 5: utility=0.7850 (floor 0.7177) forget_nll=1.9125  keep
+17:02:29 INFO      epoch 6 step 160  loss=-1.9163  forget_nll=1.9158
+17:03:02 INFO      epoch 6: utility=0.7825 (floor 0.7177) forget_nll=1.9792  keep
+17:03:05 INFO      epoch 7 step 180  loss=-1.7616  forget_nll=1.7709
+17:03:39 INFO      epoch 7: utility=0.7725 (floor 0.7177) forget_nll=2.0646  keep
+17:03:41 INFO      epoch 8 step 200  loss=-2.2333  forget_nll=2.2336
+17:03:44 INFO      epoch 8 step 220  loss=-2.0322  forget_nll=2.0397
+17:04:15 INFO      epoch 8: utility=0.7675 (floor 0.7177) forget_nll=2.1798  keep
+17:04:19 INFO      epoch 9 step 240  loss=-2.4910  forget_nll=2.5039
+17:04:52 INFO      epoch 9: utility=0.7675 (floor 0.7177) forget_nll=2.3377  keep
+17:04:55 INFO      epoch 10 step 260  loss=-2.2493  forget_nll=2.2583
+17:05:28 INFO      epoch 10: utility=0.7575 (floor 0.7177) forget_nll=2.5431  keep
+17:05:30 INFO      epoch 11 step 280  loss=-2.2905  forget_nll=2.2914
+17:06:00 INFO      epoch 11: utility=0.7425 (floor 0.7177) forget_nll=2.8025  keep
+17:06:02 INFO      epoch 12 step 300  loss=-2.9794  forget_nll=2.9980
+17:06:05 INFO      epoch 12 step 320  loss=-2.9210  forget_nll=2.9209
+17:06:37 INFO      epoch 12: utility=0.7200 (floor 0.7177) forget_nll=3.1158  keep
+17:06:41 INFO      epoch 13 step 340  loss=-3.5579  forget_nll=3.5756
+17:07:13 INFO      epoch 13: utility=0.6900 (floor 0.7177) forget_nll=3.5241  REJECTED -- utility too low
+17:07:15 INFO      epoch 14 step 360  loss=-3.2059  forget_nll=3.2285
+17:07:48 INFO      epoch 14: utility=0.6600 (floor 0.7177) forget_nll=4.0430  REJECTED -- utility too low
+17:07:49 INFO      epoch 15 step 380  loss=-3.6726  forget_nll=3.7120
+17:08:23 INFO      epoch 15: utility=0.6225 (floor 0.7177) forget_nll=4.6830  REJECTED -- utility too low
+17:08:23 INFO      epoch 16 step 400  loss=-4.5820  forget_nll=4.6300
+17:08:26 INFO      epoch 16 step 420  loss=-5.3730  forget_nll=5.4308
+17:08:57 INFO      epoch 16: utility=0.5675 (floor 0.7177) forget_nll=5.4927  REJECTED -- utility too low
+17:09:00 INFO      epoch 17 step 440  loss=-5.9301  forget_nll=5.9659
+17:09:32 INFO      epoch 17: utility=0.5325 (floor 0.7177) forget_nll=6.5828  REJECTED -- utility too low
+17:09:34 INFO      epoch 18 step 460  loss=-4.9085  forget_nll=4.9197
+17:10:07 INFO      epoch 18: utility=0.4775 (floor 0.7177) forget_nll=8.0462  REJECTED -- utility too low
+17:10:08 INFO      epoch 19 step 480  loss=-8.6771  forget_nll=8.7546
+17:10:42 INFO      epoch 19: utility=0.4500 (floor 0.7177) forget_nll=9.8331  REJECTED -- utility too low
+17:10:43 INFO      selected epoch 12 (utility 0.7200, forget_nll 3.1158)
+17:10:43 INFO    Unlearning finished: 500 steps in 715.0s, forget NLL 1.6019 -> 3.1158 (+1.5139 over the full forget set)
+17:11:24 INFO      [OK] ||v||=0.3327, forget NLL change=+1.5139, weights moved and forget-set NLL rose, as expected
+17:11:41 INFO      update vector: 147 tensors, ||v||=0.3327
+17:11:41 INFO    [5/6] Sweeping alpha over 11 settings
+17:12:47 INFO    ExtrapolationReport(a_par=0, a_perp=0, modified=147, skipped=0, ||v||=0.332678, ||delta||=0)
+17:14:20 INFO    Captured hidden states for 100 examples across 16 layers
+17:14:20 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+17:14:22 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 1.7s
+17:14:54 INFO      alpha=0.00  breadth=0.237  depth=0.353  retention=0.720  (193s)
+17:16:05 INFO    ExtrapolationReport(a_par=0.1, a_perp=0.1, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.0332678)
+17:17:39 INFO    Captured hidden states for 100 examples across 16 layers
+17:18:11 INFO      alpha=0.10  breadth=0.237  depth=0.424  retention=0.710  (196s)
+17:19:19 INFO    ExtrapolationReport(a_par=0.2, a_perp=0.2, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.0665356)
+17:20:53 INFO    Captured hidden states for 100 examples across 16 layers
+17:21:25 INFO      alpha=0.20  breadth=0.333  depth=0.480  retention=0.695  (194s)
+17:22:34 INFO    ExtrapolationReport(a_par=0.3, a_perp=0.3, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.0998034)
+17:24:08 INFO    Captured hidden states for 100 examples across 16 layers
+17:24:39 INFO      alpha=0.30  breadth=0.333  depth=0.531  retention=0.677  (194s)
+17:25:47 INFO    ExtrapolationReport(a_par=0.4, a_perp=0.4, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.133071)
+17:27:20 INFO    Captured hidden states for 100 examples across 16 layers
+17:27:52 INFO      alpha=0.40  breadth=0.354  depth=0.572  retention=0.657  (192s)
+17:29:00 INFO    ExtrapolationReport(a_par=0.5, a_perp=0.5, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.166339)
+17:30:33 INFO    Captured hidden states for 100 examples across 16 layers
+17:31:05 INFO      alpha=0.50  breadth=0.399  depth=0.608  retention=0.652  (194s)
+17:32:16 INFO    ExtrapolationReport(a_par=0.6, a_perp=0.6, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.199607)
+17:33:49 INFO    Captured hidden states for 100 examples across 16 layers
+17:34:21 INFO      alpha=0.60  breadth=0.429  depth=0.639  retention=0.650  (196s)
+17:35:26 INFO    ExtrapolationReport(a_par=0.7, a_perp=0.7, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.232875)
+17:37:00 INFO    Captured hidden states for 100 examples across 16 layers
+17:37:32 INFO      alpha=0.70  breadth=0.485  depth=0.666  retention=0.647  (191s)
+17:38:41 INFO    ExtrapolationReport(a_par=0.8, a_perp=0.8, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.266142)
+17:40:15 INFO    Captured hidden states for 100 examples across 16 layers
+17:40:43 INFO      alpha=0.80  breadth=0.510  depth=0.690  retention=0.640  (191s)
+17:41:59 INFO    ExtrapolationReport(a_par=0.9, a_perp=0.9, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.29941)
+17:43:32 INFO    Captured hidden states for 100 examples across 16 layers
+17:44:04 INFO      alpha=0.90  breadth=0.551  depth=0.708  retention=0.632  (201s)
+17:45:10 INFO    ExtrapolationReport(a_par=1, a_perp=1, modified=147, skipped=0, ||v||=0.332678, ||delta||=0.332678)
+17:46:43 INFO    Captured hidden states for 100 examples across 16 layers
+17:47:16 INFO      alpha=1.00  breadth=0.571  depth=0.725  retention=0.625  (192s)
+17:47:17 INFO    Freed full -- cuda:0: 5.02 GB allocated, 5.64 GB reserved, 21.95 GB free of 42.28 GB (48% used)
+17:47:17 INFO    [6/6] Analysis
+17:47:17 INFO    Wrote 11 plane points to results/studies/study_ga_1B_20260816_165423/plane.json
+17:47:18 INFO    Wrote figure to results/studies/study_ga_1B_20260816_165423/plane.png
+============================================================================
+DEPTH-BREADTH STUDY  |  method=ga  size=1B
+run=study_ga_1B_20260816_165423
+============================================================================
+
+[FITS] strategy=all_resident  peak weights=10.89 GB  headroom=8.56 GB
+  training dominates: 2.47 GB weights x 4 (weights + grads + 2 AdamW moments) + 1.0 GB activations = 10.89 GB, within 19.44 GB usable (27.8 GB free minus 30% safety margin).
+  WARNING: Only 27.8 GB of 42.3 GB is free -- 14.5 GB is held by other processes. Planning against free memory. Run `nvidia-smi` to see who, and consider CUDA_VISIBLE_DEVICES to pick an idle GPU.
+
+
+============================================================================
+RESULTS
+============================================================================
+  alpha   breadth     depth  retention  note
+----------------------------------------------------------------------------
+   0.00     0.237     0.353      0.720  
+   0.10     0.237     0.424      0.710  
+   0.20     0.333     0.480      0.695  
+   0.30     0.333     0.531      0.677  
+   0.40     0.354     0.572      0.657  
+   0.50     0.399     0.608      0.652  
+   0.60     0.429     0.639      0.650  
+   0.70     0.485     0.666      0.647  
+   0.80     0.510     0.690      0.640  
+   0.90     0.551     0.708      0.632  
+   1.00     0.571     0.725      0.625  
+
+----------------------------------------------------------------------------
+TRADE-OFF
+----------------------------------------------------------------------------
+  Spearman rho : 0.9886   p = 0.0 (NOT a significance test -- the points are one continuous path, not independent samples)
+  usable points: 11
+  utility stable across sweep: False
+
+  breadth span : 0.333 (66 of 800 items; one item = 0.0051)
+  depth span   : 0.372 (retain90 oracle = 1.000, so peak is 72.5% of full erasure)
+
+AXES AGREE: breadth and depth rise together across a substantial span of both axes. This runs against the hypothesis and is equally worth reporting -- now replicate across methods and seeds.
+
+Saved to results/studies/study_ga_1B_20260816_165423
+
+NOTE: one unlearning method, one model, one seed. A single trajectory is not a finding -- repeat across methods and seeds before drawing any conclusion.
+============================================================================

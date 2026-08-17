@@ -1,0 +1,28 @@
+{
+  "run_id": "study_ga_1B_20260816_092417",
+  "method": "ga",
+  "size": "1B",
+  "alphas": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+  ],
+  "adaptation": "full_parameter",
+  "unlearn": {
+    "epochs": 5,
+    "learning_rate": 1e-05,
+    "batch_size": 4,
+    "beta": 0.1
+  },
+  "n_depth_examples": 100,
+  "n_breadth_per_tier": 100,
+  "prompt_format": "plain_qa"
+}

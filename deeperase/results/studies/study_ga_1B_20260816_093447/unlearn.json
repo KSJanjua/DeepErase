@@ -1,0 +1,27 @@
+{
+  "config": {
+    "method": "ga",
+    "learning_rate": 1e-05,
+    "epochs": 5,
+    "batch_size": 4,
+    "max_grad_norm": 1.0,
+    "beta": 0.1,
+    "retain_weight": 1.0,
+    "seed": 0,
+    "log_every": 20
+  },
+  "history": {
+    "n_steps": 125,
+    "seconds": 21.8,
+    "first_loss": -1.7186720371246338,
+    "last_loss": -91.77824401855469,
+    "first_forget_nll": 3.139378070831299,
+    "last_forget_nll": 91.8373794555664,
+    "forget_nll_change": 88.69800138473511
+  },
+  "verdict": {
+    "passed": true,
+    "reason": "weights moved and forget-set NLL rose, as expected",
+    "update_norm": 2.016046191219034
+  }
+}

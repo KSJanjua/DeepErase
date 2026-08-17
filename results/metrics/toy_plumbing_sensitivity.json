@@ -1,0 +1,15 @@
+[
+  {
+    "method": "GA",
+    "model": "tiny-llama-4L-random",
+    "benchmark": "toy-plumbing",
+    "n_points": 6,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": null,
+    "p_excluding": null,
+    "rho_including": null,
+    "p_including": null,
+    "conclusion_is_robust": null
+  }
+]

@@ -1,0 +1,50 @@
+07:04:19 INFO    Loading breadth items (B0 exact, B1 paraphrase, R retain)
+==========================================================================
+Breadth measurement  |  size=1B  run=breadth_1B_20260816_070419
+==========================================================================
+
+[FITS] strategy=all_resident  peak weights=7.41 GB  headroom=22.18 GB
+  1B at 2.47 GB/model x 3 resident = 7.41 GB, within 29.60 GB usable (42.3 GB total minus 30% safety margin).
+
+Generating train split:   0%|                                                                                                                                                            | 0/400 [00:00<?, ? examples/s]Generating train split: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 400/400 [00:00<00:00, 31259.95 examples/s]
+Generating train split:   0%|                                                                                                                                                            | 0/400 [00:00<?, ? examples/s]Generating train split: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 400/400 [00:00<00:00, 45032.25 examples/s]
+07:04:27 INFO    Loaded 1200 breadth items across tiers ['B0', 'B1', 'R']
+07:04:27 INFO      300 items: {'B0': 100, 'B1': 100, 'R': 100}
+07:04:28 INFO    Scoring full ...
+07:04:28 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+07:04:30 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 2.3s
+07:04:37 INFO      scored 100/300 breadth items
+07:04:44 INFO      scored 200/300 breadth items
+07:04:50 INFO      scored 300/300 breadth items
+07:04:50 INFO      full in 22.9s -- breadth=0.005 (leakage=0.995) [B0=1.000, B1=0.990, R=1.000], B0-B1 gap=+0.010
+07:04:50 INFO    Scoring retain90 ...
+07:04:50 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.bfloat16, device=cuda:0)
+07:04:52 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 1.2s
+07:04:58 INFO      scored 100/300 breadth items
+07:05:05 INFO      scored 200/300 breadth items
+07:05:12 INFO      scored 300/300 breadth items
+07:05:12 INFO      retain90 in 21.4s -- breadth=0.285 (leakage=0.715) [B0=0.720, B1=0.710, R=1.000], B0-B1 gap=+0.010
+07:05:13 INFO    Freed full -- cuda:0: 2.51 GB allocated, 2.52 GB reserved, 35.17 GB free of 42.28 GB (17% used)
+07:05:14 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.03 GB reserved, 37.66 GB free of 42.28 GB (11% used)
+
+==========================================================================
+RESULTS  (knows-rate: fraction where the model still picks the
+          correct answer over the wrong ones)
+==========================================================================
+model               B0        B1         R   breadth
+--------------------------------------------------------------------------
+full             1.000     0.990     1.000     0.005
+retain90         0.720     0.710     1.000     0.285
+
+--------------------------------------------------------------------------
+SANITY CHECK
+--------------------------------------------------------------------------
+  full leaks     : 0.995   (saw every author -- should be high)
+  retain90 leaks : 0.715   (never saw them  -- should be low)
+  difference     : +0.280
+  retention      : full 1.000 / retain90 1.000 (both should be high)
+
+PASS: full leaks clearly more than retain90
+
+Saved to results/gpu_runs/breadth_1B_20260816_070419
+==========================================================================

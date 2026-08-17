@@ -1,0 +1,49 @@
+{
+  "point": {
+    "method": "ga",
+    "model": "1B-ga",
+    "benchmark": "tofu-forget10",
+    "alpha": 0.6,
+    "breadth": 0.07407407407407418,
+    "depth": 0.052951214067353765,
+    "retain_accuracy": 0.76,
+    "utility": 0.76,
+    "relearn_recovery": null,
+    "smr": null,
+    "el10": null,
+    "type_label": null,
+    "breadth_gap": null,
+    "alpha_parallel": null,
+    "alpha_perp": null,
+    "depth_overshoot": false,
+    "n_targets": 100,
+    "seed": 0,
+    "notes": ""
+  },
+  "retention": 0.76,
+  "raw_leakage": 0.765,
+  "breadth_tiers": {
+    "breadth": 0.235,
+    "forget_leakage": 0.765,
+    "retention": 0.76,
+    "generalisation_gap": 0.030000000000000027,
+    "per_tier": {
+      "B0": {
+        "n": 100,
+        "n_knows": 78,
+        "knows_rate": 0.78
+      },
+      "B1": {
+        "n": 100,
+        "n_knows": 75,
+        "knows_rate": 0.75
+      },
+      "R": {
+        "n": 100,
+        "n_knows": 76,
+        "knows_rate": 0.76
+      }
+    }
+  },
+  "depth_summary": "UDS=0.0530 over 98/100 examples (2 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]"
+}

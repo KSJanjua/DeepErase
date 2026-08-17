@@ -1,0 +1,53 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# --- Test / tooling caches ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.tmp_pytest_verify*/
+
+# --- Model / dataset caches (re-downloadable, not source) ---
+hf_cache/
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+
+# --- Archives (redundant snapshots of this same tree) ---
+*.tar.gz
+*.zip
+
+# --- Duplicate copies of deeperase/ pulled back from the GPU box ---
+server/extracted/
+server/from_gpu/
+
+# --- OS / editor ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# --- Local run logs ---
+deeperase/run_log*.txt
+deeperase/breadth_log*.txt
+deeperase/study_ga*.txt
+
+# --- Third-party literature PDFs (copyrighted; see literature/README.md) ---
+literature/
+*.pdf
+
+# Office lock files
+~$*

@@ -1,0 +1,114 @@
+09:34:48 INFO    [1/6] Preparing evaluation data
+09:34:48 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+09:34:48 INFO      reference annotations: 367 examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+09:34:48 INFO      100 depth examples tokenised
+09:34:56 INFO    Loaded 1200 breadth items across tiers ['B0', 'B1', 'R']
+09:34:56 INFO      300 breadth items
+09:34:56 INFO    [2/6] Measuring reference models (anchors both axes)
+09:34:56 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+09:34:58 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 2.3s
+09:35:27 INFO      full leakage=0.785 retention=0.790
+09:35:27 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.bfloat16, device=cuda:0)
+09:35:28 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 1.2s
+09:35:50 INFO      retain90 leakage=0.515 retention=0.820
+09:35:50 INFO      calibration: floor=0.515 ceiling=0.785 range=0.270
+09:35:50 INFO    [3/6] Depth Stage-1 baseline (retain90 -> full)
+09:35:52 INFO    Captured hidden states for 100 examples across 16 layers
+09:36:26 INFO      98/100 examples have a Knowledge-Encoding layer
+09:36:27 INFO    Freed full -- cuda:0: 2.51 GB allocated, 2.52 GB reserved, 24.85 GB free of 42.28 GB (41% used)
+09:36:29 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.03 GB reserved, 27.34 GB free of 42.28 GB (35% used)
+09:36:29 INFO    [4/6] Unlearning with ga
+09:36:29 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda)
+09:36:30 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 1.2s
+09:36:32 INFO      epoch 0 step 0  loss=-1.7187  forget_nll=3.1394
+09:36:35 INFO      epoch 0 step 20  loss=-40.7583  forget_nll=43.4022
+09:36:39 INFO      epoch 1 step 40  loss=-77.4018  forget_nll=78.4837
+09:36:42 INFO      epoch 2 step 60  loss=-89.0529  forget_nll=89.2499
+09:36:46 INFO      epoch 3 step 80  loss=-89.9035  forget_nll=89.9623
+09:36:49 INFO      epoch 4 step 100  loss=-91.8917  forget_nll=91.9131
+09:36:53 INFO      epoch 4 step 120  loss=-90.8815  forget_nll=90.9096
+09:36:53 INFO    Unlearning finished: 125 steps in 21.8s, forget NLL 3.1394 -> 91.8374
+09:37:18 INFO      [OK] ||v||=2.016, forget NLL change=88.69800138473511, weights moved and forget-set NLL rose, as expected
+09:37:27 INFO      update vector: 147 tensors, ||v||=2.016
+09:37:27 INFO    [5/6] Sweeping alpha over 11 settings
+09:38:11 INFO    ExtrapolationReport(a_par=0, a_perp=0, modified=147, skipped=0, ||v||=2.01605, ||delta||=0)
+09:38:36 INFO    Captured hidden states for 100 examples across 16 layers
+09:38:36 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+09:38:37 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 1.2s
+09:39:09 INFO      alpha=0.00  breadth=1.000  depth=0.987  retention=0.210  (102s)
+09:39:54 INFO    ExtrapolationReport(a_par=0.1, a_perp=0.1, modified=147, skipped=0, ||v||=2.01605, ||delta||=0.201605)
+09:40:20 INFO    Captured hidden states for 100 examples across 16 layers
+09:40:52 INFO      alpha=0.10  breadth=1.000  depth=0.987  retention=0.210  (103s)
+09:41:37 INFO    ExtrapolationReport(a_par=0.2, a_perp=0.2, modified=147, skipped=0, ||v||=2.01605, ||delta||=0.403209)
+09:42:03 INFO    Captured hidden states for 100 examples across 16 layers
+09:42:35 INFO      alpha=0.20  breadth=1.000  depth=0.987  retention=0.200  (103s)
+09:43:19 INFO    ExtrapolationReport(a_par=0.3, a_perp=0.3, modified=147, skipped=0, ||v||=2.01605, ||delta||=0.604814)
+09:43:45 INFO    Captured hidden states for 100 examples across 16 layers
+09:44:17 INFO      alpha=0.30  breadth=1.000  depth=0.988  retention=0.220  (102s)
+09:45:01 INFO    ExtrapolationReport(a_par=0.4, a_perp=0.4, modified=147, skipped=0, ||v||=2.01605, ||delta||=0.806418)
+09:45:27 INFO    Captured hidden states for 100 examples across 16 layers
+09:45:59 INFO      alpha=0.40  breadth=1.000  depth=0.988  retention=0.200  (102s)
+09:46:44 INFO    ExtrapolationReport(a_par=0.5, a_perp=0.5, modified=147, skipped=0, ||v||=2.01605, ||delta||=1.00802)
+09:47:10 INFO    Captured hidden states for 100 examples across 16 layers
+09:47:42 INFO      alpha=0.50  breadth=1.000  depth=0.988  retention=0.210  (103s)
+09:48:28 INFO    ExtrapolationReport(a_par=0.6, a_perp=0.6, modified=147, skipped=0, ||v||=2.01605, ||delta||=1.20963)
+09:48:54 INFO    Captured hidden states for 100 examples across 16 layers
+09:49:26 INFO      alpha=0.60  breadth=1.000  depth=0.988  retention=0.210  (104s)
+09:50:10 INFO    ExtrapolationReport(a_par=0.7, a_perp=0.7, modified=147, skipped=0, ||v||=2.01605, ||delta||=1.41123)
+09:50:36 INFO    Captured hidden states for 100 examples across 16 layers
+09:51:08 INFO      alpha=0.70  breadth=1.000  depth=0.989  retention=0.210  (102s)
+09:51:54 INFO    ExtrapolationReport(a_par=0.8, a_perp=0.8, modified=147, skipped=0, ||v||=2.01605, ||delta||=1.61284)
+09:52:20 INFO    Captured hidden states for 100 examples across 16 layers
+09:52:51 INFO      alpha=0.80  breadth=1.000  depth=0.989  retention=0.220  (103s)
+09:53:36 INFO    ExtrapolationReport(a_par=0.9, a_perp=0.9, modified=147, skipped=0, ||v||=2.01605, ||delta||=1.81444)
+09:54:01 INFO    Captured hidden states for 100 examples across 16 layers
+09:54:33 INFO      alpha=0.90  breadth=1.000  depth=0.989  retention=0.210  (102s)
+09:55:19 INFO    ExtrapolationReport(a_par=1, a_perp=1, modified=147, skipped=0, ||v||=2.01605, ||delta||=2.01605)
+09:55:44 INFO    Captured hidden states for 100 examples across 16 layers
+09:56:16 INFO      alpha=1.00  breadth=1.000  depth=0.989  retention=0.210  (103s)
+09:56:17 INFO    Freed full -- cuda:0: 5.02 GB allocated, 5.85 GB reserved, 21.45 GB free of 42.28 GB (49% used)
+09:56:17 INFO    [6/6] Analysis
+09:56:17 WARNING Trajectory ga/1B-ga/tofu-forget10 has a constant axis; rho undefined
+09:56:17 WARNING Trajectory ga/1B-ga/tofu-forget10 has a constant axis; rho undefined
+09:56:17 WARNING Trajectory ga/1B-ga/tofu-forget10 has a constant axis; rho undefined
+09:56:17 INFO    Wrote 11 plane points to results/studies/study_ga_1B_20260816_093447/plane.json
+09:56:18 INFO    Wrote figure to results/studies/study_ga_1B_20260816_093447/plane.png
+============================================================================
+DEPTH-BREADTH STUDY  |  method=ga  size=1B
+run=study_ga_1B_20260816_093447
+============================================================================
+
+[FITS] strategy=all_resident  peak weights=7.41 GB  headroom=22.18 GB
+  1B at 2.47 GB/model x 3 resident = 7.41 GB, within 29.60 GB usable (42.3 GB total minus 30% safety margin).
+
+
+============================================================================
+RESULTS
+============================================================================
+  alpha   breadth     depth  retention  note
+----------------------------------------------------------------------------
+   0.00     1.000     0.987      0.210  
+   0.10     1.000     0.987      0.210  
+   0.20     1.000     0.987      0.200  
+   0.30     1.000     0.988      0.220  
+   0.40     1.000     0.988      0.200  
+   0.50     1.000     0.988      0.210  
+   0.60     1.000     0.988      0.210  
+   0.70     1.000     0.989      0.210  
+   0.80     1.000     0.989      0.220  
+   0.90     1.000     0.989      0.210  
+   1.00     1.000     0.989      0.210  
+
+----------------------------------------------------------------------------
+TRADE-OFF
+----------------------------------------------------------------------------
+  Spearman rho : None   p = None
+  usable points: 11
+  utility stable across sweep: True
+
+INCONCLUSIVE: an axis did not vary enough to correlate. Widen the alpha range or use more examples.
+
+Saved to results/studies/study_ga_1B_20260816_093447
+
+NOTE: one unlearning method, one model, one seed. A single trajectory is not a finding -- repeat across methods and seeds before drawing any conclusion.
+============================================================================

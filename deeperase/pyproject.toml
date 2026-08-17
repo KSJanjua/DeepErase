@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deeperase"
+version = "0.1.0"
+description = "Depth vs. breadth evaluation harness for LLM knowledge erasure (research scaffold)"
+readme = "README.md"
+requires-python = ">=3.10,<3.12"
+
+# Python version rationale:
+#   3.11 is the tested target. 3.10 is expected to work but is NOT verified.
+#   3.12+ is excluded: numpy 1.26.4 has no 3.12 wheels for all platforms, and
+#   the 3.13/3.14 interpreters present on the original dev machine pulled in
+#   newer numpy/scipy that we have not validated against this pin set.
+#   Do not widen this range without re-running the full suite.
+
+dependencies = [
+    # Pinned exactly. These are the versions the test suite is verified against
+    # (see VERIFICATION.md). Ranges are deliberately avoided: the MKL/OpenMP
+    # failure documented in README was caused by an unpinned mixed-source install.
+    "torch==2.6.0",
+    "numpy==1.26.4",
+    "scipy==1.13.1",
+    "scikit-learn==1.5.2",
+    "pandas==2.2.3",
+    "matplotlib==3.9.2",
+    "transformers==4.46.3",
+    "tokenizers==0.20.3",
+    "safetensors==0.4.5",
+    "huggingface-hub==0.26.5",
+    "accelerate==1.1.1",
+    "peft==0.13.2",
+    "datasets==3.1.0",
+]
+
+[project.optional-dependencies]
+test = ["pytest==8.3.4"]
+
+[tool.setuptools.packages.find]
+include = ["deeperase*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = [
+    "ignore::DeprecationWarning:matplotlib.*",
+    "ignore::UserWarning:torch.*",
+]

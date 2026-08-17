@@ -1,0 +1,48 @@
+07:11:27 INFO    Loading breadth items (B0 exact, B1 paraphrase, R retain)
+07:11:34 INFO    Loaded 1200 breadth items across tiers ['B0', 'B1', 'R']
+07:11:34 INFO      300 items: {'B0': 100, 'B1': 100, 'R': 100}
+07:11:35 INFO    Scoring full ...
+07:11:35 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.bfloat16, device=cuda:0)
+07:11:38 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 2.3s
+07:11:45 INFO      scored 100/300 breadth items
+07:11:53 INFO      scored 200/300 breadth items
+07:12:00 INFO      scored 300/300 breadth items
+07:12:00 INFO      full in 25.0s -- breadth=0.225 (leakage=0.775) [B0=0.780, B1=0.770, R=0.790], B0-B1 gap=+0.010
+07:12:00 INFO    Scoring retain90 ...
+07:12:00 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.bfloat16, device=cuda:0)
+07:12:01 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 1.3s
+07:12:09 INFO      scored 100/300 breadth items
+07:12:16 INFO      scored 200/300 breadth items
+07:12:24 INFO      scored 300/300 breadth items
+07:12:24 INFO      retain90 in 23.5s -- breadth=0.490 (leakage=0.510) [B0=0.510, B1=0.510, R=0.820], B0-B1 gap=+0.000
+07:12:25 INFO    Freed full -- cuda:0: 2.51 GB allocated, 2.53 GB reserved, 24.84 GB free of 42.28 GB (41% used)
+07:12:26 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.03 GB reserved, 27.34 GB free of 42.28 GB (35% used)
+==========================================================================
+Breadth measurement  |  size=1B  run=breadth_1B_20260816_071127
+==========================================================================
+
+[FITS] strategy=all_resident  peak weights=7.41 GB  headroom=22.18 GB
+  1B at 2.47 GB/model x 3 resident = 7.41 GB, within 29.60 GB usable (42.3 GB total minus 30% safety margin).
+
+
+==========================================================================
+RESULTS  (knows-rate: fraction where the model still picks the
+          correct answer over the wrong ones)
+==========================================================================
+model               B0        B1         R   breadth
+--------------------------------------------------------------------------
+full             0.780     0.770     0.790     0.225
+retain90         0.510     0.510     0.820     0.490
+
+--------------------------------------------------------------------------
+SANITY CHECK
+--------------------------------------------------------------------------
+  full leaks     : 0.775   (saw every author -- should be high)
+  retain90 leaks : 0.510   (never saw them  -- should be low)
+  difference     : +0.265
+  retention      : full 0.790 / retain90 0.820 (both should be high)
+
+PASS: full leaks clearly more than retain90
+
+Saved to results/gpu_runs/breadth_1B_20260816_071127
+==========================================================================

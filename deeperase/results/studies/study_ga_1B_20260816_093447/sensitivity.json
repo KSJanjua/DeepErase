@@ -1,0 +1,15 @@
+[
+  {
+    "method": "ga",
+    "model": "1B-ga",
+    "benchmark": "tofu-forget10",
+    "n_points": 11,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": null,
+    "p_excluding": null,
+    "rho_including": null,
+    "p_including": null,
+    "conclusion_is_robust": null
+  }
+]

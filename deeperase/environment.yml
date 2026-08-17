@@ -1,0 +1,18 @@
+# DeepErase — conda environment specification (CPU-only).
+#
+# Creates the interpreter ONLY. All Python packages come from pip, deliberately:
+# mixing conda-forge/defaults numpy+MKL with pip torch installs two Intel OpenMP
+# runtimes into one process and aborts the interpreter on Windows (OMP Error #15).
+# See requirements.txt for the full explanation.
+#
+#   conda env create -f environment.yml
+#   conda activate deeperase
+#   pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt
+
+name: deeperase
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - pip

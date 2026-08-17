@@ -1,0 +1,44 @@
+# DeepErase — pinned dependencies (CPU-only).
+#
+# Verified on: Windows 11, Python 3.11.15, conda env "deeperase".
+# See VERIFICATION.md for the exact captured test output.
+#
+# IMPORTANT — install torch from the PyTorch CPU index FIRST:
+#
+#   pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt
+#
+# WHY THE ORDER AND THE PINS MATTER
+# ---------------------------------
+# Installing these packages into an Anaconda *base* environment, or mixing
+# `conda install numpy` with `pip install torch`, puts TWO copies of the Intel
+# OpenMP runtime (libiomp5md.dll) into one process. On Windows that aborts the
+# interpreter with:
+#
+#   OMP: Error #15: Initializing libiomp5md.dll, but found libiomp5md.dll
+#        already initialized.
+#
+# The abort surfaces at the first LAPACK call after `import torch` -- in this
+# codebase that is np.linalg.norm(..., ord="fro") inside eval/depth.linear_cka,
+# which makes it look like a bug in the depth metrics. It is not.
+#
+# Fix: install every package from pip into a clean (non-base) environment, so
+# only torch's own libiomp5md.dll is present. Do NOT paper over it with
+# KMP_DUPLICATE_LIB_OK=TRUE -- that flag is documented by Intel as unsafe and
+# can silently produce wrong numerical results, which is unacceptable in a
+# measurement harness.
+
+torch==2.6.0
+numpy==1.26.4
+scipy==1.13.1
+scikit-learn==1.5.2
+pandas==2.2.3
+matplotlib==3.9.2
+transformers==4.46.3
+tokenizers==0.20.3
+safetensors==0.4.5
+huggingface-hub==0.26.5
+accelerate==1.1.1
+peft==0.13.2
+datasets==3.1.0
+pytest==8.3.4
