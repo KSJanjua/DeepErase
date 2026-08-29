@@ -31,6 +31,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+# `python gpu/bootstrap.py` puts THIS file's directory (gpu/) on sys.path, not
+# the working directory -- so `import deeperase` fails even from the repo root.
+# `python -m pytest` and `python -m deeperase.scripts.run_study` are unaffected
+# because -m puts cwd on the path. Put the repo root on explicitly.
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
 # Fragmentation is the usual cause of an OOM that "should" have fitted, and it
 # bites hardest when another process owns part of the card. Set before torch
 # allocates anything.
@@ -132,8 +140,9 @@ def check_plan(size: str) -> float | None:
     try:
         from deeperase.config import RunConfig, plan_memory
     except Exception as e:                                   # noqa: BLE001
-        line(WARN, f"could not import deeperase.config ({e}); skipping memory plan")
-        return None
+        line(BAD, f"could not import deeperase.config ({e}). The package must be "
+                  f"importable from {_ROOT}. Are you in the repository root?")
+        sys.exit(1)
     try:
         cfg = RunConfig(size_label=size)
         plan = plan_memory(cfg)

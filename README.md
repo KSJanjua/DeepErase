@@ -82,7 +82,7 @@ Installing everything from pip into a clean non-base environment leaves exactly 
 | Signature extraction | **Not started.** Deferred with SAGE. |
 | The depth-vs-breadth study itself | **One trajectory run** (`study_ga_1B_20260816_165423`), reported in [`RESULTS.md`](RESULTS.md) §5. **Not replicated** — one method, one scale, one seed, utility control not flat. |
 
-**491 tests** in the documented environment; the plumbing test passes **31/31 checks**. Note that [`VERIFICATION.md`](VERIFICATION.md) captures the August runs at **118** and **180** tests — no transcript of the full 491-test run has been pasted there yet, and regenerating it is a standing to-do (see the notice at the top of that file). The 491 figure is the count of test functions in `tests/`, which matched Table 13 of the mid-semester report file by file at 489; two regression tests were added on 29 Aug 2026 for the GradDiff wiring defect.
+**493 collected tests** (491 test functions; one is parametrised three ways) in the documented environment; the plumbing test passes **31/31 checks**. Note that [`VERIFICATION.md`](VERIFICATION.md) captures the August runs at **118** and **180** tests — no transcript of the full 491-test run has been pasted there yet, and regenerating it is a standing to-do (see the notice at the top of that file). The 491 figure is the count of test functions in `tests/`, which matched Table 13 of the mid-semester report file by file at 489; two regression tests were added on 29 Aug 2026 for the GradDiff wiring defect.
 
 Test quality was checked by mutation: deliberate bugs were injected (swapped SAGE coefficients, broken Type II threshold, retain tier misclassified as forget, wrong UDS reference point, hook leak, patch-all-positions, ignore-τ, no LER clipping, unweighted mean) and every one was caught.
 
@@ -179,7 +179,7 @@ deeperase/
   scripts/measure_breadth.py     breadth calibration against the reference models
   scripts/run_study.py           the full depth-breadth study
   scripts/compare_spans.py       our span heuristic vs the authors' annotations
-tests/                      491 tests
+tests/                      493 tests (491 functions)
 data/probes/                seed_tofu.json
 data/breadth_items.json     1200 forced-choice items (B0/B1/R), built from TOFU
 data/tofu/                  the TOFU benchmark, downloaded (gitignored)

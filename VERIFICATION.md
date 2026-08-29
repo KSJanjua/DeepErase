@@ -4,30 +4,77 @@ All commands below were run from the repository root in the documented
 environment (conda env `deeperase`, Python 3.11.15) and their output
 pasted verbatim. Captured: 2026-08-09 21:29
 
-> ## ⚠️ These transcripts are dated snapshots, not the current suite
+> ## Current run captured 29 August 2026 — see section 0
 >
-> The runs captured below are from **2 and 9 August 2026** and show
-> **118** and then **180** tests. The suite has since grown to **491 tests**
-> (the count cited in the mid-semester report, Table 13, and in `README.md`).
->
-> **There is no captured transcript of the 491-test run in this file.** The
-> 491 figure is the number of test functions in `tests/`, which can be
-> confirmed statically:
->
-> ```bash
-> grep -c '^def test_\|^    def test_' tests/*.py   # 50 58 23 84 84 37 53 42 39 21 = 491
-> ```
->
-> To regenerate this document's evidence, run the suite in the documented
-> environment and paste the output here, replacing this notice:
->
-> ```bash
-> python -m pytest tests/ -q      # expect: 491 passed
-> python -m deeperase.scripts.smoke_e2e   # expect: 31/31 checks
-> ```
->
-> Until that is done, cite the report's Table 13 for the *composition* of the
-> suite and this file only for the August environment and defect history.
+> Sections 1 onward are the **August 2 and 9** transcripts, at 118 and then 180
+> tests. They are kept for the environment and defect history. **Section 0 below
+> is the current suite**, captured on the university A100.
+
+---
+
+## 0. Current: 493 tests passing (29 August 2026)
+
+Machine: `dgxanode02`, NVIDIA A100-SXM4-80GB, Ubuntu 22.04.4.
+Environment: `/workspace/Capstone_Project/.venv`, a `--system-site-packages`
+venv on Python 3.10.12 inheriting the NGC container's tuned PyTorch.
+
+```
+torch         2.4.0a0+f70bd71a48.nv24.06   (NGC 24.06 build, CUDA 12.5)
+transformers  4.46.3
+datasets      3.6.0
+numpy         1.24.4
+scipy         1.13.1
+matplotlib    3.9.0
+pytest        8.1.1
+```
+
+```
+$ python gpu/bootstrap.py --size 1B --run-tests
+
+Running 493 items in this shard
+.................................................................... [ 27%]
+.................................................................... [ 54%]
+.................................................................... [ 82%]
+.................................................................... [100%]
+
+[  OK  ] repository root: /workspace/Capstone_Project/DeepErase
+[  OK  ] reference_uds/ annotations present (needed for --reference-spans)
+[ WARN ] python 3.10.12 (3.11 is the tested target)
+[  OK  ] torch 2.4.0a0+f70bd71a48.nv24.06
+[  OK  ] transformers 4.46.3
+[  OK  ] datasets 3.6.0
+[  OK  ] scipy 1.13.1
+[  OK  ] matplotlib 3.9.0
+[  OK  ] numpy 1.24.4
+[  OK  ] pytest 8.1.1
+[  OK  ] 1 CUDA device(s) visible
+[  OK  ]   cuda:0 NVIDIA A100-SXM4-80GB -- 79.2 GB total, 29.5 GB in use by
+           others, 49.7 GB free
+[  OK  ] 98 GB free on this filesystem
+[  OK  ] HF cache: /workspace/Capstone_Project/hf_cache
+[  OK  ] test suite passed
+READY
+```
+
+**493 collected items from 491 test functions.** The difference is one
+`@pytest.mark.parametrize` in `test_unlearn.py:213` that expands a single
+function across GA, GradDiff and NPO. Table 13 of the mid-semester report
+counts functions (489 at submission, +2 for the GradDiff regression tests added
+29 Aug).
+
+The only warnings are intentional: `DeprecationWarning` from the deliberately
+deprecated `unlearning_depth_score` shim, which the tests assert fires, plus two
+upstream deprecations from torch and huggingface_hub.
+
+Two caveats this run does **not** settle:
+
+* `datasets` here is **3.6.0**, not the 3.1.0 the published results used. It is
+  inside the `<4.0.0` ceiling and the suite passes, but **the suite never
+  imports `datasets`** — `load_dataset` is reached only at real measurement
+  time. Data loading is still unverified on this environment.
+* Python is **3.10.12**, not the 3.11 the suite was originally verified on.
+
+---
 
 ## 1. Environment
 
