@@ -2,9 +2,9 @@
 
 Research **scaffold** for the D1 direction: *do unlearning methods trade representation-level depth against generalisation breadth?*
 
-**The measurement is built and validated; the study has not been run.** The depth metric reproduces the reference paper's published values at two model scales across six configurations. **No answer to the research question exists yet.** See [Honest status](#honest-status) before citing anything here.
+**The measurement is built and validated. One trajectory has been run; it is not yet an answer.** The depth metric reproduces the reference paper's published values at two model scales across seven configurations (mean absolute deviation 0.010 against a 0.08 tolerance). A first end-to-end depth-breadth trajectory exists, but it is one method, one scale, one seed, and its utility control was not flat — so **no answer to the research question exists yet.** See [Honest status](#honest-status) before citing anything here.
 
-Background: [`RESEARCH_PLAN.md`](RESEARCH_PLAN.md) · [`literature/`](literature/) (54 papers) · [`VERIFICATION.md`](VERIFICATION.md) (captured test output)
+Background: [`RESEARCH_PLAN.md`](RESEARCH_PLAN.md) · [`RESULTS.md`](RESULTS.md) (every measured number) · [`literature/`](literature/) (the 10 Appendix A references) · [`VERIFICATION.md`](VERIFICATION.md) (captured test output)
 
 ---
 
@@ -67,23 +67,24 @@ Installing everything from pip into a clean non-base environment leaves exactly 
 | Component | Status |
 |---|---|
 | **UIPE isotropic extrapolation** | **Implemented and tested.** Faithful to the published method. Usable. |
-| Breadth probe schema (B0–B4 + retain) | Implemented and tested. Schema only — 3 seed targets exist, scaling not built. |
+| Breadth probe schema (B0–B4 + retain) | Schema implemented and tested for all six tiers. **Only B0, B1 and R are populated** (1200 items, built from TOFU's perturbed splits). B2/B3/B4 are an enum and nothing more. |
 | Surface metrics (SMR, EL10, Type I/II/III, ROUGE-L) | Implemented and tested. |
 | Linear probe recoverability | Implemented and tested. Correlational, not causal. |
 | Representation drift (CKA, PCA, selectivity) | Implemented and tested. Correlational, not causal. |
 | **Activation patching** (`eval/patching.py`) | **Implemented and tested.** Real residual-stream patching, LLaMA-style verified; GPT-2/OPT/NeoX paths supported but untested (warn at runtime). |
-| **UDS** (`eval/uds.py`) | **Implemented and validated against published values.** Reproduces the paper's Table 2 at 1B and 3B across six configurations, all monotonic and within tolerance. **Not yet cross-validated against the authors' own code** — one open discrepancy on `retain99` (§8.1 of the conformance doc). See [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md). |
+| **UDS** (`eval/uds.py`) | **Implemented and validated against published values.** Reproduces the paper's Table 2 at 1B and 3B across seven runs, all monotonic and within the 0.08 tolerance; best run (`table2_refspans`, the authors' own annotations) has mean absolute deviation 0.010. **Not yet cross-validated against the authors' own code** — a residual −0.027 on `retain99` remains (§8.1 of the conformance doc). See [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md). |
 | `depth.unlearning_depth_score` (old) | **DEPRECATED.** Was never the published metric. Raises `DeprecationWarning`. |
 | **SAGE directed extrapolation** | **DEFERRED from capstone scope.** Prototype retained; emits `ExperimentalPrototypeWarning`. Must not be used for research claims. |
 | Plane + plotting | Implemented and tested. Depth axis now fed by real UDS. |
 | **TOFU data + entity spans** (`data/tofu.py`) | **Implemented and tested.** Span extraction verified on real TOFU rows; a guard drops 61/400 examples where extraction demonstrably fails. |
 | **GPU infrastructure** (`config.py`, `models.py`) | **Implemented and tested.** Memory planning, model lifecycle, preflight. Proven on a 42 GB card. |
-| Probe scaling, signature extraction | **Not started.** |
-| The depth-vs-breadth study itself | **Not started** — this is the next phase. |
+| Unlearning: GA / GradDiff / NPO + utility-floor checkpoint selection | **Implemented and tested.** Only the **GA** arm has actually been run; GradDiff and NPO have no results yet. |
+| Signature extraction | **Not started.** Deferred with SAGE. |
+| The depth-vs-breadth study itself | **One trajectory run** (`study_ga_1B_20260816_165423`), reported in [`RESULTS.md`](RESULTS.md) §5. **Not replicated** — one method, one scale, one seed, utility control not flat. |
 
-**358 tests pass** in the documented environment. The plumbing test passes **31/31 checks**. Exact captured output: [`VERIFICATION.md`](VERIFICATION.md).
+**489 tests** in the documented environment; the plumbing test passes **31/31 checks**. Note that [`VERIFICATION.md`](VERIFICATION.md) captures the August runs at **118** and **180** tests — no transcript of the full 489-test run has been pasted there yet, and regenerating it is a standing to-do (see the notice at the top of that file). The 489 figure is the count of test functions in `tests/`, which matches Table 13 of the mid-semester report file by file.
 
-Test quality was checked by mutation: four deliberate bugs were injected (swapped SAGE coefficients, broken Type II threshold, retain tier misclassified as forget, wrong UDS reference point) and all four were caught.
+Test quality was checked by mutation: deliberate bugs were injected (swapped SAGE coefficients, broken Type II threshold, retain tier misclassified as forget, wrong UDS reference point, hook leak, patch-all-positions, ignore-τ, no LER clipping, unweighted mean) and every one was caught.
 
 ---
 
@@ -174,11 +175,26 @@ deeperase/
   probes/schema.py          Tier, Probe, ProbeSet, breadth scoring
   probes/seed_tofu.py       3 hand-verified seed targets (36 probes)
   scripts/smoke_e2e.py      plumbing test — NOT a research experiment
-tests/                      358 tests
+  scripts/run_uds_validation.py  depth-axis validation against published values
+  scripts/measure_breadth.py     breadth calibration against the reference models
+  scripts/run_study.py           the full depth-breadth study
+  scripts/compare_spans.py       our span heuristic vs the authors' annotations
+tests/                      489 tests
 data/probes/                seed_tofu.json
-results/                    toy_plumbing_* (plumbing output, not results)
-literature/                 54 PDFs + references.bib + reading list
+data/breadth_items.json     1200 forced-choice items (B0/B1/R), built from TOFU
+data/tofu/                  the TOFU benchmark, downloaded (gitignored)
+data/uds_annotations/       the authors' entity-span annotations (gitignored)
+results/gpu_runs/           depth validation + breadth calibration runs
+results/studies/            depth-breadth trajectories
+results/metrics/, figures/  toy_plumbing_* — plumbing output, NOT results
+reference_uds/              vendored https://github.com/gnueaj/unlearning-depth-score
+reference_openunlearning/   vendored OpenUnlearning, for comparison only
+literature/                 the 10 Appendix A references (gitignored)
 ```
+
+`reference_uds/` must sit at the repository root: `DEFAULT_REFERENCE_PATH` in
+`deeperase/data/reference_spans.py` resolves `reference_uds/tofu_data/forget10_filtered.json`
+relative to the working directory, so `--reference-spans` breaks if it is moved.
 
 ### About `results/toy_plumbing_*`
 
@@ -190,31 +206,30 @@ On this toy the axes **saturate**: breadth pins at 1.0, depth clips to 0.0, all 
 
 ## Known limitations
 
-1. **UDS is not numerically cross-validated** against the reference implementation. Specification conformance is documented and tested; agreement on shared inputs is not. This is the largest remaining gap — see [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md) §5.
-2. **UDS has never run on a model with real knowledge.** All testing to date uses randomly-initialised toy models.
-3. **Entity-span extraction is not implemented.** Callers supply token indices; the paper scores entity spans specifically.
-4. **Batch is treated as one example** — a deviation from the reference that must be resolved before TOFU.
-5. **Non-LLaMA architectures are unverified.** Structurally supported, warn at runtime.
-6. **The breadth probe set has 3 targets.** Enough to validate the schema, not to measure anything.
-7. **Nothing has run above toy scale.** No GPU on the development machine.
-8. **SAGE is deferred** from capstone scope.
-
----
+1. **UDS is not numerically cross-validated** against the reference implementation. Specification conformance is documented and tested, and the published Table 2 is reproduced at two scales — but agreement with the authors' *code* on shared inputs is still unverified. This remains the largest gap: `is_validated_against_reference` is `False` in every saved run. See [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md) §5 item 1.
+2. **The utility control is not flat across the α sweep.** It falls 0.720 → 0.625, so part of the joint depth/breadth rise is general degradation rather than targeted forgetting. The planned degradation control — a matched-magnitude update in a direction unrelated to the forget set — **is not implemented**.
+3. **`run_study.py` has no `--seed` flag.** Every saved point records `seed: 0`. Replication across three seeds per arm cannot be run without adding it.
+4. **The breadth probe set covers B0, B1 and R only.** B2 (alias), B3 (entailed) and B4 (multi-hop) are declared in `probes/schema.py` and have no items. These are the tiers where a depth/breadth divergence would be expected to show most clearly.
+5. **Only the GA arm has been run.** GradDiff and NPO are implemented and unit-tested but have produced no results at any scale.
+6. **τ = 0.05 is inherited, not sensitivity-checked** on our data.
+7. **Our own entity-span heuristic agrees with the authors' annotations on only 12% of examples** (`results/span_comparison.json`). Use `--reference-spans` for anything on `forget10`; the heuristic is a documented weak approximation everywhere else.
+8. **Non-LLaMA architectures are unverified.** GPT-2/OPT/NeoX paths are structurally supported and warn at runtime.
+9. **SAGE is deferred** from capstone scope and must not be used for research claims.
 
 ## Next steps
 
-Blocked on a decision or GPU access, in priority order:
+Priority order, matching tasks T0–T4 of the mid-semester report §5.4.
 
-**No GPU needed:**
-1. Entity-span extraction for TOFU (conformance item 4).
-2. Resolve the batch-as-one-example convention (item 6).
-3. Non-LLaMA architecture tests (item 7).
-4. Stage-1 caching before any large sweep (~2× saving).
+**T0 — Cross-check UDS against the reference implementation** on shared inputs, layer by layer, to ~1e-4. `reference_uds/` is vendored and its annotations are byte-identical to the published dataset, so this is unblocked and needs only GPU time. Gates `is_validated_against_reference`; everything below depends on it.
 
-**Needs GPU:**
-5. Numerical cross-check against the reference on shared inputs (item 1) — gates `is_validated_against_reference`.
-6. Reproduce the paper's Table 2 monotonicity result (items 2, 3).
-7. τ sensitivity sweep (item 5).
-8. Probe scaling, OpenUnlearning integration, 7B validation.
+**T1 — Separate targeted forgetting from general degradation.** Select a checkpoint with more headroom above the utility floor, and add the matched-magnitude random-direction control (limitation 2). Precondition for reading the trajectory at all.
 
-SAGE and signature extraction are **deferred from capstone scope**.
+**T2 — Replicate across methods and seeds.** Add `--seed` (limitation 3), then run the GradDiff and NPO arms, three seeds each, under the identical protocol.
+
+**T3 — Extend the breadth axis** with hand-written B2/B3/B4 items, validated against the reference models before use.
+
+**T4 — Scale and consolidate.** Repeat the full protocol at 3B; add a parameter-efficient adaptation arm; consolidate artefacts for the final report.
+
+Also outstanding, no GPU needed: τ sensitivity sweep, non-LLaMA architecture tests.
+
+SAGE and signature extraction remain **deferred from capstone scope**.

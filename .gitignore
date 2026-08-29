@@ -23,6 +23,12 @@ hf_cache/
 *.pt
 *.ckpt
 
+# Benchmark data downloaded from the Hugging Face Hub. Re-downloadable and
+# governed by its own licence, so it is not vendored. See data/README.md for
+# the exact commands and the expected row counts.
+data/tofu/
+data/uds_annotations/
+
 # --- Archives (redundant snapshots of this same tree) ---
 *.tar.gz
 *.zip
@@ -46,8 +52,15 @@ deeperase/breadth_log*.txt
 deeperase/study_ga*.txt
 
 # --- Third-party literature PDFs (copyrighted; see literature/README.md) ---
-literature/
+# The PDFs themselves are never committed. The index that says which papers
+# belong there, and how to fetch them, is.
+literature/*
+!literature/README.md
+!literature/download_manifest.json
+
 *.pdf
+# ...except our own reports, which are project deliverables, not third-party material.
+!report/*.pdf
 
 # Office lock files
 ~$*

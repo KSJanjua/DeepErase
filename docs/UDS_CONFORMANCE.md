@@ -9,7 +9,7 @@ Our implementation ([`deeperase/eval/uds.py`](../deeperase/eval/uds.py), [`deepe
 > Jaeung Lee, Dohyun Kim, Jaemin Jo. *Measuring the Depth of LLM Unlearning via Activation Patching*. arXiv:2605.24614.
 > Reference code: https://github.com/gnueaj/unlearning-depth-score
 
-Local copy: [`literature/05_critical_evaluation_robustness/UDS_Lee_2026_Measuring-Depth-via-Activation-Patching.pdf`](../literature/05_critical_evaluation_robustness/UDS_Lee_2026_Measuring-Depth-via-Activation-Patching.pdf)
+Paper: [arXiv:2605.24614](https://arxiv.org/abs/2605.24614) · local copy under [`literature/`](../literature/README.md) (PDFs gitignored; fetch commands in that README) · reference implementation vendored at [`reference_uds/`](../reference_uds/)
 
 ---
 
@@ -80,21 +80,29 @@ This is the honest gap. **`UDSReport.is_validated_against_reference` is `False` 
 | 1 | **No numerical cross-check against the reference on shared inputs.** | Two implementations can both satisfy the equations and still diverge on tokenisation, position conventions, or reduction order. This is the single most important gap. | Run reference + ours on identical (model, example, layer) triples; require agreement to ~1e-4. Needs the reference repo and a real model. |
 | 2 | ~~Not reproduced against Table 2~~ **DONE — PASSED (15 Aug 2026).** See §8. | — | — |
 | 3 | ~~Never run on a model with real knowledge~~ **DONE.** Run on Llama-3.2-1B TOFU checkpoints. | — | — |
-| 4 | **Entity-span extraction not implemented.** | The paper scores *entity spans*, not whole answers, "because common template phrases are predictable regardless of knowledge retention". We currently require the caller to supply token indices. | Tokeniser-aware span annotation for TOFU. |
-| 5 | **τ = 0.05 not sensitivity-checked** on our data. | The paper analyses this in Appendix D.2. Our value is inherited, not verified. | A τ sweep once real data exists. |
+| 4 | ~~Entity-span extraction not implemented~~ **DONE (16 Aug 2026).** Two paths now exist: a `NOVEL_CONTENT` heuristic, and the authors' own hand annotations via `--reference-spans` (`deeperase/data/reference_spans.py`, located by character offset). `compare_spans` measured the heuristic against the annotations at **12% exact agreement**, so the heuristic must not be used on `forget10` — see `RESULTS.md` §4. | — | — |
+| 5 | **τ = 0.05 not sensitivity-checked** on our data. | The paper analyses this in Appendix D.2. Our value is inherited, not verified. Real data now exists, so this is unblocked. | A τ sweep. |
 | 6 | ~~Batch-as-one-example deviation~~ **FIXED.** ``UDSExample`` now enforces one sequence per example and rejects batches. | — | — |
 | 7 | **Non-LLaMA architectures unverified.** | GPT-2/OPT/NeoX paths are structurally supported and warn at runtime, but untested. | Tests on one model per family. |
 
 ## 6. Validation plan
 
-1. **No GPU needed:** implement entity-span extraction (item 4); resolve the batching convention (item 6); add non-LLaMA tests (item 7).
-2. **Needs GPU:** clone the reference, run both implementations on shared TOFU inputs, compare per-layer `ΔS1`/`ΔS2` (item 1); reproduce Table 2 monotonicity (items 2, 3); sweep τ (item 5).
+Items 2, 3, 4 and 6 are closed. Three remain:
 
-Only when items 1–3 pass may `is_validated_against_reference` be set `True` and UDS values be used in a research claim.
+1. **Item 1 (needs GPU) — the blocker.** Run the reference implementation and ours on identical (model, example, layer) triples and compare per-layer `ΔS1`/`ΔS2` to ~1e-4. This is **now unblocked**: the reference is vendored at `reference_uds/` (repository root), and its `tofu_data/forget10_filtered.json` is byte-identical to the published `jaeunglee/uds-annotated-tofu` dataset (sha256 `c3d88b76702fed46…`, 367 records), so both implementations can be pointed at the same annotations without further setup.
+2. **Item 5 (needs GPU) — τ sweep** over the real TOFU checkpoints.
+3. **Item 7 (no GPU) — non-LLaMA architecture tests**, one model per family.
 
-## 7. Why the reference was not executed here
+Only when item 1 passes may `is_validated_against_reference` be set `True` and UDS values be used in a research claim.
 
-The reference requires GPU-scale models and TOFU checkpoints. The development machine is **CPU-only** (`torch 2.6.0+cpu`, no CUDA), so a like-for-like numerical comparison is not currently possible. Conformance was therefore established against the paper's equations, with the interface deliberately mirrored so the comparison is mechanical once hardware is available.
+## 7. Why the reference has not been executed yet
+
+*Historical note, superseded.* This section originally recorded that the
+development machine was CPU-only (`torch 2.6.0+cpu`, no CUDA), which is why the
+comparison had not been run. **That constraint no longer applies** — a 42.3 GB
+card has since been used for the runs in `RESULTS.md`. Item 1 is now open purely
+because it has not been scheduled, not because it is blocked. The interface was
+deliberately mirrored so the comparison is mechanical.
 
 
 ---

@@ -9,6 +9,29 @@
 
 ---
 
+> ## ⚠️ SUPERSEDED — historical record, do not cite for current status
+>
+> **This letter describes the project as of 9 August 2026 and is kept unedited
+> as a record of what was reported when.** Much of it is no longer true:
+>
+> | This letter says | Current position (29 August 2026) |
+> |---|---|
+> | "no research results" | Depth axis validated against the published table across **7 runs at two scales** (mean abs. deviation 0.010); breadth axis calibrated; **one full depth-breadth trajectory** measured. See [`RESULTS.md`](RESULTS.md). |
+> | "180 tests pass" (§1) / "Now 118" (§7) — these two figures contradict each other and neither was re-verified | **489 tests**, all passing. See [`VERIFICATION.md`](VERIFICATION.md). |
+> | "UDS has never run on a model with real knowledge" (§9, blocker 2) | **Closed.** Run on the Llama-3.2 1B and 3B TOFU checkpoints. |
+> | "Entity-span extraction not implemented" (§9, blocker 3) | **Closed.** The authors' own annotations are used directly via `--reference-spans`; `results/span_comparison.json` quantifies how poor our heuristic substitute was (12% exact agreement). |
+> | "Batch is treated as one example" (§9, blocker 4) | **Closed.** `UDSExample` now rejects batches. |
+> | "GPU access, now the critical path" (§10) | **Granted and used** — 42.3 GB card. |
+>
+> **Still open from this letter:** blocker 1, the numerical cross-check against
+> the authors' released implementation. `is_validated_against_reference`
+> remains `False`. This is task T0 of the mid-semester report.
+>
+> For current status read [`RESULTS.md`](RESULTS.md), [`README.md`](README.md)
+> and [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md).
+
+---
+
 ## 1. Summary
 
 An independent review found the project was not reproducible. That was correct. This update reports the fixes and states plainly what does and does not work.

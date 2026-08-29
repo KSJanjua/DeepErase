@@ -55,17 +55,17 @@ Modern AI language systems learn from enormous amounts of text, and some of that
 | Question | Answer |
 |---|---|
 | Is the software written? | Yes — about 4,700 lines |
-| Is it tested? | Yes — 358 automated tests, all passing |
+| Is it tested? | Yes — 489 automated tests, all passing |
 | Does the whole system run end to end? | Yes — 31 out of 31 checks pass |
 | Has it run on a real AI model? | **Yes** — Llama 1B and 3B |
-| Does it reproduce the published reference numbers? | **Yes** — 6 runs, all passing |
-| Do we have any research results? | **Not yet** — the study itself has not been run |
+| Does it reproduce the published reference numbers? | **Yes** — 7 runs, all passing, best off by 0.010 |
+| Do we have any research results? | **One trajectory** — run once, with gradient ascent, at 1B, on one seed. Not yet an answer |
 | Is it compared against the original authors' own code? | **No** — the one remaining validation gap |
 | Do we have the powerful computer we need? | **Yes** — 42 GB GPU, working |
 
 ### The one-line status
 
-**The instrument is built and proven to work on real AI models. It has not yet been used to answer the research question — that is the next phase.**
+**The instrument is built and proven to work on real AI models, and it has produced one complete depth-breadth trajectory. That single run is not yet an answer to the research question: it used one unlearning method, one model size and one random seed, and its "nothing else changed" control drifted during the run. Replicating it is the next phase.**
 
 ### What the check showed
 
@@ -74,11 +74,13 @@ We took four AI models, each taught a different amount about some made-up author
 | The model | Should score | We measured |
 |---|---|---|
 | learned everything | 0.002 | **0.000** |
-| missed a little | 0.153 | 0.096 |
-| missed half | 0.496 | 0.447 |
+| missed a little | 0.153 | **0.126** |
+| missed half | 0.496 | **0.486** |
 | never learned it | 1.000 | **1.000** |
 
-The scores rise in the right order and all four sit inside the accepted margin. We repeated the whole check **six times** — three different ways of phrasing the questions, a completely different random selection of questions, a different way of choosing which words to score, and a larger model — and got the same answer every time.
+(These are the figures from our best run, which uses the original authors' own hand-marked answer spans. Our own automatic span-finder agrees with those marks on only 12% of examples and gives slightly lower middle values — 0.096 and 0.447. Both sets of runs pass; the difference is documented rather than averaged away.)
+
+The scores rise in the right order and all four sit inside the accepted margin — the average miss is 0.010 against an allowance of 0.08. We repeated the whole check **seven times** — three different ways of phrasing the questions, a completely different random selection of questions, two different ways of choosing which words to score, and a larger model — and got the same answer every time.
 
 The two extremes coming out *exactly* right (0.000 and 1.000) is the strongest single signal. Those two cannot be produced by accident: the first is a model compared against itself, the second is a model compared against the reference standard.
 
@@ -225,7 +227,7 @@ If breadth and depth really do trade off, then the tests the field currently tru
 1. Build reliable software to measure breadth and depth. **(Done)**
 2. Prove the software is correct. **(Done)**
 3. Check our depth measurement agrees with the original authors' version. **(Blocked — needs a powerful computer)**
-4. Run it on real models and answer the question. **(Not started)**
+4. Run it on real models and answer the question. **(Started — one trajectory measured; needs replication across methods, seeds and scales before it is an answer)**
 
 ### Deliberately excluded
 
@@ -402,7 +404,7 @@ We got this wrong at first: the check we used caught only some of them, and a fe
 
 ---
 
-### 8.3 The question ladder — 🟢 Ready (structure) / ⚪ Not started (quantity)
+### 8.3 The question ladder — 🟢 Ready (structure) / 🟡 Partly populated (quantity)
 
 **What it does.** Organises the B0-to-R ladder from Section 3.
 
@@ -420,9 +422,9 @@ That last item is subtle but valuable. If a model fails a two-step question, the
 - leakage on each forgetting rung (B0–B4) — lower is better
 - accuracy on the retain rung (R) — higher is better, **reported separately and never mixed in**
 
-**What exists today.** The machinery is finished and tested. We have written **36 questions covering 3 example subjects**, every one checked by hand.
+**What exists today.** The machinery is finished and tested for all six rungs. Two sources feed it. A hand-checked seed set of **36 questions across 3 example subjects** validates the schema. Separately, the study runs use **1200 items built automatically from TOFU's own perturbed splits** (`data/breadth_items.json`) — 400 each on B0, B1 and R. That is what produced the calibration in `RESULTS.md` §2.
 
-**What does not exist.** Only 3 subjects. A real study needs 50 to 200. Not started.
+**What does not exist.** Rungs **B2 (nicknames), B3 (one-step consequences) and B4 (two-step reasoning) have no questions at all** — they are declared in the code and empty. They cannot be generated from TOFU and must be written by hand. These are exactly the rungs where deep-but-narrow forgetting would show up, so this is a scientific gap, not a cosmetic one.
 
 **Where the questions come from.** The three subjects are genuine TOFU authors. TOFU supplies the B0 questions for free (its own 20 questions per author are, by definition, the exact-wording rung) and supplies most of the R material. But B1 through B4 do not exist anywhere and must be written by hand.
 
@@ -457,7 +459,7 @@ This matters a great deal, because our entire research question is whether surfa
 
 ---
 
-### 8.6 Signal swapping (activation patching) — 🟡 Built, unproven
+### 8.6 Signal swapping (activation patching) — 🟢 Built and proven on real models
 
 **This is the most important piece of recent work.**
 
@@ -478,11 +480,11 @@ This matters a great deal, because our entire research question is whether surfa
 
 We do this one layer at a time, so we can see *where* in the stack the knowledge lives.
 
-**Status.** Built and heavily tested — but only on the tiny artificial model. Never run on a real one.
+**Status.** Built, heavily tested, and since run on the real Llama-3.2 TOFU checkpoints at 1B and 3B. Two exact end-to-end checks hold on real models: patching a model with its own signals changes nothing at all, and patching in the "never learned it" model's signals gives exactly the maximum score.
 
 ---
 
-### 8.7 The depth score (UDS) — 🟡 Built, unproven
+### 8.7 The depth score (UDS) — 🟢 Built; reproduces the published numbers, not yet checked against the authors' code
 
 **What it is.** A published measurement that turns signal swapping into a single number between 0 and 1.
 
@@ -506,11 +508,13 @@ Repeat exactly the same procedure, but using signals from the unlearned model.
 
 **A deliberate honesty feature.** If Stage 1 finds no layer that holds the knowledge, the result is recorded as **"undefined"** — not as zero. Zero would mean "we measured, and nothing was erased". Undefined means "we could not measure". Confusing those two would be misleading, so the code refuses to.
 
-**Status: built, but NOT checked against the original authors' code.**
+**Status: reproduces the published numbers, but still NOT checked against the original authors' code.**
 
-We implemented this from the equations in the published paper, and we wrote a detailed point-by-point comparison confirming every equation matches. But two teams can both follow the same equations correctly and still get different numbers, because of small choices about how text is split up or how averages are taken.
+We implemented this from the equations in the published paper, and we wrote a detailed point-by-point comparison confirming every equation matches. We have since reproduced the paper's own published table across seven runs at two model sizes, with an average miss of 0.010 against an allowance of 0.08.
 
-Until we compare directly against the authors' own code, the numbers cannot be used for research. **The software knows this about itself** — every result it produces is stamped *"NOT cross-validated vs reference"*.
+That is necessary evidence, but not sufficient. Two teams can both follow the same equations correctly and still get different numbers, because of small choices about how text is split up or how averages are taken — and we have direct evidence that such choices matter here, because switching from our own word-picking heuristic to the authors' hand-marked spans moved the middle values by about 0.03 to 0.05.
+
+Until we compare directly against the authors' own code on the same inputs, the numbers cannot carry a research claim. **The software knows this about itself** — every result it produces is stamped *"NOT cross-validated vs reference"*. This is task T0, and it is now unblocked: the authors' code is vendored at `reference_uds/` and their annotations are byte-identical to the published dataset.
 
 **One thing we got wrong and fixed.** Our first version of this score was much simpler — it just combined three numbers the user supplied. When we read the original paper properly, we found the real measurement is quite different: layer by layer, question by question, with a selection step and a weighting step. Ours had none of that structure. We rebuilt it properly, and marked the old version obsolete rather than quietly patching it, because it was not a rough version of the right thing — it was a different thing.
 
@@ -554,7 +558,7 @@ pip install -r requirements.txt
 ### Running it
 
 ```bash
-# Run all 358 tests            (~30 seconds)
+# Run all 489 tests            (~35 seconds)
 python -m pytest tests/
 
 # Run the whole system end to end  (~24 seconds)
@@ -588,10 +592,10 @@ Both commands were run immediately before writing this document.
 
 | Test | Result |
 |---|---|
-| Automated tests | **180 passed** |
+| Automated tests | **489 passed** |
 | End-to-end plumbing test | **31 / 31 checks passed** |
 
-The 358 tests split as: 42 for the control dial, 76 for the measurements, 84 for signal swapping and the depth score, 47 for the TOFU data handling, 40 for GPU memory planning, 48 for model loading, and 21 for the experiment runner.
+The 489 tests split as: 84 for signal swapping, 84 for the depth-score maths and the trajectory guards, 58 for the TOFU data handling, 51 for the unlearning methods and the stopping rule, 50 for run configuration and memory planning, 42 for the control dial, 39 for model loading, 37 for the breadth axis, 23 for the reference span annotations, and 21 for the experiment runner.
 
 ### What the tests DO prove
 
@@ -837,7 +841,7 @@ The development computer has **no GPU** — only an ordinary processor.
 
 That was a deliberate choice. Writing the software, testing it, and running the tiny model all work perfectly well on an ordinary processor.
 
-This was the right way to work: get the software correct cheaply first, then spend expensive computer time only when there is something worth running. All 358 tests and the full end-to-end check were completed without spending a penny on computing.
+This was the right way to work: get the software correct cheaply first, then spend expensive computer time only when there is something worth running. All 489 tests and the full end-to-end check were completed without spending a penny on computing.
 
 ### Why it is now the blocker
 

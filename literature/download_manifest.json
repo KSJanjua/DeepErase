@@ -1,0 +1,112 @@
+[
+  {
+    "ref": 1,
+    "arxiv_id": "2402.16835",
+    "title_expected": "Eight Methods to Evaluate Robust Unlearning in LLMs",
+    "title_on_arxiv": "Eight Methods to Evaluate Robust Unlearning in LLMs",
+    "match": "exact",
+    "status": "OK",
+    "file": "[01] lynch2024-eight-methods (arXiv 2402.16835).pdf",
+    "bytes": 615654,
+    "note": ""
+  },
+  {
+    "ref": 2,
+    "arxiv_id": "2409.18025",
+    "title_expected": "An Adversarial Perspective on Machine Unlearning for AI Safety",
+    "title_on_arxiv": "An Adversarial Perspective on Machine Unlearning for AI Safety",
+    "match": "exact",
+    "status": "OK",
+    "file": "[02] lucki2025-adversarial (arXiv 2409.18025).pdf",
+    "bytes": 4960701,
+    "note": ""
+  },
+  {
+    "ref": 3,
+    "arxiv_id": "2605.24614",
+    "title_expected": "Measuring the Depth of LLM Unlearning",
+    "title_on_arxiv": "Measuring the Depth of LLM Unlearning via Activation Patching",
+    "match": "partial",
+    "status": "OK",
+    "file": "[03] lee2026-uds (arXiv 2605.24614).pdf",
+    "bytes": 1972607,
+    "note": ""
+  },
+  {
+    "ref": 4,
+    "arxiv_id": "2401.06121",
+    "title_expected": "TOFU: A Task of Fictitious Unlearning for LLMs",
+    "title_on_arxiv": "TOFU: A Task of Fictitious Unlearning for LLMs",
+    "match": "exact",
+    "status": "OK",
+    "file": "[04] maini2024-tofu (arXiv 2401.06121).pdf",
+    "bytes": 1693823,
+    "note": ""
+  },
+  {
+    "ref": 5,
+    "arxiv_id": "2210.01504",
+    "title_expected": "Knowledge Unlearning for Mitigating Privacy Risks in Language Models",
+    "title_on_arxiv": "Knowledge Unlearning for Mitigating Privacy Risks in Language Models",
+    "match": "exact",
+    "status": "OK",
+    "file": "[05] jang2023-knowledge-unlearning (arXiv 2210.01504).pdf",
+    "bytes": 934441,
+    "note": ""
+  },
+  {
+    "ref": 6,
+    "arxiv_id": "2404.05868",
+    "title_expected": "Negative Preference Optimization: From Catastrophic Collapse to Effective Unlearning",
+    "title_on_arxiv": "Negative Preference Optimization: From Catastrophic Collapse to Effective Unlearning",
+    "match": "exact",
+    "status": "OK",
+    "file": "[06] zhang2024-npo (arXiv 2404.05868).pdf",
+    "bytes": 1978351,
+    "note": ""
+  },
+  {
+    "ref": 7,
+    "arxiv_id": "2503.04693",
+    "title_expected": "UIPE: Enhancing LLM Unlearning by Removing Knowledge Related to Forgetting Targets",
+    "title_on_arxiv": "UIPE: Enhancing LLM Unlearning by Removing Knowledge Related to Forgetting Targets",
+    "match": "exact",
+    "status": "OK",
+    "file": "[07] wang2025-uipe (arXiv 2503.04693).pdf",
+    "bytes": 843228,
+    "note": ""
+  },
+  {
+    "ref": 8,
+    "arxiv_id": "2406.11614",
+    "title_expected": "Intrinsic Test of Unlearning Using Parametric Knowledge Traces",
+    "title_on_arxiv": "Intrinsic Test of Unlearning Using Parametric Knowledge Traces",
+    "match": "exact",
+    "status": "OK",
+    "file": "[08] hong2025-parametric-traces (arXiv 2406.11614).pdf",
+    "bytes": 1100733,
+    "note": "ID correct; the earlier MISMATCH was an error in the checker script, not the citation"
+  },
+  {
+    "ref": 9,
+    "arxiv_id": "2212.04089",
+    "title_expected": "Editing Models with Task Arithmetic",
+    "title_on_arxiv": "Editing Models with Task Arithmetic",
+    "match": "exact",
+    "status": "OK",
+    "file": "[09] ilharco2023-task-arithmetic (arXiv 2212.04089).pdf",
+    "bytes": 7763394,
+    "note": ""
+  },
+  {
+    "ref": 10,
+    "arxiv_id": "2202.05262",
+    "title_expected": "Locating and Editing Factual Associations in GPT",
+    "title_on_arxiv": "Locating and Editing Factual Associations in GPT",
+    "match": "exact",
+    "status": "OK",
+    "file": "[10] meng2022-rome (arXiv 2202.05262).pdf",
+    "bytes": 8262403,
+    "note": ""
+  }
+]
