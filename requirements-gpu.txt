@@ -24,17 +24,32 @@
 # --- exact pin: the version the test suite is verified against -------------
 transformers==4.46.3
 
-# --- minimum versions: any newer release is fine ---------------------------
-tokenizers>=0.20.0
-safetensors>=0.4.0
-huggingface-hub>=0.26.0
-accelerate>=1.0.0
-datasets>=3.0.0
-scipy>=1.11.0
-scikit-learn>=1.3.0
-pandas>=2.0.0
-matplotlib>=3.7.0
-pytest>=8.0.0
+# --- ranges: newer PATCH/MINOR is fine, a new MAJOR is not -----------------
+#
+# These were unbounded floors until 29 Aug 2026. On a GPU box that resolved
+# `datasets>=3.0.0` to **datasets 5.0.1** -- two major versions past the 3.1.0
+# that every other requirements file in this repo pins, and that the results in
+# RESULTS.md were produced with.
+#
+# That is not a cosmetic risk here. TOFU's forget splits are ordered and nested
+# at the end of one another (forget10 = rows 0-399, forget05 = 200-399,
+# forget01 = 360-399), and the even-spacing sampler depends on that order. A
+# change to row ordering or load defaults would silently select a different
+# sample and shift every UDS value, with no error raised -- the same failure
+# class as the sampling bug in RESULTS.md section 1.1.
+#
+# The test suite cannot catch this: it never imports `datasets`. The only place
+# load_dataset runs is a real measurement. So the ceiling is the guard.
+tokenizers>=0.20.0,<0.21.0
+safetensors>=0.4.0,<1.0.0
+huggingface-hub>=0.26.0,<1.0.0
+accelerate>=1.0.0,<2.0.0
+datasets>=3.0.0,<4.0.0
+scipy>=1.11.0,<2.0.0
+scikit-learn>=1.3.0,<2.0.0
+pandas>=2.0.0,<3.0.0
+matplotlib>=3.7.0,<4.0.0
+pytest>=8.0.0,<9.0.0
 
 # --- not needed for the validation run, but part of the wider project ------
-peft>=0.13.0
+peft>=0.13.0,<1.0.0
