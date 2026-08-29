@@ -351,6 +351,16 @@ def unlearn(
         raise ValueError(f"Invalid UnlearnConfig: {problems}")
     if config.method.needs_retain and not retain_data:
         raise ValueError(f"{config.method.value} requires retain_data")
+    if retain_data is not None and retain_data is forget_data:
+        raise ValueError(
+            "retain_data is the same object as forget_data. The retention term "
+            "would then be computed on the forget set, making the GradDiff "
+            "objective (retain_weight - 1) * NLL(forget) -- identically zero at "
+            "the default retain_weight of 1.0. The run would not train, would "
+            "keep full utility, would pass checkpoint selection, and would "
+            "produce a flat trajectory indistinguishable from a real null "
+            "result. Pass a disjoint retain split (see FORGET_TO_RETAIN)."
+        )
     if config.method.needs_reference and reference_model is None:
         raise ValueError(
             f"{config.method.value} requires reference_model -- a frozen copy of "

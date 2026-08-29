@@ -55,7 +55,7 @@ Modern AI language systems learn from enormous amounts of text, and some of that
 | Question | Answer |
 |---|---|
 | Is the software written? | Yes — about 4,700 lines |
-| Is it tested? | Yes — 489 automated tests, all passing |
+| Is it tested? | Yes — 491 automated tests, all passing |
 | Does the whole system run end to end? | Yes — 31 out of 31 checks pass |
 | Has it run on a real AI model? | **Yes** — Llama 1B and 3B |
 | Does it reproduce the published reference numbers? | **Yes** — 7 runs, all passing, best off by 0.010 |
@@ -558,7 +558,7 @@ pip install -r requirements.txt
 ### Running it
 
 ```bash
-# Run all 489 tests            (~35 seconds)
+# Run all 491 tests            (~35 seconds)
 python -m pytest tests/
 
 # Run the whole system end to end  (~24 seconds)
@@ -592,10 +592,10 @@ Both commands were run immediately before writing this document.
 
 | Test | Result |
 |---|---|
-| Automated tests | **489 passed** |
+| Automated tests | **491 passed** |
 | End-to-end plumbing test | **31 / 31 checks passed** |
 
-The 489 tests split as: 84 for signal swapping, 84 for the depth-score maths and the trajectory guards, 58 for the TOFU data handling, 51 for the unlearning methods and the stopping rule, 50 for run configuration and memory planning, 42 for the control dial, 39 for model loading, 37 for the breadth axis, 23 for the reference span annotations, and 21 for the experiment runner.
+The 491 tests split as: 84 for signal swapping, 84 for the depth-score maths and the trajectory guards, 58 for the TOFU data handling, 53 for the unlearning methods and the stopping rule, 50 for run configuration and memory planning, 42 for the control dial, 39 for model loading, 37 for the breadth axis, 23 for the reference span annotations, and 21 for the experiment runner.
 
 ### What the tests DO prove
 
@@ -841,7 +841,7 @@ The development computer has **no GPU** — only an ordinary processor.
 
 That was a deliberate choice. Writing the software, testing it, and running the tiny model all work perfectly well on an ordinary processor.
 
-This was the right way to work: get the software correct cheaply first, then spend expensive computer time only when there is something worth running. All 489 tests and the full end-to-end check were completed without spending a penny on computing.
+This was the right way to work: get the software correct cheaply first, then spend expensive computer time only when there is something worth running. All 491 tests and the full end-to-end check were completed without spending a penny on computing.
 
 ### Why it is now the blocker
 

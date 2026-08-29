@@ -52,7 +52,10 @@ import torch
 from deeperase.config import TOFU_MODELS, RunConfig, plan_memory
 from deeperase.core.extrapolation import alpha_grid, compute_update_vector, extrapolate
 from deeperase.data.reference_spans import load_reference_annotations
-from deeperase.data.tofu import PromptFormat, tokenise_example
+from deeperase.data.tofu import (
+    FORGET_TO_RETAIN, PromptFormat, SamplingStrategy, build_prompt, load_tofu,
+    select_examples, tokenise_example,
+)
 from deeperase.eval.breadth import (
     BreadthCalibration, load_breadth_items, score_breadth,
 )
@@ -79,18 +82,32 @@ logging.getLogger("deeperase").setLevel(logging.INFO)
 UTILITY_COLLAPSE_RATIO = 0.75
 
 
-def build_uds_examples(tokenizer, reference_spans, fmt, max_length, n) -> List[UDSExample]:
+def build_uds_examples(tokenizer, reference_spans, fmt, max_length, n,
+                       strategy: SamplingStrategy = SamplingStrategy.EVEN,
+                       seed: int = 0) -> List[UDSExample]:
     """Depth examples, using the authors' hand annotations.
 
     Our own extractor agrees with those only 12% of the time (RESULTS.md §4),
     so it is not used here.
+
+    ``strategy`` matters for replication. EVEN is deterministic and is what
+    every published run here used. RANDOM varies which examples are drawn with
+    ``seed``, which is the only real source of run-to-run variation in this
+    pipeline -- see the note on ``--seed`` in :func:`main`.
     """
     kept, stats = load_reference_annotations(reference_spans)
     log.info("  reference annotations: %d examples (%s)", len(kept), stats)
 
-    step = (len(kept) - 1) / (n - 1) if n > 1 and n < len(kept) else 1
-    chosen = ([kept[int(round(i * step))] for i in range(n)]
-              if n < len(kept) else kept)
+    if n >= len(kept):
+        chosen = kept
+    elif strategy is SamplingStrategy.RANDOM:
+        import random
+        chosen = sorted(random.Random(seed).sample(list(kept), n),
+                        key=lambda e: e.index)
+    else:
+        step = (len(kept) - 1) / (n - 1) if n > 1 else 1
+        chosen = [kept[int(round(i * step))] for i in range(n)]
+    log.info("  depth example sampling: %s (seed %d)", strategy.value, seed)
 
     out: List[UDSExample] = []
     for ex in chosen:
@@ -101,6 +118,45 @@ def build_uds_examples(tokenizer, reference_spans, fmt, max_length, n) -> List[U
         out.append(UDSExample(f"ref_{ex.index}", ids, tok.to_entity_span(),
                               attention_mask=torch.ones_like(ids)))
     log.info("  %d depth examples tokenised", len(out))
+    return out
+
+
+#: The forget split this study is built around. The reference entity-span
+#: annotations exist only for forget10, and the breadth tiers are drawn from
+#: forget10_perturbed, so the two must agree.
+FORGET_CONFIG = "forget10"
+
+
+def build_retain_batches(tokenizer, fmt, max_length, n, cache_dir,
+                         strategy: SamplingStrategy, seed: int
+                         ) -> List[Dict[str, torch.Tensor]]:
+    """Token batches from the **retain** split, for GradDiff's retention term.
+
+    GradDiff minimises loss on data that must be preserved while maximising it
+    on the forget set, so the two sets must be disjoint. TOFU's splits are
+    nested, and ``FORGET_TO_RETAIN`` is the pairing that keeps them so:
+    forget10's complement is retain90.
+
+    This exists because an earlier version passed the *forget* batches in as
+    retain data. The objective then collapses to
+    ``(retain_weight - 1) * NLL(forget)``, which at the default weight of 1.0
+    is identically zero -- the model would not train at all, would keep full
+    utility, would pass checkpoint selection, and would emit a flat trajectory
+    that looked like a legitimate null result.
+    """
+    retain_config = FORGET_TO_RETAIN[FORGET_CONFIG]
+    examples = load_tofu(retain_config, cache_dir=cache_dir)
+    chosen = select_examples(examples, n, strategy=strategy, seed=seed)
+    log.info("  retain split %s: %d of %d examples (%s)",
+             retain_config, len(chosen), len(examples), strategy.value)
+
+    out: List[Dict[str, torch.Tensor]] = []
+    for ex in chosen:
+        text, _ = build_prompt(ex.question, ex.answer, fmt, tokenizer)
+        enc = tokenizer(text, truncation=True, max_length=max_length,
+                        add_special_tokens=True)
+        ids = torch.tensor([enc["input_ids"]], dtype=torch.long)
+        out.append({"input_ids": ids, "attention_mask": torch.ones_like(ids)})
     return out
 
 
@@ -131,6 +187,18 @@ def main() -> int:
                     choices=[f.value for f in PromptFormat])
     ap.add_argument("--reference-spans",
                     default="reference_uds/tofu_data/forget10_filtered.json")
+    ap.add_argument("--seed", type=int, default=0,
+                    help="Random seed. Sets torch.manual_seed and, with "
+                         "--sampling random, chooses which examples are drawn. "
+                         "NOTE: training here has no shuffling and the Llama "
+                         "dropout is 0, so the seed alone does NOT change the "
+                         "result -- use --sampling random to get genuinely "
+                         "independent replicates.")
+    ap.add_argument("--sampling", default="even",
+                    choices=[s.value for s in SamplingStrategy],
+                    help="How depth/retain examples are drawn. 'even' is "
+                         "deterministic and reproduces the published runs. Use "
+                         "'random' with distinct --seed values for replication.")
     ap.add_argument("--cache-dir", default="./hf_cache")
     ap.add_argument("--output-dir", default="results/studies")
     ap.add_argument("--run-id", default=None)
@@ -138,7 +206,27 @@ def main() -> int:
     args = ap.parse_args()
 
     method = UnlearnMethod(args.method)
-    run_id = args.run_id or f"study_{args.method}_{args.size}_{time.strftime('%Y%m%d_%H%M%S')}"
+    sampling = SamplingStrategy(args.sampling)
+
+    import random as _random
+    _random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(args.seed)
+    try:
+        import numpy as _np
+        _np.random.seed(args.seed)
+    except ImportError:
+        pass
+    if sampling is SamplingStrategy.EVEN and args.seed != 0:
+        log.warning(
+            "--seed %d has no effect under --sampling even: example selection is "
+            "deterministic, training does not shuffle, and dropout is 0. This run "
+            "will be identical to seed 0. Use --sampling random for replicates.",
+            args.seed)
+
+    run_id = args.run_id or (f"study_{args.method}_{args.size}_s{args.seed}"
+                             f"_{time.strftime('%Y%m%d_%H%M%S')}")
     out_dir = Path(args.output_dir) / run_id
     (out_dir / "partial").mkdir(parents=True, exist_ok=True)
 
@@ -179,6 +267,10 @@ def main() -> int:
                     "batch_size": args.batch_size, "beta": args.beta},
         "n_depth_examples": args.n_examples, "n_breadth_per_tier": args.n_breadth,
         "prompt_format": args.prompt_format,
+        "seed": args.seed, "sampling": sampling.value,
+        "forget_config": FORGET_CONFIG,
+        "retain_config": (FORGET_TO_RETAIN[FORGET_CONFIG]
+                          if method.needs_retain else None),
     }, indent=2), encoding="utf-8")
 
     fmt = PromptFormat(args.prompt_format)
@@ -187,7 +279,8 @@ def main() -> int:
     # -- data ---------------------------------------------------------------
     log.info("[1/6] Preparing evaluation data")
     uds_examples = build_uds_examples(tokenizer, args.reference_spans, fmt,
-                                      args.max_length, args.n_examples)
+                                      args.max_length, args.n_examples,
+                                      sampling, args.seed)
     breadth_items = subsample(load_breadth_items(cache_dir=args.cache_dir),
                               args.n_breadth)
     log.info("  %d breadth items", len(breadth_items))
@@ -262,7 +355,8 @@ def main() -> int:
 
     ucfg = UnlearnConfig(method=method, learning_rate=args.learning_rate,
                          epochs=args.epochs, batch_size=args.batch_size,
-                         beta=args.beta, min_utility_ratio=args.min_utility_ratio)
+                         beta=args.beta, min_utility_ratio=args.min_utility_ratio,
+                         seed=args.seed)
 
     def utility_of(m) -> float:
         """Retention on unrelated knowledge, for checkpoint selection.
@@ -274,9 +368,16 @@ def main() -> int:
         return score_breadth(m, tokenizer, r_items, max_length=args.max_length,
                              prompt_prefix=prefix).tiers["R"].knows_rate
 
+    retain_batches = None
+    if method.needs_retain:
+        log.info("[3b/6] Loading retain split for %s", method.value)
+        retain_batches = build_retain_batches(
+            tokenizer, fmt, args.max_length, args.n_examples,
+            args.cache_dir, sampling, args.seed)
+
     try:
         history = unlearn(model, forget_batches, ucfg,
-                          retain_data=forget_batches if method.needs_retain else None,
+                          retain_data=retain_batches,
                           reference_model=reference_model,
                           eval_fn=utility_of)
     except CollapsedError as e:
@@ -345,7 +446,7 @@ def main() -> int:
                 breadth=cal_breadth,
                 depth=depth.uds if depth.uds is not None else float("nan"),
                 retain_accuracy=retention, utility=retention,
-                n_targets=len(uds_examples),
+                n_targets=len(uds_examples), seed=args.seed,
                 notes=("UTILITY COLLAPSED -- excluded from the trade-off statistic"
                        if collapsed else ""),
             )

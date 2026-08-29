@@ -82,7 +82,7 @@ Installing everything from pip into a clean non-base environment leaves exactly 
 | Signature extraction | **Not started.** Deferred with SAGE. |
 | The depth-vs-breadth study itself | **One trajectory run** (`study_ga_1B_20260816_165423`), reported in [`RESULTS.md`](RESULTS.md) §5. **Not replicated** — one method, one scale, one seed, utility control not flat. |
 
-**489 tests** in the documented environment; the plumbing test passes **31/31 checks**. Note that [`VERIFICATION.md`](VERIFICATION.md) captures the August runs at **118** and **180** tests — no transcript of the full 489-test run has been pasted there yet, and regenerating it is a standing to-do (see the notice at the top of that file). The 489 figure is the count of test functions in `tests/`, which matches Table 13 of the mid-semester report file by file.
+**491 tests** in the documented environment; the plumbing test passes **31/31 checks**. Note that [`VERIFICATION.md`](VERIFICATION.md) captures the August runs at **118** and **180** tests — no transcript of the full 491-test run has been pasted there yet, and regenerating it is a standing to-do (see the notice at the top of that file). The 491 figure is the count of test functions in `tests/`, which matched Table 13 of the mid-semester report file by file at 489; two regression tests were added on 29 Aug 2026 for the GradDiff wiring defect.
 
 Test quality was checked by mutation: deliberate bugs were injected (swapped SAGE coefficients, broken Type II threshold, retain tier misclassified as forget, wrong UDS reference point, hook leak, patch-all-positions, ignore-τ, no LER clipping, unweighted mean) and every one was caught.
 
@@ -179,7 +179,7 @@ deeperase/
   scripts/measure_breadth.py     breadth calibration against the reference models
   scripts/run_study.py           the full depth-breadth study
   scripts/compare_spans.py       our span heuristic vs the authors' annotations
-tests/                      489 tests
+tests/                      491 tests
 data/probes/                seed_tofu.json
 data/breadth_items.json     1200 forced-choice items (B0/B1/R), built from TOFU
 data/tofu/                  the TOFU benchmark, downloaded (gitignored)
@@ -208,9 +208,9 @@ On this toy the axes **saturate**: breadth pins at 1.0, depth clips to 0.0, all 
 
 1. **UDS is not numerically cross-validated** against the reference implementation. Specification conformance is documented and tested, and the published Table 2 is reproduced at two scales — but agreement with the authors' *code* on shared inputs is still unverified. This remains the largest gap: `is_validated_against_reference` is `False` in every saved run. See [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md) §5 item 1.
 2. **The utility control is not flat across the α sweep.** It falls 0.720 → 0.625, so part of the joint depth/breadth rise is general degradation rather than targeted forgetting. The planned degradation control — a matched-magnitude update in a direction unrelated to the forget set — **is not implemented**.
-3. **`run_study.py` has no `--seed` flag.** Every saved point records `seed: 0`. Replication across three seeds per arm cannot be run without adding it.
+3. **Seeding alone does not produce independent replicates.** `--seed` and `--sampling` now exist, but training does not shuffle and the Llama dropout is 0, so a seed change under the default `--sampling even` yields a bit-identical run (the runner warns if you try). Genuine replicates need `--sampling random --seed N`, which varies *which examples are drawn*. That is the only real source of run-to-run variation in this pipeline.
 4. **The breadth probe set covers B0, B1 and R only.** B2 (alias), B3 (entailed) and B4 (multi-hop) are declared in `probes/schema.py` and have no items. These are the tiers where a depth/breadth divergence would be expected to show most clearly.
-5. **Only the GA arm has been run.** GradDiff and NPO are implemented and unit-tested but have produced no results at any scale.
+5. **Only the GA arm has been run.** GradDiff and NPO are implemented and unit-tested but have produced no results at any scale. GradDiff's retain wiring was broken until 29 Aug 2026 (it was fed the forget set, making its objective identically zero) — fixed, with a regression test and a hard guard in `unlearn()`, but still never actually run.
 6. **τ = 0.05 is inherited, not sensitivity-checked** on our data.
 7. **Our own entity-span heuristic agrees with the authors' annotations on only 12% of examples** (`results/span_comparison.json`). Use `--reference-spans` for anything on `forget10`; the heuristic is a documented weak approximation everywhere else.
 8. **Non-LLaMA architectures are unverified.** GPT-2/OPT/NeoX paths are structurally supported and warn at runtime.

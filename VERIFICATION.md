@@ -7,22 +7,22 @@ pasted verbatim. Captured: 2026-08-09 21:29
 > ## ⚠️ These transcripts are dated snapshots, not the current suite
 >
 > The runs captured below are from **2 and 9 August 2026** and show
-> **118** and then **180** tests. The suite has since grown to **489 tests**
+> **118** and then **180** tests. The suite has since grown to **491 tests**
 > (the count cited in the mid-semester report, Table 13, and in `README.md`).
 >
-> **There is no captured transcript of the 489-test run in this file.** The
-> 489 figure is the number of test functions in `tests/`, which can be
+> **There is no captured transcript of the 491-test run in this file.** The
+> 491 figure is the number of test functions in `tests/`, which can be
 > confirmed statically:
 >
 > ```bash
-> grep -c '^def test_\|^    def test_' tests/*.py   # 50 58 23 84 84 37 51 42 39 21 = 489
+> grep -c '^def test_\|^    def test_' tests/*.py   # 50 58 23 84 84 37 53 42 39 21 = 491
 > ```
 >
 > To regenerate this document's evidence, run the suite in the documented
 > environment and paste the output here, replacing this notice:
 >
 > ```bash
-> python -m pytest tests/ -q      # expect: 489 passed
+> python -m pytest tests/ -q      # expect: 491 passed
 > python -m deeperase.scripts.smoke_e2e   # expect: 31/31 checks
 > ```
 >

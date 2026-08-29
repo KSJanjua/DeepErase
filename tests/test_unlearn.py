@@ -169,6 +169,35 @@ class TestMissingInputsAreFatal:
             unlearn(_model(), _data(2),
                     UnlearnConfig(method=UnlearnMethod.NPO, epochs=1))
 
+    def test_graddiff_with_forget_set_as_retain_raises(self):
+        """Regression: the study runner once passed the forget batches in as
+        retain data.
+
+        The objective then reduces to ``(retain_weight - 1) * NLL(forget)``,
+        which at the default retain_weight of 1.0 is identically zero. Nothing
+        crashes: the model simply never trains, keeps full utility, passes
+        checkpoint selection, and yields a flat trajectory that reads as a
+        legitimate null result. The loss function itself was correct and well
+        tested -- the defect was the argument at the call site, which is
+        exactly what unit tests on the loss cannot see.
+        """
+        forget = _data(4)
+        with pytest.raises(ValueError, match="same object as forget_data"):
+            unlearn(_model(), forget,
+                    UnlearnConfig(method=UnlearnMethod.GRAD_DIFF, epochs=1),
+                    retain_data=forget)
+
+    def test_graddiff_on_forget_set_has_no_gradient(self):
+        """Why the guard above matters, demonstrated numerically."""
+        from deeperase.unlearn import ga_loss, grad_diff_loss
+
+        m, batch = _model(), _data(1)[0]
+        degenerate = grad_diff_loss(m, batch, batch, 1.0)
+        assert float(degenerate) == pytest.approx(0.0, abs=1e-5)
+        # ...whereas a genuinely disjoint retain batch does not vanish.
+        healthy = grad_diff_loss(m, batch, _data(1, seed=99)[0], 1.0)
+        assert abs(float(healthy)) > 1e-4
+
     def test_empty_forget_data_raises(self):
         with pytest.raises(ValueError, match="empty"):
             unlearn(_model(), [], UnlearnConfig(epochs=1))
