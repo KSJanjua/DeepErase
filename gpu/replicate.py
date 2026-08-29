@@ -54,8 +54,21 @@ def free_vram_gb() -> float:
     return free_b / GB
 
 
-def run_id_for(method: str, size: str, seed: int) -> str:
-    return f"study_{method}_{size}_s{seed}"
+DEFAULT_LR = 1e-6
+
+
+def run_id_for(method: str, size: str, seed: int, lr: float = DEFAULT_LR) -> str:
+    """Run id, with the learning rate encoded when it is not the default.
+
+    The lr belongs in the id because methods need different ones: GA reaches
+    its utility floor at 1e-6, GradDiff barely moves there and diverges at
+    1e-5. Without it in the id, a matrix at a new lr would collide with an
+    existing directory and ``already_done`` would silently skip the run,
+    producing a matrix whose rows were trained at different rates. The
+    default is left un-suffixed so existing run directories still resume.
+    """
+    base = f"study_{method}_{size}_s{seed}"
+    return base if lr == DEFAULT_LR else f"{base}_lr{lr:g}"
 
 
 def already_done(out_dir: Path) -> bool:
@@ -76,6 +89,10 @@ def main() -> int:
     ap.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
     ap.add_argument("--size", default="1B")
     ap.add_argument("--epochs", type=int, default=20)
+    ap.add_argument("--learning-rate", type=float, default=DEFAULT_LR,
+                    help="Passed through to run_study and recorded in the run "
+                         "id. Methods need different rates -- run this script "
+                         "once per method rather than once for all three.")
     ap.add_argument("--n-examples", type=int, default=100)
     ap.add_argument("--n-breadth", type=int, default=400)
     ap.add_argument("--sampling", default="random", choices=["even", "random"])
@@ -104,12 +121,13 @@ def main() -> int:
     print(f"Replication matrix: {len(jobs)} run(s) -- "
           f"{len(args.methods)} method(s) x {len(args.seeds)} seed(s) at {args.size}")
     print(f"sampling={args.sampling}  epochs={args.epochs}  "
+          f"lr={args.learning_rate:g}  "
           f"n_examples={args.n_examples}  n_breadth={args.n_breadth}")
     print("=" * 78)
 
     planned = []
     for method, seed in jobs:
-        rid = run_id_for(method, args.size, seed)
+        rid = run_id_for(method, args.size, seed, args.learning_rate)
         state = "DONE (skip)" if already_done(out_root / rid) else "queued"
         planned.append((method, seed, rid, state))
         print(f"  {method:9s} seed={seed}  ->  {rid:34s} {state}")
@@ -138,6 +156,7 @@ def main() -> int:
                "--seed", str(seed),
                "--sampling", args.sampling,
                "--epochs", str(args.epochs),
+               "--learning-rate", str(args.learning_rate),
                "--n-examples", str(args.n_examples),
                "--n-breadth", str(args.n_breadth),
                "--reference-spans", "reference_uds/tofu_data/forget10_filtered.json",
@@ -171,6 +190,7 @@ def main() -> int:
     manifest.write_text(json.dumps({
         "generated": time.strftime("%Y-%m-%d %H:%M:%S"),
         "size": args.size, "sampling": args.sampling, "epochs": args.epochs,
+        "learning_rate": args.learning_rate,
         "methods": args.methods, "seeds": args.seeds,
         "runs": [{"run_id": r, "status": s, "minutes": round(d, 1)}
                  for r, s, d in results],
