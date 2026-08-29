@@ -1,0 +1,49 @@
+{
+  "point": {
+    "method": "graddiff",
+    "model": "1B-graddiff",
+    "benchmark": "tofu-forget10",
+    "alpha": 0.0,
+    "breadth": 0.03703703703703709,
+    "depth": 0.010448941988138949,
+    "retain_accuracy": 0.76,
+    "utility": 0.76,
+    "relearn_recovery": null,
+    "smr": null,
+    "el10": null,
+    "type_label": null,
+    "breadth_gap": null,
+    "alpha_parallel": null,
+    "alpha_perp": null,
+    "depth_overshoot": false,
+    "n_targets": 20,
+    "seed": 0,
+    "notes": ""
+  },
+  "retention": 0.76,
+  "raw_leakage": 0.76,
+  "breadth_tiers": {
+    "breadth": 0.24,
+    "forget_leakage": 0.76,
+    "retention": 0.76,
+    "generalisation_gap": 0.040000000000000036,
+    "per_tier": {
+      "B0": {
+        "n": 50,
+        "n_knows": 39,
+        "knows_rate": 0.78
+      },
+      "B1": {
+        "n": 50,
+        "n_knows": 37,
+        "knows_rate": 0.74
+      },
+      "R": {
+        "n": 50,
+        "n_knows": 38,
+        "knows_rate": 0.76
+      }
+    }
+  },
+  "depth_summary": "UDS=0.0104 over 16/20 examples (4 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]"
+}

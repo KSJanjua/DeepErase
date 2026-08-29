@@ -1,0 +1,46 @@
+{
+  "config": {
+    "method": "graddiff",
+    "learning_rate": 1e-06,
+    "epochs": 2,
+    "batch_size": 4,
+    "max_grad_norm": 1.0,
+    "beta": 0.1,
+    "retain_weight": 1.0,
+    "seed": 0,
+    "log_every": 20,
+    "min_utility_ratio": 0.9
+  },
+  "history": {
+    "n_steps": 10,
+    "seconds": 11.8,
+    "first_loss": -0.11261749267578125,
+    "last_loss": -0.14084148406982422,
+    "baseline_forget_nll": 1.6382122039794922,
+    "final_forget_nll": 1.6598958253860474,
+    "forget_nll_change": 0.02168362140655522,
+    "baseline_utility": 0.78,
+    "selected_epoch": 1,
+    "epoch_evals": [
+      {
+        "epoch": 0,
+        "utility": 0.74,
+        "forget_nll": 1.6509,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 1,
+        "utility": 0.76,
+        "forget_nll": 1.6599,
+        "acceptable": true,
+        "selected": true
+      }
+    ]
+  },
+  "verdict": {
+    "passed": true,
+    "reason": "weights moved and forget-set NLL rose, as expected",
+    "update_norm": 0.01887773940907365
+  }
+}
