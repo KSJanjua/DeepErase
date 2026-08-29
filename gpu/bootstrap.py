@@ -134,24 +134,32 @@ def check_gpu_memory(torch, want_gb: float | None) -> float:
     return free_gb
 
 
-def check_plan(size: str) -> float | None:
+def check_plan(torch, size: str) -> None:
     """Ask the package's own memory planner, so this agrees with what the
-    runners will enforce rather than guessing separately."""
+    runners will enforce rather than guessing separately.
+
+    Planned as a **training** run against **free** memory, not total: this card
+    is shared, a co-tenant's allocation never appears in ``total_memory``, and
+    full-parameter AdamW peaks at ~4x the weight footprint. Planning against
+    total, or for inference, produces a confident "fits" for a run that OOMs.
+    """
     try:
-        from deeperase.config import RunConfig, plan_memory
+        from deeperase.config import plan_memory
     except Exception as e:                                   # noqa: BLE001
         line(BAD, f"could not import deeperase.config ({e}). The package must be "
                   f"importable from {_ROOT}. Are you in the repository root?")
         sys.exit(1)
-    try:
-        cfg = RunConfig(size_label=size)
-        plan = plan_memory(cfg)
-        line(OK, f"memory plan for {size}: {plan.summary()}")
-        return float(getattr(plan, "peak_weight_gb", 0.0)) + float(
-            getattr(plan, "headroom_gb", 0.0)) or None
-    except Exception as e:                                   # noqa: BLE001
-        line(WARN, f"memory plan unavailable ({e})")
-        return None
+
+    free_b, total_b = torch.cuda.mem_get_info(0)
+    plan = plan_memory(size, total_b / GB, gpu_free_gb=free_b / GB, training=True)
+    line(OK if plan.fits else BAD, f"memory plan for {size} (training, vs free):")
+    for chunk in plan.summary().splitlines():
+        print("           " + chunk)
+    if not plan.fits:
+        line(BAD, "this run would not fit right now. The card is shared -- wait "
+                  "for the co-tenant, drop to a smaller --size, or set "
+                  "CUDA_VISIBLE_DEVICES to an idle device.")
+        sys.exit(1)
 
 
 def check_disk(min_gb: float = 60.0) -> None:
@@ -188,8 +196,8 @@ def main() -> int:
     check_python()
     torch = check_torch()
     check_deps()
-    want = check_plan(args.size)
-    check_gpu_memory(torch, want)
+    check_gpu_memory(torch, None)
+    check_plan(torch, args.size)
     check_disk()
     check_hf_cache()
 
@@ -202,8 +210,8 @@ def main() -> int:
             line(BAD, "test suite FAILED -- fix this before running anything on GPU")
             return 1
         line(OK, "test suite passed")
-        print("\nPaste that output into VERIFICATION.md -- it currently shows the "
-              "August 118/180-test runs and is overdue for a refresh.")
+        print("\nIf this differs from VERIFICATION.md section 0, update that "
+              "section -- it is the record of what was actually observed.")
 
     print("=" * 72)
     print("READY")

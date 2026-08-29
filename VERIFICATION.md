@@ -73,6 +73,65 @@ Two caveats this run does **not** settle:
   imports `datasets`** — `load_dataset` is reached only at real measurement
   time. Data loading is still unverified on this environment.
 * Python is **3.10.12**, not the 3.11 the suite was originally verified on.
+  *(The first caveat is closed by section 0.1 below.)*
+
+---
+
+## 0.1 First live execution of the GradDiff arm (29 August 2026)
+
+A deliberately small run, not a result. Its purpose was to answer two questions
+the test suite structurally cannot: does the BUG-1 fix train under real data,
+and does `datasets` 3.6.0 load TOFU correctly?
+
+```
+$ python -m deeperase.scripts.run_study \
+    --method graddiff --size 1B --seed 0 --sampling random \
+    --epochs 2 --n-examples 20 --n-breadth 50 --alphas 0.0,0.5,1.0 \
+    --reference-spans reference_uds/tofu_data/forget10_filtered.json \
+    --run-id smoke_graddiff
+```
+
+**Both questions answered yes.**
+
+`datasets` 3.6.0 loads TOFU at the expected sizes — `forget10` 400 rows,
+`retain90` 3600 rows, 367 reference-annotated examples resolved with
+`skipped_not_found: 0`. This is the first time the data path has been exercised
+on this environment, so the "data loading unverified" caveat above no longer
+stands.
+
+BUG-1 is fixed in the running system, not only in the unit tests:
+
+```
+[3b/6] Loading retain split for graddiff
+  retain split retain90: 20 of 3600 examples (random)
+  baseline before training: utility=0.7800 forget_nll=1.6382
+  epoch 0 step 0  loss=-0.1126  forget_nll=1.7690
+Unlearning finished: 10 steps in 11.8s, forget NLL 1.6382 -> 1.6599 (+0.0217)
+  [OK] ||v||=0.01888, weights moved and forget-set NLL rose, as expected
+```
+
+Two independent confirmations in that trace. The retain split is drawn from
+**retain90**, a different corpus from the forget set. And `loss=-0.1126` is
+non-zero: under the defect the objective was `(retain_weight - 1) * NLL(forget)`,
+identically **0.0000** at the default weight of 1.0, and `||v||` would have been
+0. The observed value is consistent with `-NLL(forget) + NLL(retain)` for two
+distinct corpora of similar difficulty.
+
+**The measurement itself is underpowered and is reported as such by the runner,
+which is the intended behaviour:**
+
+```
+UNDERPOWERED -- NO FINDING EITHER WAY (rho=+0.000).
+  breadth span : 0.037 (1 of 100 items; one item = 0.0370)
+  depth span   : 0.007 (retain90 oracle = 1.000, so peak is 1.3% of full erasure)
+```
+
+Two epochs at `lr=1e-6` is 10 optimiser steps; peak depth 0.013 means roughly 1%
+of what retraining-without-the-data achieves. Utility never approached its floor
+(0.74–0.76 against a floor of 0.702), so the run was stopped by the epoch budget,
+not by damage — there is headroom to train much further. **No number in this
+section is a finding about depth or breadth.** It is evidence that the pipeline
+executes correctly end to end.
 
 ---
 
