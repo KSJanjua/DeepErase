@@ -1,0 +1,49 @@
+{
+  "point": {
+    "method": "npo",
+    "model": "1B-npo",
+    "benchmark": "tofu-forget10",
+    "alpha": 0.0,
+    "breadth": 0.2292682926829267,
+    "depth": 0.25914795289446635,
+    "retain_accuracy": 0.7325,
+    "utility": 0.7325,
+    "relearn_recovery": null,
+    "smr": null,
+    "el10": null,
+    "type_label": null,
+    "breadth_gap": null,
+    "alpha_parallel": null,
+    "alpha_perp": null,
+    "depth_overshoot": false,
+    "n_targets": 100,
+    "seed": 0,
+    "notes": ""
+  },
+  "retention": 0.7325,
+  "raw_leakage": 0.7175,
+  "breadth_tiers": {
+    "breadth": 0.2825,
+    "forget_leakage": 0.7175,
+    "retention": 0.7325,
+    "generalisation_gap": -0.015000000000000013,
+    "per_tier": {
+      "B0": {
+        "n": 400,
+        "n_knows": 284,
+        "knows_rate": 0.71
+      },
+      "B1": {
+        "n": 400,
+        "n_knows": 290,
+        "knows_rate": 0.725
+      },
+      "R": {
+        "n": 400,
+        "n_knows": 293,
+        "knows_rate": 0.7325
+      }
+    }
+  },
+  "depth_summary": "UDS=0.2591 over 94/100 examples (6 undefined, tau=0.05), layers=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]  [NOT cross-validated vs reference]"
+}
