@@ -46,6 +46,31 @@ os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 GB = 1024 ** 3
 
 
+def check_interpreter() -> None:
+    """Fail in seconds, not hours, if this interpreter cannot run a study.
+
+    ``sys.executable`` is what every child run uses, so whatever is importable
+    here is what they get. A shell that never activated the venv still has the
+    container's system python on PATH -- which carries the NGC torch, so the
+    GPU checks all pass -- but not ``datasets``, which is only reached once a
+    run starts loading data. Without this guard an overnight matrix fails one
+    run at a time, hours in, having produced nothing.
+    """
+    missing = []
+    for mod in ("torch", "transformers", "datasets", "scipy"):
+        try:
+            __import__(mod)
+        except ImportError:
+            missing.append(mod)
+    if missing:
+        print(f"REFUSING: {sys.executable} cannot import: {', '.join(missing)}.\n"
+              "Every run would fail. Activate the project venv first:\n\n"
+              "    source /workspace/Capstone_Project/.venv/bin/activate\n\n"
+              "then re-run. Confirm with `python gpu/bootstrap.py --size 1B`.",
+              file=sys.stderr)
+        sys.exit(2)
+
+
 def free_vram_gb() -> float:
     import torch
     if not torch.cuda.is_available():
@@ -114,12 +139,15 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
+    check_interpreter()
+
     jobs = [(m, s) for m in args.methods for s in args.seeds]
     out_root = Path(args.output_dir)
 
     print("=" * 78)
     print(f"Replication matrix: {len(jobs)} run(s) -- "
           f"{len(args.methods)} method(s) x {len(args.seeds)} seed(s) at {args.size}")
+    print(f"interpreter: {sys.executable}")
     print(f"sampling={args.sampling}  epochs={args.epochs}  "
           f"lr={args.learning_rate:g}  "
           f"n_examples={args.n_examples}  n_breadth={args.n_breadth}")
