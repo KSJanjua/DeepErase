@@ -269,15 +269,19 @@ def random_direction_like(
         match: ``"per_tensor"`` (default) gives every tensor its own norm from
             ``v``. ``"global"`` matches only the total norm.
 
-            Prefer ``per_tensor``. Parameter tensors differ in scale by orders
-            of magnitude, so a globally-matched random vector concentrates
-            almost all of its displacement in the largest tensors (embeddings)
-            and leaves the rest essentially untouched. That is not a control
-            for the trained update -- it is a different perturbation that
-            happens to share one scalar. Matching per tensor preserves the
-            layerwise profile of the real update and leaves *direction within
-            each tensor* as the only thing that differs, which is the
-            comparison the experiment is trying to make.
+            Prefer ``per_tensor``. A globally-matched draw divides its norm
+            between tensors in proportion to ``sqrt(numel)``, which is a
+            property of the draw and has nothing to do with how far training
+            moved each tensor. The two allocations can disagree by more than
+            an order of magnitude in both directions at once: a wide tensor
+            that training barely touched receives far more perturbation than
+            it ever saw, while a smaller tensor that training moved hard
+            receives far less. Such a vector is not a control for the trained
+            update -- it is a different perturbation that happens to share one
+            scalar. Matching per tensor reproduces the layerwise profile of
+            the real update exactly and leaves *direction within each tensor*
+            as the only thing that differs, which is the comparison the
+            experiment is trying to make.
 
     Returns:
         Mapping with the same keys as ``v``, in float32, on the same devices.

@@ -402,18 +402,28 @@ class TestRandomDirectionControl:
         assert global_norm(r.values()) == pytest.approx(global_norm(v.values()),
                                                         rel=1e-5)
 
-    def test_per_tensor_mode_is_not_the_same_as_global(self):
-        """Guards the reason per_tensor is the default: with tensors whose
-        scales differ by ~100x, a globally-matched draw puts nearly all of its
-        displacement in the largest tensor and leaves the others far below
-        their real magnitude."""
+    def test_global_mode_misallocates_across_tensors(self):
+        """Guards the reason per_tensor is the default.
+
+        A globally-matched draw splits its norm between tensors in proportion
+        to sqrt(numel) -- a property of the draw, unrelated to how far training
+        actually moved each tensor. In this fixture q_proj has the most
+        elements but by far the smallest real update, so it receives about 22x
+        the displacement training gave it, while embed_tokens (fewest elements,
+        largest real update) receives about 0.34x. A control that perturbs
+        weights training left alone, and spares weights training moved, is not
+        a control for that training. per_tensor reproduces every real norm.
+        """
         v = self._v()
         per = random_direction_like(v, seed=7)
         glob = random_direction_like(v, seed=7, match="global")
-        small = "model.layers.0.self_attn.q_proj.weight"
-        assert float(per[small].norm()) == pytest.approx(float(v[small].norm()),
+
+        ratios = {k: float(glob[k].norm()) / float(v[k].norm()) for k in v}
+        assert max(ratios.values()) / min(ratios.values()) > 10
+
+        for k in v:
+            assert float(per[k].norm()) == pytest.approx(float(v[k].norm()),
                                                          rel=1e-5)
-        assert float(glob[small].norm()) < 0.5 * float(v[small].norm())
 
     def test_direction_is_essentially_orthogonal_to_v(self):
         """A random direction in R^n has cosine ~ N(0, 1/n) with any fixed
