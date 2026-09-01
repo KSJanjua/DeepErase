@@ -122,6 +122,53 @@ class TestLosses:
         expected = (2.0 / 0.1) * math.log(2)
         assert float(npo_loss(m, m, batch, beta=0.1)) == pytest.approx(expected, rel=1e-4)
 
+    def test_npo_log_ratio_is_summed_not_length_normalised(self):
+        """The log-ratio must use sequence log-likelihoods, i.e. token sums.
+
+        Dividing by length is arithmetically identical to shrinking beta by
+        the same factor, and NPO reduces to GA as beta -> 0. With a per-token
+        mean and beta=0.1 the effective beta is ~1e-3 and the method silently
+        becomes gradient ascent -- which is exactly what happened: GA and NPO
+        produced ||v|| agreeing to four significant figures across three seeds
+        before this was fixed. Nothing crashes, so only a value check catches
+        it.
+        """
+        import torch.nn.functional as F
+        ref, m = _model(0), _model(1)            # genuinely different models
+        ids = _data(3)[0]["input_ids"]
+        batch = {"input_ids": ids, "attention_mask": torch.ones_like(ids)}
+        beta = 0.1
+
+        with torch.no_grad():
+            lp = -sequence_nll(m, ids, batch["attention_mask"], reduction="sum")
+            lpr = -sequence_nll(ref, ids, batch["attention_mask"], reduction="sum")
+            summed = float((2.0 / beta)
+                           * -F.logsigmoid(-beta * (lp - lpr)).mean())
+            lp_m = -sequence_nll(m, ids, batch["attention_mask"])
+            lpr_m = -sequence_nll(ref, ids, batch["attention_mask"])
+            averaged = float((2.0 / beta)
+                             * -F.logsigmoid(-beta * (lp_m - lpr_m)).mean())
+
+        assert float(npo_loss(m, ref, batch, beta=beta)) == pytest.approx(
+            summed, rel=1e-4)
+        # Guard the guard: if the two reductions happened to agree here, the
+        # assertion above would pass for the wrong reason.
+        assert abs(summed - averaged) > 1e-3
+
+    def test_sequence_nll_sum_is_mean_times_scored_tokens(self):
+        """The two reductions differ by exactly the number of scored tokens."""
+        m = _model()
+        ids = _data(2)[0]["input_ids"]
+        mask = torch.ones_like(ids)
+        n_scored = float(mask[:, 1:].sum(-1)[0])
+        mean = sequence_nll(m, ids, mask)
+        total = sequence_nll(m, ids, mask, reduction="sum")
+        assert torch.allclose(total, mean * n_scored, atol=1e-4)
+
+    def test_sequence_nll_rejects_unknown_reduction(self):
+        with pytest.raises(ValueError, match="reduction"):
+            sequence_nll(_model(), _data(1)[0]["input_ids"], reduction="median")
+
     def test_npo_falls_as_model_diverges_downward(self):
         """Once the model is less likely than the reference on the forget set,
         NPO's loss shrinks -- the self-damping that avoids collapse."""

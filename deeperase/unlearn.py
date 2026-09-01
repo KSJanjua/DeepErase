@@ -137,12 +137,24 @@ class UnlearnConfig:
 
 
 def sequence_nll(model, input_ids: torch.Tensor,
-                 attention_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
-    """Mean negative log-likelihood per sequence. Shape ``(batch,)``.
+                 attention_mask: Optional[torch.Tensor] = None,
+                 *, reduction: str = "mean") -> torch.Tensor:
+    """Negative log-likelihood per sequence. Shape ``(batch,)``.
 
     Per-sequence rather than a single scalar, because NPO needs to compare each
     sequence against its reference value before any reduction.
+
+    Args:
+        reduction: ``"mean"`` averages over the sequence's scored tokens, which
+            is what the GA and GradDiff objectives and every reported
+            ``forget_nll`` use -- a per-token figure comparable across examples
+            of different length. ``"sum"`` returns the sequence log-likelihood
+            itself, which is what a likelihood *ratio* between two models
+            requires. See :func:`npo_loss`.
     """
+    if reduction not in ("mean", "sum"):
+        raise ValueError(f"reduction must be 'mean' or 'sum', got {reduction!r}")
+
     out = model(input_ids=input_ids, attention_mask=attention_mask)
     logits = out.logits[:, :-1, :]
     targets = input_ids[:, 1:]
@@ -152,8 +164,13 @@ def sequence_nll(model, input_ids: torch.Tensor,
 
     if attention_mask is not None:
         mask = attention_mask[:, 1:].to(token_lp.dtype)
+        total = -(token_lp * mask).sum(-1)
+        if reduction == "sum":
+            return total
         # clamp so an all-padding row cannot divide by zero
-        return -(token_lp * mask).sum(-1) / mask.sum(-1).clamp(min=1.0)
+        return total / mask.sum(-1).clamp(min=1.0)
+    if reduction == "sum":
+        return -token_lp.sum(-1)
     return -token_lp.mean(-1)
 
 
@@ -179,11 +196,24 @@ def npo_loss(model, reference_model, batch, beta: float) -> torch.Tensor:
     As the current model's likelihood on the forget set falls below the
     reference's, the gradient shrinks. That self-damping is what makes NPO
     approach catastrophic collapse exponentially more slowly than plain GA.
+
+    ``logp`` here is the **sequence** log-likelihood -- a sum over tokens, not
+    a per-token average. This is not cosmetic. Length-normalising divides the
+    log-ratio by |y|, which is identical to shrinking beta by the same factor,
+    and NPO provably reduces to GA as beta -> 0 (Zhang et al. Prop. 1). At
+    beta=0.1 over TOFU answers of 30-100 tokens the effective beta lands near
+    1e-3, and the method becomes gradient ascent with a reference model's
+    forward pass attached: an earlier version of this file did exactly that,
+    and GA and NPO agreed to four significant figures on ||v|| across three
+    seeds. The reference implementation sums (openunlearning
+    ``compute_batch_nll``, "get the sum loss for each sequence") and reserves
+    the length-normalised form for SimNPO, which is a different method.
     """
-    logp = -sequence_nll(model, batch["input_ids"], batch.get("attention_mask"))
+    logp = -sequence_nll(model, batch["input_ids"], batch.get("attention_mask"),
+                         reduction="sum")
     with torch.no_grad():
         logp_ref = -sequence_nll(reference_model, batch["input_ids"],
-                                 batch.get("attention_mask"))
+                                 batch.get("attention_mask"), reduction="sum")
     return (2.0 / beta) * -F.logsigmoid(-beta * (logp - logp_ref)).mean()
 
 
