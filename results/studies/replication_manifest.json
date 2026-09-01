@@ -1,0 +1,32 @@
+{
+  "generated": "2026-08-30 15:48:30",
+  "size": "1B",
+  "sampling": "random",
+  "epochs": 20,
+  "learning_rate": 1e-06,
+  "methods": [
+    "npo"
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "runs": [
+    {
+      "run_id": "study_npo_1B_s0",
+      "status": "ok",
+      "minutes": 38.0
+    },
+    {
+      "run_id": "study_npo_1B_s1",
+      "status": "ok",
+      "minutes": 39.7
+    },
+    {
+      "run_id": "study_npo_1B_s2",
+      "status": "ok",
+      "minutes": 39.5
+    }
+  ]
+}

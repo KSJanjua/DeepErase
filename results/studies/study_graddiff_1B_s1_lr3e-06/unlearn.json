@@ -1,0 +1,172 @@
+{
+  "config": {
+    "method": "graddiff",
+    "learning_rate": 3e-06,
+    "epochs": 20,
+    "batch_size": 4,
+    "max_grad_norm": 1.0,
+    "beta": 0.1,
+    "retain_weight": 1.0,
+    "seed": 1,
+    "log_every": 20,
+    "min_utility_ratio": 0.9
+  },
+  "history": {
+    "n_steps": 500,
+    "seconds": 565.6,
+    "first_loss": -0.12530052661895752,
+    "last_loss": -9.183656692504883,
+    "baseline_forget_nll": 1.6263235187530518,
+    "final_forget_nll": 3.335724754333496,
+    "forget_nll_change": 1.7094012355804442,
+    "baseline_utility": 0.805,
+    "selected_epoch": 6,
+    "epoch_evals": [
+      {
+        "epoch": 0,
+        "utility": 0.7925,
+        "forget_nll": 1.7212,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 1,
+        "utility": 0.8,
+        "forget_nll": 1.816,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 2,
+        "utility": 0.7875,
+        "forget_nll": 1.9459,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 3,
+        "utility": 0.7825,
+        "forget_nll": 2.1275,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 4,
+        "utility": 0.7775,
+        "forget_nll": 2.3835,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 5,
+        "utility": 0.7625,
+        "forget_nll": 2.7614,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 6,
+        "utility": 0.7375,
+        "forget_nll": 3.3357,
+        "acceptable": true,
+        "selected": true
+      },
+      {
+        "epoch": 7,
+        "utility": 0.685,
+        "forget_nll": 3.9905,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 8,
+        "utility": 0.6775,
+        "forget_nll": 4.6733,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 9,
+        "utility": 0.6675,
+        "forget_nll": 5.3868,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 10,
+        "utility": 0.6525,
+        "forget_nll": 6.0623,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 11,
+        "utility": 0.64,
+        "forget_nll": 6.7178,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 12,
+        "utility": 0.6325,
+        "forget_nll": 7.3694,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 13,
+        "utility": 0.61,
+        "forget_nll": 7.9792,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 14,
+        "utility": 0.61,
+        "forget_nll": 8.5689,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 15,
+        "utility": 0.6025,
+        "forget_nll": 9.1417,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 16,
+        "utility": 0.6025,
+        "forget_nll": 9.7261,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 17,
+        "utility": 0.595,
+        "forget_nll": 10.2932,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 18,
+        "utility": 0.6075,
+        "forget_nll": 10.8176,
+        "acceptable": false,
+        "selected": false
+      },
+      {
+        "epoch": 19,
+        "utility": 0.6075,
+        "forget_nll": 11.3275,
+        "acceptable": false,
+        "selected": false
+      }
+    ]
+  },
+  "verdict": {
+    "passed": true,
+    "reason": "weights moved and forget-set NLL rose, as expected",
+    "update_norm": 0.5077009854138825
+  }
+}
