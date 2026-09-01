@@ -27,6 +27,7 @@ from deeperase.core.extrapolation import (
     is_buffer_name,
     project_onto_subspace,
     project_state_dict,
+    random_direction_like,
 )
 
 
@@ -366,3 +367,114 @@ class TestHelpers:
     def test_alpha_grid_rejects_single_point(self):
         with pytest.raises(ValueError):
             alpha_grid(num=1)
+
+
+class TestRandomDirectionControl:
+    """The T1 degradation control (report S5.4).
+
+    Its whole value rests on being a *matched* perturbation: same magnitude,
+    same layerwise profile, different direction. Every test here checks one of
+    those three properties, because a control that quietly differs in
+    magnitude proves nothing about direction.
+    """
+
+    @staticmethod
+    def _v(seed=0):
+        g = torch.Generator().manual_seed(seed)
+        return {
+            "model.layers.0.self_attn.q_proj.weight":
+                torch.randn(100, 100, generator=g) * 0.03,
+            "model.layers.0.mlp.down_proj.weight":
+                torch.randn(80, 120, generator=g) * 0.4,
+            "model.embed_tokens.weight":
+                torch.randn(64, 32, generator=g) * 2.0,
+        }
+
+    def test_per_tensor_norms_match_exactly(self):
+        v = self._v()
+        r = random_direction_like(v, seed=7)
+        for k in v:
+            assert float(r[k].norm()) == pytest.approx(float(v[k].norm()), rel=1e-5)
+
+    def test_global_norm_matches_under_global_mode(self):
+        v = self._v()
+        r = random_direction_like(v, seed=7, match="global")
+        assert global_norm(r.values()) == pytest.approx(global_norm(v.values()),
+                                                        rel=1e-5)
+
+    def test_per_tensor_mode_is_not_the_same_as_global(self):
+        """Guards the reason per_tensor is the default: with tensors whose
+        scales differ by ~100x, a globally-matched draw puts nearly all of its
+        displacement in the largest tensor and leaves the others far below
+        their real magnitude."""
+        v = self._v()
+        per = random_direction_like(v, seed=7)
+        glob = random_direction_like(v, seed=7, match="global")
+        small = "model.layers.0.self_attn.q_proj.weight"
+        assert float(per[small].norm()) == pytest.approx(float(v[small].norm()),
+                                                         rel=1e-5)
+        assert float(glob[small].norm()) < 0.5 * float(v[small].norm())
+
+    def test_direction_is_essentially_orthogonal_to_v(self):
+        """A random direction in R^n has cosine ~ N(0, 1/n) with any fixed
+        vector. At n = 10000 that is a standard deviation of 0.01, so 0.1 is a
+        ten-sigma bound -- if this ever fires, the draw is not random."""
+        v = self._v()
+        r = random_direction_like(v, seed=7)
+        k = "model.layers.0.self_attn.q_proj.weight"
+        cos = float(torch.dot(v[k].flatten(), r[k].flatten())
+                    / (v[k].norm() * r[k].norm()))
+        assert abs(cos) < 0.1
+
+    def test_same_seed_reproduces_and_different_seed_does_not(self):
+        v = self._v()
+        a = random_direction_like(v, seed=3)
+        b = random_direction_like(v, seed=3)
+        c = random_direction_like(v, seed=4)
+        k = "model.layers.0.mlp.down_proj.weight"
+        assert torch.equal(a[k], b[k])
+        assert not torch.equal(a[k], c[k])
+
+    def test_key_order_does_not_affect_the_draw(self):
+        """Keys are drawn in sorted order, so a state dict built in a different
+        order yields the same control. Without this the control would not be
+        reproducible across runs that happened to enumerate parameters
+        differently."""
+        v = self._v()
+        reversed_v = {k: v[k] for k in reversed(list(v))}
+        a = random_direction_like(v, seed=11)
+        b = random_direction_like(reversed_v, seed=11)
+        for k in v:
+            assert torch.equal(a[k], b[k])
+
+    def test_zero_tensor_stays_zero(self):
+        """A weight training never moved must not be moved by its control."""
+        v = self._v()
+        v["frozen.weight"] = torch.zeros(10, 10)
+        r = random_direction_like(v, seed=5)
+        assert float(r["frozen.weight"].abs().sum()) == 0.0
+
+    def test_keys_and_shapes_are_preserved(self):
+        v = self._v()
+        r = random_direction_like(v, seed=5)
+        assert set(r) == set(v)
+        for k in v:
+            assert r[k].shape == v[k].shape
+
+    def test_rejects_unknown_match_mode(self):
+        with pytest.raises(ValueError, match="per_tensor"):
+            random_direction_like(self._v(), seed=1, match="l1")
+
+    def test_control_sweep_is_algebraically_parallel_to_the_real_one(self):
+        """theta_ini + (1 + alpha) * r, matching the real sweep's
+        theta_ini + (1 + alpha) * v. This is the arithmetic run_study performs
+        when --control random is set; if it drifts, the control stops being
+        comparable to the run it controls for."""
+        theta_ini = {k: torch.zeros_like(t) for k, t in self._v().items()}
+        v = self._v()
+        r = random_direction_like(v, seed=2)
+        theta_un_ctl = {k: theta_ini[k] + r[k] for k in r}
+        for alpha in (0.0, 0.5, 1.0):
+            out = extrapolate(theta_un_ctl, r, alpha=alpha)
+            for k in r:
+                assert torch.allclose(out[k], (1.0 + alpha) * r[k], atol=1e-5)

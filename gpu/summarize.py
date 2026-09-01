@@ -16,6 +16,10 @@ The three numbers that decide whether a run is usable:
           rather than damage-limited. A middle value is what you want.
   depth   span across the alpha sweep, where 1.000 is the retain oracle. Under
           ~0.1 the plane has no room to bend and no shape can be read from it.
+  ctl     a run marked T1 CONTROL swept a random direction of matched norm
+          instead of the trained one. Its depth and breadth are the
+          degradation baseline -- subtract them from the real run's before
+          reading anything as forgetting.
   dutil   utility at alpha=1 minus utility at alpha=0. Near zero means the
           sweep did not damage the model, so movement on the axes is
           attributable to forgetting. Large and negative means the trajectory
@@ -47,6 +51,7 @@ def load(run: Path) -> dict | None:
     return {
         "run": run.name,
         "method": cfg.get("method", "?"),
+        "control": cfg.get("control", "none"),
         "lr": cfg.get("unlearn", {}).get("learning_rate", float("nan")),
         "epochs": cfg.get("unlearn", {}).get("epochs", 0),
         "sel": hist.get("selected_epoch"),
@@ -60,6 +65,10 @@ def load(run: Path) -> dict | None:
 
 def verdict(r: dict) -> str:
     """Why a run is or is not usable. Ordered so the fatal reason wins."""
+    if r.get("control") == "random":
+        # Never let a control be read as a measurement. Its axes are the
+        # degradation baseline the real runs are compared against.
+        return "T1 CONTROL (random direction)"
     if r["sel"] == 0:
         return "DIVERGED (lr too high)"
     if r["sel"] is not None and r["sel"] >= r["epochs"] - 1:

@@ -244,6 +244,74 @@ def global_norm(tensors: Iterable[torch.Tensor]) -> float:
     return float(total.sqrt())
 
 
+def random_direction_like(
+    v: Mapping[str, torch.Tensor],
+    *,
+    seed: int,
+    match: str = "per_tensor",
+) -> Dict[str, torch.Tensor]:
+    """A random update vector with the same magnitude as ``v`` (report S5.4, T1).
+
+    This is the degradation control. The alpha sweep moves a model away from
+    its starting point and both axes rise; the question that decides whether
+    that is a result is whether they rise *because of the direction travelled*
+    or merely *because the model moved that far*. Substituting a random
+    direction of identical magnitude, and changing nothing else, separates the
+    two. If depth and breadth climb the same way under this control, the
+    trajectory measures damage and not forgetting.
+
+    Args:
+        v: the real update vector from :func:`compute_update_vector`. Only its
+            keys, shapes and per-tensor norms are used; its direction is not.
+        seed: seeds a dedicated generator, so a control is reproducible without
+            disturbing global RNG state. Keys are drawn in sorted order, so the
+            result does not depend on dict insertion order.
+        match: ``"per_tensor"`` (default) gives every tensor its own norm from
+            ``v``. ``"global"`` matches only the total norm.
+
+            Prefer ``per_tensor``. Parameter tensors differ in scale by orders
+            of magnitude, so a globally-matched random vector concentrates
+            almost all of its displacement in the largest tensors (embeddings)
+            and leaves the rest essentially untouched. That is not a control
+            for the trained update -- it is a different perturbation that
+            happens to share one scalar. Matching per tensor preserves the
+            layerwise profile of the real update and leaves *direction within
+            each tensor* as the only thing that differs, which is the
+            comparison the experiment is trying to make.
+
+    Returns:
+        Mapping with the same keys as ``v``, in float32, on the same devices.
+        A tensor with zero norm in ``v`` stays exactly zero: a weight the
+        training never moved must not be moved by its control either.
+    """
+    if match not in ("per_tensor", "global"):
+        raise ValueError(
+            f"match must be 'per_tensor' or 'global', got {match!r}"
+        )
+
+    gen = torch.Generator().manual_seed(seed)
+    raw: Dict[str, torch.Tensor] = {}
+    for name in sorted(v):                       # sorted: order-independent
+        raw[name] = torch.randn(v[name].shape, generator=gen, dtype=torch.float32)
+
+    out: Dict[str, torch.Tensor] = {}
+    if match == "per_tensor":
+        for name, g in raw.items():
+            target = float(v[name].to(torch.float64).pow(2).sum().sqrt())
+            gnorm = float(g.to(torch.float64).pow(2).sum().sqrt())
+            if target == 0.0 or gnorm == 0.0:
+                out[name] = torch.zeros_like(v[name], dtype=torch.float32)
+            else:
+                out[name] = (g * (target / gnorm)).to(v[name].device)
+    else:
+        target = global_norm(v.values())
+        gnorm = global_norm(raw.values())
+        scale = 0.0 if gnorm == 0.0 else target / gnorm
+        for name, g in raw.items():
+            out[name] = (g * scale).to(v[name].device)
+    return out
+
+
 def project_onto_subspace(
     v: torch.Tensor,
     basis: torch.Tensor,
