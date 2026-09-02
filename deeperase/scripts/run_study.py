@@ -213,6 +213,13 @@ def main() -> int:
                          "depth and breadth rise the same way here as in the "
                          "real run, the trajectory measures degradation rather "
                          "than forgetting and no depth/breadth claim survives.")
+    ap.add_argument("--control-scale", type=float, default=1.0,
+                    help="Multiplier on the random control direction. 1.0 is "
+                         "the matched-MAGNITUDE control (same distance, random "
+                         "heading). Larger values give the matched-DAMAGE "
+                         "control: raise it until the control's utility drop "
+                         "matches the real run's, then compare the axes. Only "
+                         "meaningful with --control random.")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
 
@@ -280,6 +287,7 @@ def main() -> int:
         "prompt_format": args.prompt_format,
         "seed": args.seed, "sampling": sampling.value,
         "control": args.control,
+        "control_scale": args.control_scale if args.control == "random" else None,
         "forget_config": FORGET_CONFIG,
         "retain_config": (FORGET_TO_RETAIN[FORGET_CONFIG]
                           if method.needs_retain else None),
@@ -426,15 +434,16 @@ def main() -> int:
         # only the direction is discarded. theta_un is rebuilt as
         # theta_ini + r, which makes the sweep theta_ini + (1 + alpha) * r,
         # exactly parallel to the real run's theta_ini + (1 + alpha) * v.
-        v = random_direction_like(v, seed=args.seed)
+        v = random_direction_like(v, seed=args.seed, scale=args.control_scale)
         theta_un = {name: ((t.to(torch.float32) + v[name]).to(t.dtype)
                            if name in v else t.clone())
                     for name, t in theta_ini.items()}
         log.info("  CONTROL: trained direction discarded; sweeping a RANDOM "
-                 "direction of matched per-tensor norm (||r||=%.4g vs ||v||=%.4g). "
-                 "Depth and breadth here are the degradation baseline, not a "
-                 "measurement of forgetting.",
-                 global_norm(v.values()), verdict.update_norm)
+                 "direction at %.4gx matched per-tensor norm "
+                 "(||r||=%.4g vs ||v||=%.4g). Depth and breadth here are the "
+                 "degradation baseline, not a measurement of forgetting.",
+                 args.control_scale, global_norm(v.values()),
+                 verdict.update_norm)
 
     # -- sweep --------------------------------------------------------------
     log.info("[5/6] Sweeping alpha over %d settings", len(alphas))

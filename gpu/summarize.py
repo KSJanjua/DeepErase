@@ -52,6 +52,7 @@ def load(run: Path) -> dict | None:
         "run": run.name,
         "method": cfg.get("method", "?"),
         "control": cfg.get("control", "none"),
+        "control_scale": cfg.get("control_scale") or 1.0,
         "lr": cfg.get("unlearn", {}).get("learning_rate", float("nan")),
         "epochs": cfg.get("unlearn", {}).get("epochs", 0),
         "sel": hist.get("selected_epoch"),
@@ -68,7 +69,9 @@ def verdict(r: dict) -> str:
     if r.get("control") == "random":
         # Never let a control be read as a measurement. Its axes are the
         # degradation baseline the real runs are compared against.
-        return "T1 CONTROL (random direction)"
+        k = r.get("control_scale", 1.0)
+        return ("T1 CONTROL (random direction)" if k == 1.0
+                else f"T1 CONTROL (random, {k:g}x norm)")
     if r["sel"] == 0:
         return "DIVERGED (lr too high)"
     if r["sel"] is not None and r["sel"] >= r["epochs"] - 1:

@@ -249,6 +249,7 @@ def random_direction_like(
     *,
     seed: int,
     match: str = "per_tensor",
+    scale: float = 1.0,
 ) -> Dict[str, torch.Tensor]:
     """A random update vector with the same magnitude as ``v`` (report S5.4, T1).
 
@@ -266,6 +267,21 @@ def random_direction_like(
         seed: seeds a dedicated generator, so a control is reproducible without
             disturbing global RNG state. Keys are drawn in sorted order, so the
             result does not depend on dict insertion order.
+        scale: multiply the matched direction by this factor. ``1.0`` is the
+            matched-*magnitude* control: same distance travelled, different
+            heading. Larger values give the matched-*damage* control, and the
+            two answer different questions.
+
+            The first run of this control showed why both are needed. At
+            ``scale=1.0`` a random step left utility completely unmoved
+            (0.797 -> 0.797) while the real update of identical norm cost
+            0.10 -- ||v|| is only ~0.05% of a 1B model's weight norm, so
+            random movement that small is simply absorbed. That rules out
+            distance-travelled as the explanation, but it cannot speak to
+            whether damage of the size the real run inflicts would raise the
+            axes on its own, because it inflicted none. Scaling up until the
+            control's utility drop matches the real run's answers that second
+            question.
         match: ``"per_tensor"`` (default) gives every tensor its own norm from
             ``v``. ``"global"`` matches only the total norm.
 
@@ -292,6 +308,11 @@ def random_direction_like(
         raise ValueError(
             f"match must be 'per_tensor' or 'global', got {match!r}"
         )
+    if scale <= 0:
+        raise ValueError(
+            f"scale must be positive, got {scale}. A control that moves the "
+            "model nowhere is not a control -- it is the unlearned model."
+        )
 
     gen = torch.Generator().manual_seed(seed)
     raw: Dict[str, torch.Tensor] = {}
@@ -310,9 +331,12 @@ def random_direction_like(
     else:
         target = global_norm(v.values())
         gnorm = global_norm(raw.values())
-        scale = 0.0 if gnorm == 0.0 else target / gnorm
+        gscale = 0.0 if gnorm == 0.0 else target / gnorm
         for name, g in raw.items():
-            out[name] = (g * scale).to(v[name].device)
+            out[name] = (g * gscale).to(v[name].device)
+
+    if scale != 1.0:
+        out = {name: t * scale for name, t in out.items()}
     return out
 
 

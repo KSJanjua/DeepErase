@@ -488,3 +488,40 @@ class TestRandomDirectionControl:
             out = extrapolate(theta_un_ctl, r, alpha=alpha)
             for k in r:
                 assert torch.allclose(out[k], (1.0 + alpha) * r[k], atol=1e-5)
+
+    def test_scale_multiplies_every_tensor_norm(self):
+        """The matched-damage control: same direction, larger step."""
+        v = self._v()
+        base = random_direction_like(v, seed=7)
+        big = random_direction_like(v, seed=7, scale=25.0)
+        for k in v:
+            assert float(big[k].norm()) == pytest.approx(
+                25.0 * float(base[k].norm()), rel=1e-5)
+
+    def test_scale_preserves_direction(self):
+        """Scaling must change only magnitude -- otherwise the damage ladder
+        would compare different random directions at each rung, and the axes
+        could move for that reason instead of the intended one."""
+        v = self._v()
+        base = random_direction_like(v, seed=7)
+        big = random_direction_like(v, seed=7, scale=25.0)
+        k = "model.layers.0.mlp.down_proj.weight"
+        assert torch.allclose(big[k], 25.0 * base[k], atol=1e-4)
+
+    def test_scale_leaves_zero_tensors_at_zero(self):
+        v = self._v()
+        v["frozen.weight"] = torch.zeros(10, 10)
+        r = random_direction_like(v, seed=5, scale=100.0)
+        assert float(r["frozen.weight"].abs().sum()) == 0.0
+
+    def test_scale_applies_under_global_match_too(self):
+        v = self._v()
+        base = random_direction_like(v, seed=7, match="global")
+        big = random_direction_like(v, seed=7, match="global", scale=4.0)
+        assert global_norm(big.values()) == pytest.approx(
+            4.0 * global_norm(base.values()), rel=1e-5)
+
+    def test_non_positive_scale_is_rejected(self):
+        for bad in (0.0, -1.0):
+            with pytest.raises(ValueError, match="scale must be positive"):
+                random_direction_like(self._v(), seed=1, scale=bad)
