@@ -1,0 +1,24 @@
+{
+  "note": "Status of every run under results/studies that should NOT be read as a current result, and why. Read by gpu/summarize.py and show_results.py. Runs absent from 'invalid' and 'superseded' are valid for their protocol. Add an entry whenever a fix invalidates past runs; never delete one.",
+  "headline": "study_ga_1B_20260816_165423",
+  "headline_note": "The run reported in the mid-semester report (Table 12, Figure 10). Kept as the demo default until protocol-v2 runs exist.",
+  "protocol_notes": {
+    "v1": "Every run before 9 Oct 2026 (no 'protocol' in config.json) is protocol v1, and its breadth and utility numbers were scored by the defective forced-choice scorer that skipped the first answer token (RESULTS.md section 8.1). Depth is unaffected. Compare v1 runs only with each other."
+  },
+  "invalid": {
+    "study_npo_1B_s0": "NPO loss defect (per-token mean instead of sequence sum, fixed in 74313dc): effectively gradient ascent. A GA duplicate.",
+    "study_npo_1B_s1": "NPO loss defect, fixed in 74313dc. A GA duplicate.",
+    "study_npo_1B_s2": "NPO loss defect, fixed in 74313dc. A GA duplicate.",
+    "lrscan_npo_1e-6": "NPO loss defect, fixed in 74313dc. The learning-rate scan must be redone.",
+    "lrscan_npo_3e-6": "NPO loss defect, fixed in 74313dc. The learning-rate scan must be redone.",
+    "study_ga_1B_20260816_093447": "lr 1e-5 with no checkpoint selection: a collapsed model (depth 0.99, breadth 1.00 throughout)."
+  },
+  "superseded": {
+    "study_ga_1B_20260816_160132": "5 epochs, underpowered (depth span 0.04); superseded by study_ga_1B_20260816_165423.",
+    "smoke_graddiff": "Plumbing check of the GradDiff fix (2 epochs, 20 examples). Not a measurement.",
+    "study_graddiff_1B_s0": "Learning-rate scan point: lr 1e-6 is budget-limited for GradDiff.",
+    "study_graddiff_1B_s0_lr1e-5": "Learning-rate scan point: lr 1e-5 diverges after epoch 0.",
+    "lrscan_graddiff_3e-6": "Learning-rate scan point; identical to study_graddiff_1B_s0_lr3e-06.",
+    "lrscan_graddiff_5e-6": "Learning-rate scan point: selected epoch 2, too fast."
+  }
+}

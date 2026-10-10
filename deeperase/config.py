@@ -186,6 +186,7 @@ def plan_memory(
     prefer: ExecutionStrategy = ExecutionStrategy.ALL_RESIDENT,
     gpu_free_gb: Optional[float] = None,
     training: bool = False,
+    reference_model: bool = False,
 ) -> MemoryPlan:
     """Decide whether a model size fits, and how to run it.
 
@@ -201,6 +202,9 @@ def plan_memory(
             confident "fits" for a run that cannot start.
         training: if True, budget for full-parameter optimiser state rather than
             weights alone. See :data:`TRAINING_STATE_MULTIPLIER`.
+        reference_model: training also holds a frozen copy of the starting
+            model (NPO). Adds one model's weights to the training peak -- an
+            earlier version omitted it and under-planned NPO by a whole model.
 
     Returns:
         A :class:`MemoryPlan`. Always check ``.fits`` before starting a run.
@@ -235,7 +239,8 @@ def plan_memory(
 
     # Training peak, if asked for: optimiser state dominates and is invisible to
     # a weight count.
-    train_peak = one * TRAINING_STATE_MULTIPLIER + ACTIVATION_ALLOWANCE_GB
+    train_peak = (one * TRAINING_STATE_MULTIPLIER + ACTIVATION_ALLOWANCE_GB
+                  + (one if reference_model else 0.0))
 
     # Try the preferred strategy, then fall back.
     order = (
@@ -263,10 +268,12 @@ def plan_memory(
                     "20-40% longer runtime than all-resident."
                 )
             if training and train_peak >= weight_peak:
+                ref = (f" + {one:.2f} GB frozen reference model"
+                       if reference_model else "")
                 driver = (
                     f"training dominates: {one:.2f} GB weights x "
                     f"{TRAINING_STATE_MULTIPLIER:.0f} (weights + grads + 2 AdamW "
-                    f"moments) + {ACTIVATION_ALLOWANCE_GB:.1f} GB activations "
+                    f"moments) + {ACTIVATION_ALLOWANCE_GB:.1f} GB activations{ref} "
                     f"= {train_peak:.2f} GB"
                 )
             else:

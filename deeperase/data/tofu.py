@@ -49,6 +49,71 @@ TOFU_CONFIGS = (
 #: silently measures the wrong thing, so callers should go through this map.
 FORGET_TO_RETAIN = {"forget01": "retain99", "forget05": "retain95", "forget10": "retain90"}
 
+#: TOFU writes 20 question-answer pairs per fictitious author, stored as
+#: consecutive rows: rows 0-19 of forget10 are one author, 20-39 the next, and
+#: so on. Verified on forget10 (book titles and names cluster in 20-row blocks).
+QAS_PER_AUTHOR = 20
+
+
+def read_tofu_rows(config: str, data_dir: str) -> List[Dict[str, object]]:
+    """Read one TOFU config from a local JSON-Lines file (``{data_dir}/{config}.json``).
+
+    These are the files ``data/README.md`` downloads. Reading them directly
+    avoids the HuggingFace ``datasets`` stack, which makes runs reproducible
+    offline and lets tests use real TOFU text.
+    """
+    import json
+    from pathlib import Path
+
+    path = Path(data_dir) / f"{config}.json"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} not found. Download it as described in data/README.md, or "
+            "omit data_dir to load from the HuggingFace hub.")
+    text = path.read_text(encoding="utf-8").strip()
+    if text.startswith("["):
+        return json.loads(text)
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
+def author_of(index: int) -> int:
+    """Author block of a forget-split row. See :data:`QAS_PER_AUTHOR`."""
+    return index // QAS_PER_AUTHOR
+
+
+def split_by_author(
+    n_rows: int, *, train_fraction: float, seed: int,
+) -> Tuple[List[int], List[int]]:
+    """Split row indices into *trained* and *held-out*, the same share per author.
+
+    Protocol v2 trains the unlearning objective on part of each author's facts
+    and keeps the rest unseen by the trainer. The held-out facts are then a
+    natural "related knowledge" probe: same entity, different fact, never in
+    the forget batches. Stratifying by author keeps every author represented on
+    both sides, so a held-out effect cannot come from forgetting one author
+    wholesale.
+
+    Returns:
+        ``(trained, heldout)``, each sorted. ``train_fraction=1.0`` returns
+        every row as trained and none held out.
+    """
+    import random
+
+    if not 0.0 < train_fraction <= 1.0:
+        raise ValueError(f"train_fraction must be in (0, 1], got {train_fraction}")
+    if n_rows % QAS_PER_AUTHOR:
+        raise ValueError(
+            f"{n_rows} rows is not a whole number of {QAS_PER_AUTHOR}-row author blocks")
+    rng = random.Random(seed)
+    k = round(QAS_PER_AUTHOR * train_fraction)
+    trained: List[int] = []
+    for start in range(0, n_rows, QAS_PER_AUTHOR):
+        block = list(range(start, start + QAS_PER_AUTHOR))
+        trained.extend(rng.sample(block, k))
+    trained.sort()
+    held = sorted(set(range(n_rows)) - set(trained))
+    return trained, held
+
 
 # ---------------------------------------------------------------------------
 # Prompt formats
@@ -308,21 +373,30 @@ def load_tofu(
     cache_dir: Optional[str] = None,
     limit: Optional[int] = None,
     strategy: SpanStrategy = SpanStrategy.NOVEL_CONTENT,
+    data_dir: Optional[str] = None,
 ) -> List[TofuExample]:
     """Load a TOFU config and attach entity spans.
 
     Examples where no span could be found are still returned, with
     ``entity_char_span=None``. Filter with :func:`filter_usable` before
     measuring -- dropping them silently here would hide how many were lost.
-    """
-    from datasets import load_dataset
 
+    Args:
+        data_dir: read ``{data_dir}/{config}.json`` (see :func:`read_tofu_rows`)
+            instead of the HuggingFace hub.
+    """
     if config not in TOFU_CONFIGS:
         raise ValueError(f"Unknown TOFU config {config!r}. Known: {list(TOFU_CONFIGS)}")
 
-    ds = load_dataset(TOFU_DATASET, config, split=split, cache_dir=cache_dir)
-    if limit is not None:
-        ds = ds.select(range(min(limit, len(ds))))
+    if data_dir is not None:
+        ds = read_tofu_rows(config, data_dir)
+        if limit is not None:
+            ds = ds[:limit]
+    else:
+        from datasets import load_dataset
+        ds = load_dataset(TOFU_DATASET, config, split=split, cache_dir=cache_dir)
+        if limit is not None:
+            ds = ds.select(range(min(limit, len(ds))))
 
     out: List[TofuExample] = []
     for i, row in enumerate(ds):
@@ -489,6 +563,59 @@ def tokenise_example(
         text=text,
         answer_start_char=answer_start,
     )
+
+
+class LossScope(str, Enum):
+    """Which tokens the unlearning objective is computed on."""
+
+    ANSWER = "answer"
+    """Answer tokens only, the prompt is context. What OpenUnlearning does
+    (prompt labels are -100), and the protocol-v2 default."""
+
+    FULL = "full"
+    """Every token after the first, question included. The v1 behaviour: it
+    also unlearns question templates shared with retain-set questions."""
+
+
+def tokenise_for_training(
+    question: str,
+    answer: str,
+    tokenizer,
+    *,
+    fmt: PromptFormat = PromptFormat.PLAIN_QA,
+    max_length: int = 256,
+    loss_scope: LossScope = LossScope.ANSWER,
+):
+    """One training example: ``{"input_ids", "attention_mask"[, "loss_mask"]}``.
+
+    Tensors are ``(1, seq)``. Under :attr:`LossScope.ANSWER` a ``loss_mask``
+    marks the answer tokens, located by character offset in the single
+    encoding of prompt + answer: the first token whose span ends after the
+    prompt, and everything after it. That is the same boundary rule as the
+    breadth scorer (:func:`deeperase.eval.breadth.answer_token_start`), so a
+    merged leading space cannot drop the first answer token here either.
+
+    Returns ``None`` when truncation leaves no answer token.
+    """
+    import torch
+
+    text, answer_start = build_prompt(question, answer, fmt, tokenizer)
+    enc = tokenizer(text, truncation=True, max_length=max_length,
+                    add_special_tokens=True,
+                    return_offsets_mapping=(loss_scope is LossScope.ANSWER))
+    ids = torch.tensor([enc["input_ids"]], dtype=torch.long)
+    out = {"input_ids": ids, "attention_mask": torch.ones_like(ids)}
+    if loss_scope is LossScope.FULL:
+        return out
+
+    first = next((i for i, (a, b) in enumerate(enc["offset_mapping"])
+                  if a != b and b > answer_start), None)
+    if first is None or first < 1:
+        return None
+    mask = torch.zeros_like(ids)
+    mask[0, first:] = 1
+    out["loss_mask"] = mask
+    return out
 
 
 def sanity_check_prompt_format(

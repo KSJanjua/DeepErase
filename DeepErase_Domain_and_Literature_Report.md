@@ -2,6 +2,14 @@
 
 **Subject:** *DeepErase: Selective Knowledge Erasure in Large Language Models — A Representation-Aware Unlearning Framework* (CPG 221, Thapar Institute, BE III COE/CSE)
 **Prepared:** 2 August 2026
+
+> **Historical document (2 August 2026).** It records the reasoning that led
+> to the depth-breadth (D1) direction, written before any implementation
+> existed. Scope has since narrowed (TOFU only, Llama-3.2 1B/3B, GA/GradDiff/NPO;
+> SAGE deferred), and `literature/` now holds the 10 Appendix A papers rather
+> than the full set of PDFs surveyed here. For current status see
+> [`README.md`](README.md) and [`RESULTS.md`](RESULTS.md).
+
 **Scope:** Phases 1–7 of the assigned research-orientation task. No code was written, modified, or refactored.
 
 ---

@@ -70,7 +70,20 @@ TIER_SOURCES: Dict[str, Tuple[str, str]] = {
     "B0": ("forget10_perturbed", "question"),
     "B1": ("forget10_perturbed", "paraphrased_question"),
     "R":  ("retain_perturbed", "question"),
+    "RA": ("real_authors_perturbed", "question"),
+    "WF": ("world_facts_perturbed", "question"),
 }
+
+#: Tiers measuring knowledge that must SURVIVE unlearning. They are never part
+#: of the forget average. ``R`` is neighbouring TOFU authors -- the most
+#: sensitive collateral-damage probe, since they share the forget authors'
+#: question templates. ``RA`` (real authors) and ``WF`` (world facts) are
+#: general knowledge the base model brought with it; TOFU's own Model Utility
+#: uses the same two sets.
+RETAIN_TIERS = frozenset({"R", "RA", "WF"})
+
+#: Retain tiers that measure general knowledge rather than TOFU authors.
+GENERAL_TIERS = ("RA", "WF")
 
 
 @dataclass
@@ -89,6 +102,12 @@ class BreadthItem:
     """Which column ``correct_answer`` came from. Recorded because using
     ``answer`` instead inflates scores by roughly 0.4 -- see the module
     docstring."""
+    author: Optional[int] = None
+    """Author block (forget-split row // 20) for forget tiers; None otherwise.
+    Lets results be broken down by author and lets a derived item (B2, B4)
+    inherit its source row's trained/held-out status."""
+    meta: Dict[str, object] = field(default_factory=dict)
+    """Provenance for derived items: how the question was constructed."""
 
     def __post_init__(self) -> None:
         if not self.wrong_answers:
@@ -99,7 +118,89 @@ class BreadthItem:
     @property
     def is_forget_tier(self) -> bool:
         """True when producing the correct answer counts as leakage."""
-        return self.tier != "R"
+        return self.tier not in RETAIN_TIERS
+
+    def to_dict(self) -> dict:
+        d = {"item_id": self.item_id, "tier": self.tier, "question": self.question,
+             "correct_answer": self.correct_answer,
+             "correct_source": self.correct_source,
+             "wrong_answers": list(self.wrong_answers),
+             "source_index": self.source_index}
+        if self.author is not None:
+            d["author"] = self.author
+        if self.meta:
+            d["meta"] = dict(self.meta)
+        return d
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "BreadthItem":
+        idx = d.get("source_index")
+        if idx is None:
+            # The original 1200-item export omitted source_index, but its ids
+            # were built as f"{tier}_{row}" -- recover the row from the id.
+            import re
+            m = re.search(r"_(\d+)$", d["item_id"])
+            idx = int(m.group(1)) if m else -1
+        return cls(item_id=d["item_id"], tier=d["tier"], question=d["question"],
+                   correct_answer=d["correct_answer"],
+                   wrong_answers=list(d["wrong_answers"]),
+                   source_index=int(idx),
+                   correct_source=d.get("correct_source", "paraphrased_answer"),
+                   author=d.get("author"), meta=dict(d.get("meta") or {}))
+
+
+@dataclass
+class ItemOutcome:
+    """One forced choice: did the correct answer win, and by how much."""
+
+    knows: bool
+    margin: float
+    """log p(correct) minus the best wrong option's log p (per-token means).
+    Positive means the model prefers the correct answer. Kept because the
+    binary outcome throws away most of the signal."""
+    scores: Optional[Tuple[float, ...]] = None
+    """Per-token mean log-prob of every candidate, correct first. These are
+    exactly the length-normalised probabilities in TOFU's truth ratio, so
+    TOFU's own Forget Quality can be computed from them (:func:`truth_ratio`,
+    :func:`forget_quality`)."""
+
+    @property
+    def truth_ratio(self) -> Optional[float]:
+        return None if self.scores is None else truth_ratio(self.scores)
+
+
+def truth_ratio(scores: Sequence[float]) -> float:
+    """TOFU's truth ratio (Maini et al. 2024, Eq. 1) from per-token mean log-probs.
+
+        R = mean over wrong a of P(a|q)^(1/|a|)  /  P(correct|q)^(1/|correct|)
+
+    ``scores[0]`` is the correct answer (TOFU's paraphrased answer), the rest
+    are its perturbations. Lower R means the model still prefers the truth;
+    R near 1 means it cannot tell them apart.
+    """
+    import math
+    correct, wrong = scores[0], scores[1:]
+    if not wrong or correct == float("-inf"):
+        return float("nan")
+    num = sum(math.exp(w - correct) for w in wrong if w != float("-inf")) / len(wrong)
+    return num
+
+
+def forget_quality(unlearned: Sequence[float], retain: Sequence[float]) -> Optional[float]:
+    """TOFU's Forget Quality: the KS-test p-value between truth-ratio distributions.
+
+    Compares the unlearned model's truth ratios on the forget items with the
+    retain model's on the same items. High (near 1) means indistinguishable
+    from a model that never learned the facts; TOFU reports it on a log scale
+    because it spans many orders of magnitude.
+    """
+    import math
+    from scipy import stats
+    a = [x for x in unlearned if x == x and math.isfinite(x)]
+    b = [x for x in retain if x == x and math.isfinite(x)]
+    if len(a) < 2 or len(b) < 2:
+        return None
+    return float(stats.ks_2samp(a, b).pvalue)
 
 
 @dataclass
@@ -121,12 +222,20 @@ class TierResult:
 @dataclass
 class BreadthResult:
     tiers: Dict[str, TierResult] = field(default_factory=dict)
+    outcomes: Optional[Dict[str, ItemOutcome]] = None
+    """Per-item results, when :func:`score_breadth` was asked for them."""
 
     @property
     def forget_leakage(self) -> float:
         """Mean leakage across forget tiers. Lower means broader forgetting."""
-        vals = [t.knows_rate for k, t in self.tiers.items() if k != "R"]
+        vals = [t.knows_rate for k, t in self.tiers.items() if k not in RETAIN_TIERS]
         return float(sum(vals) / len(vals)) if vals else float("nan")
+
+    @property
+    def general_utility(self) -> Optional[float]:
+        """Mean knows-rate over the general-knowledge tiers (RA, WF), if scored."""
+        vals = [self.tiers[k].knows_rate for k in GENERAL_TIERS if k in self.tiers]
+        return float(sum(vals) / len(vals)) if vals else None
 
     @property
     def breadth(self) -> float:
@@ -154,17 +263,24 @@ class BreadthResult:
         b0, b1 = self.tiers.get("B0"), self.tiers.get("B1")
         return None if not (b0 and b1) else b0.knows_rate - b1.knows_rate
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, *, include_outcomes: bool = False) -> dict:
+        d = {
             "breadth": self.breadth,
             "forget_leakage": self.forget_leakage,
             "retention": self.retention,
+            "general_utility": self.general_utility,
             "generalisation_gap": self.generalisation_gap,
             "per_tier": {
                 k: {"n": t.n, "n_knows": t.n_knows, "knows_rate": t.knows_rate}
                 for k, t in self.tiers.items()
             },
         }
+        if include_outcomes and self.outcomes is not None:
+            # compact: item_id -> [knows, margin, [score of each candidate, correct first]]
+            d["outcomes"] = {k: [int(o.knows), round(o.margin, 4)]
+                             + ([[round(x, 4) for x in o.scores]] if o.scores else [])
+                             for k, o in self.outcomes.items()}
+        return d
 
     def summary(self) -> str:
         parts = [f"{k}={t.knows_rate:.3f}" for k, t in sorted(self.tiers.items())]
@@ -244,6 +360,52 @@ def load_breadth_items(
 # ---------------------------------------------------------------------------
 
 
+def answer_token_start(tokenizer, prefix: str, answer: str, *,
+                       max_length: int) -> Tuple[List[int], Optional[int]]:
+    """Tokenise ``prefix + answer`` once, and find where the answer begins.
+
+    Returns ``(input_ids, start)`` where ``input_ids[start:]`` are exactly the
+    tokens carrying the answer, or ``start=None`` when no answer token survives
+    truncation.
+
+    **Why the prefix is not tokenised on its own.** An earlier version computed
+    ``start = len(tokenizer(prefix))``. Every prompt here ends in a space
+    (``"...Answer: "``). Llama-3's byte-level BPE makes that trailing space its
+    own token when the prefix is encoded alone, but in ``prefix + answer`` the
+    space merges into the first answer token (``"ĠH"`` of ``"Hsiao"``). The
+    prefix-only encoding is therefore one token longer than the prompt part of
+    the full encoding, and the first answer token -- in TOFU usually the start
+    of the entity, the most discriminating token in the comparison -- was never
+    scored. Verified against the real ``tokenizer.json`` (RESULTS.md §8.1).
+
+    The answer start is located by character offsets instead: the first token
+    whose span ends after ``len(prefix)``. A token that straddles the boundary
+    (a merged leading space) therefore counts as an answer token, which is how
+    the model actually sees the text.
+
+    Requires a fast tokenizer (``return_offsets_mapping``). Every checkpoint
+    used by this project ships one.
+    """
+    full = prefix + answer
+    try:
+        enc = tokenizer(full, truncation=True, max_length=max_length,
+                        add_special_tokens=True, return_offsets_mapping=True)
+    except NotImplementedError as e:  # slow (Python) tokenizers
+        raise TypeError(
+            "Breadth scoring needs a fast tokenizer with offset mapping to find "
+            "where the answer begins. Load it with use_fast=True."
+        ) from e
+
+    ids = list(enc["input_ids"])
+    boundary = len(prefix)
+    for i, (a, b) in enumerate(enc["offset_mapping"]):
+        if a == b:              # special tokens carry an empty span
+            continue
+        if b > boundary:
+            return ids, (i if i >= 1 else None)
+    return ids, None
+
+
 @torch.no_grad()
 def _answer_logprob(model, tokenizer, question: str, answer: str,
                     *, max_length: int, prompt_prefix: str) -> float:
@@ -251,26 +413,63 @@ def _answer_logprob(model, tokenizer, question: str, answer: str,
 
     Length-normalised, because the alternatives differ in length and an
     un-normalised total would simply favour whichever answer is shortest.
+    Every answer token is scored, including the first -- see
+    :func:`answer_token_start`.
     """
     device = next(model.parameters()).device
     prefix = prompt_prefix.format(question=question)
-    full = prefix + answer
-
-    prefix_ids = tokenizer(prefix, add_special_tokens=True)["input_ids"]
-    enc = tokenizer(full, truncation=True, max_length=max_length,
-                    add_special_tokens=True, return_tensors="pt")
-    ids = enc["input_ids"].to(device)
-
-    start = min(len(prefix_ids), ids.shape[1] - 1)
-    if start < 1 or start >= ids.shape[1]:
+    ids_list, start = answer_token_start(tokenizer, prefix, answer,
+                                         max_length=max_length)
+    if start is None:
         return float("-inf")
 
-    logits = model(input_ids=ids, attention_mask=enc["attention_mask"].to(device)).logits
+    ids = torch.tensor([ids_list], dtype=torch.long, device=device)
+    logits = model(input_ids=ids, attention_mask=torch.ones_like(ids)).logits
     logprobs = F.log_softmax(logits.float(), dim=-1)
     # Position p predicts token p+1, so answer token j is read from p = j-1.
     tgt = ids[0, start:]
     pred = logprobs[0, start - 1: ids.shape[1] - 1, :]
     return float(pred.gather(-1, tgt.unsqueeze(-1)).squeeze(-1).mean())
+
+
+@torch.no_grad()
+def _candidate_logprobs(model, tokenizer, question: str, candidates: Sequence[str],
+                        *, max_length: int, prompt_prefix: str) -> List[float]:
+    """:func:`_answer_logprob` for every candidate, in one padded forward pass.
+
+    The candidates share the question, so they are right-padded into one batch.
+    With causal attention and right padding, a real token never attends to a
+    pad, and position ids are unchanged, so each candidate's scores equal its
+    unbatched scores up to floating-point reduction order (tested). One pass
+    instead of four is most of the cost of a breadth sweep.
+    """
+    device = next(model.parameters()).device
+    prefix = prompt_prefix.format(question=question)
+    encoded = [answer_token_start(tokenizer, prefix, c, max_length=max_length)
+               for c in candidates]
+    live = [i for i, (_, st) in enumerate(encoded) if st is not None]
+    out = [float("-inf")] * len(candidates)
+    if not live:
+        return out
+
+    pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+    max_len = max(len(encoded[i][0]) for i in live)
+    ids = torch.full((len(live), max_len), pad_id, dtype=torch.long)
+    mask = torch.zeros((len(live), max_len), dtype=torch.long)
+    for row, i in enumerate(live):
+        seq = encoded[i][0]
+        ids[row, :len(seq)] = torch.tensor(seq, dtype=torch.long)
+        mask[row, :len(seq)] = 1
+    ids, mask = ids.to(device), mask.to(device)
+
+    logits = model(input_ids=ids, attention_mask=mask).logits
+    logprobs = F.log_softmax(logits.float(), dim=-1)
+    for row, i in enumerate(live):
+        seq, start = encoded[i]
+        tgt = ids[row, start:len(seq)]
+        pred = logprobs[row, start - 1: len(seq) - 1, :]
+        out[i] = float(pred.gather(-1, tgt.unsqueeze(-1)).squeeze(-1).mean())
+    return out
 
 
 @torch.no_grad()
@@ -282,6 +481,8 @@ def score_breadth(
     max_length: int = 256,
     prompt_prefix: str = "{question} ",
     log_every: int = 0,
+    batch_candidates: bool = True,
+    return_outcomes: bool = False,
 ) -> BreadthResult:
     """Run the forced choice for every item and aggregate by tier.
 
@@ -293,25 +494,98 @@ def score_breadth(
             match the format the model was fine-tuned with -- the same
             requirement, and the same silent-failure risk, as in the depth
             measurement.
+        batch_candidates: score an item's candidates in one padded forward
+            pass (default) rather than one pass each. Same result up to
+            floating-point reduction order; about 3-4x faster.
+        return_outcomes: also return each item's outcome and margin
+            (:class:`ItemOutcome`), for breakdowns beyond tier -- e.g. trained
+            versus held-out facts, or per author.
     """
     buckets: Dict[str, List[bool]] = {}
+    outcomes: Dict[str, ItemOutcome] = {}
     for n, item in enumerate(items):
-        correct = _answer_logprob(model, tokenizer, item.question,
-                                  item.correct_answer,
-                                  max_length=max_length, prompt_prefix=prompt_prefix)
-        best_wrong = max(
-            _answer_logprob(model, tokenizer, item.question, w,
-                            max_length=max_length, prompt_prefix=prompt_prefix)
-            for w in item.wrong_answers
-        )
-        buckets.setdefault(item.tier, []).append(correct > best_wrong)
+        if batch_candidates:
+            scores = _candidate_logprobs(
+                model, tokenizer, item.question,
+                [item.correct_answer, *item.wrong_answers],
+                max_length=max_length, prompt_prefix=prompt_prefix)
+            correct, best_wrong = scores[0], max(scores[1:])
+        else:
+            scores = [_answer_logprob(model, tokenizer, item.question, c,
+                                      max_length=max_length, prompt_prefix=prompt_prefix)
+                      for c in [item.correct_answer, *item.wrong_answers]]
+            correct, best_wrong = scores[0], max(scores[1:])
+        knows = correct > best_wrong
+        buckets.setdefault(item.tier, []).append(knows)
+        if return_outcomes:
+            outcomes[item.item_id] = ItemOutcome(
+                knows=knows, margin=correct - best_wrong, scores=tuple(scores))
         if log_every and (n + 1) % log_every == 0:
             logger.info("  scored %d/%d breadth items", n + 1, len(items))
 
-    return BreadthResult(tiers={
-        tier: TierResult(tier=tier, n=len(vals), n_knows=sum(vals))
-        for tier, vals in buckets.items()
-    })
+    return BreadthResult(
+        tiers={tier: TierResult(tier=tier, n=len(vals), n_knows=sum(vals))
+               for tier, vals in buckets.items()},
+        outcomes=outcomes if return_outcomes else None,
+    )
+
+
+def aggregate_outcomes(
+    items: Sequence[BreadthItem],
+    outcomes: Dict[str, ItemOutcome],
+    key,
+) -> Dict[str, TierResult]:
+    """Group item outcomes by ``key(item)``; items whose key is None are skipped.
+
+    E.g. ``key=lambda it: f"{it.tier}:{split[it.source_index]}"`` gives
+    per-tier, per-split rates from one scoring pass.
+    """
+    groups: Dict[str, List[bool]] = {}
+    for it in items:
+        k = key(it)
+        if k is None or it.item_id not in outcomes:
+            continue
+        groups.setdefault(k, []).append(outcomes[it.item_id].knows)
+    return {k: TierResult(tier=k, n=len(v), n_knows=sum(v)) for k, v in groups.items()}
+
+
+def save_breadth_items_file(items: Sequence[BreadthItem], path, **metadata) -> None:
+    """Freeze an item set to JSON, so a run can name exactly what it scored."""
+    import json
+    from collections import Counter
+    from pathlib import Path
+
+    payload = dict(metadata)
+    payload["version"] = 2
+    payload["n_items"] = len(items)
+    payload["counts"] = dict(sorted(Counter(i.tier for i in items).items()))
+    payload["items"] = [i.to_dict() for i in items]
+    Path(path).write_text(json.dumps(payload, indent=1, ensure_ascii=False) + "\n",
+                          encoding="utf-8")
+
+
+def load_breadth_items_file(path, *, tiers: Optional[Sequence[str]] = None
+                            ) -> List[BreadthItem]:
+    """Load a frozen item set (``data/breadth_items*.json``), optionally by tier.
+
+    Reads both the original 1200-item export and the version-2 format.
+    """
+    import json
+    from pathlib import Path
+
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    rows = data["items"] if isinstance(data, dict) else data
+    items = [BreadthItem.from_dict(r) for r in rows]
+    if tiers is not None:
+        wanted = set(tiers)
+        unknown = wanted - {i.tier for i in items}
+        if unknown:
+            raise ValueError(f"Tiers {sorted(unknown)} not present in {path}")
+        items = [i for i in items if i.tier in wanted]
+    ids = [i.item_id for i in items]
+    if len(ids) != len(set(ids)):
+        raise ValueError(f"{path}: duplicate item_id values")
+    return items
 
 
 # ---------------------------------------------------------------------------

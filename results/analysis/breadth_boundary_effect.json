@@ -1,0 +1,109 @@
+{
+  "items": "data/breadth_items_v2.json",
+  "n_items": 2014,
+  "prompt_format": "plain_qa",
+  "device": "mps",
+  "dtype": "float32",
+  "models": {
+    "full": {
+      "B0": {
+        "n": 400,
+        "fixed": 0.77,
+        "legacy": 0.7675,
+        "flipped": 3
+      },
+      "B1": {
+        "n": 400,
+        "fixed": 0.785,
+        "legacy": 0.785,
+        "flipped": 0
+      },
+      "R": {
+        "n": 400,
+        "fixed": 0.805,
+        "legacy": 0.8,
+        "flipped": 8
+      },
+      "RA": {
+        "n": 100,
+        "fixed": 0.89,
+        "legacy": 0.53,
+        "flipped": 42
+      },
+      "WF": {
+        "n": 117,
+        "fixed": 0.8547008547008547,
+        "legacy": 0.6068376068376068,
+        "flipped": 39
+      },
+      "B2": {
+        "n": 360,
+        "fixed": 0.7166666666666667,
+        "legacy": 0.7166666666666667,
+        "flipped": 0
+      },
+      "B4": {
+        "n": 237,
+        "fixed": 0.6708860759493671,
+        "legacy": 0.6708860759493671,
+        "flipped": 0
+      }
+    },
+    "retain90": {
+      "B0": {
+        "n": 400,
+        "fixed": 0.51,
+        "legacy": 0.5075,
+        "flipped": 1
+      },
+      "B1": {
+        "n": 400,
+        "fixed": 0.545,
+        "legacy": 0.5375,
+        "flipped": 3
+      },
+      "R": {
+        "n": 400,
+        "fixed": 0.81,
+        "legacy": 0.81,
+        "flipped": 4
+      },
+      "RA": {
+        "n": 100,
+        "fixed": 0.88,
+        "legacy": 0.56,
+        "flipped": 38
+      },
+      "WF": {
+        "n": 117,
+        "fixed": 0.8547008547008547,
+        "legacy": 0.5982905982905983,
+        "flipped": 38
+      },
+      "B2": {
+        "n": 360,
+        "fixed": 0.5472222222222223,
+        "legacy": 0.55,
+        "flipped": 3
+      },
+      "B4": {
+        "n": 237,
+        "fixed": 0.5358649789029536,
+        "legacy": 0.5358649789029536,
+        "flipped": 0
+      }
+    }
+  },
+  "calibration_B0_B1": {
+    "legacy": {
+      "floor": 0.5225,
+      "ceiling": 0.77625,
+      "range": 0.25375000000000003
+    },
+    "fixed": {
+      "floor": 0.5275,
+      "ceiling": 0.7775,
+      "range": 0.25
+    }
+  }
+}

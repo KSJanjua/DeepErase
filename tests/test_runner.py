@@ -171,10 +171,12 @@ class TestAssembleReport:
                               s_full={"a": -1.0}, layers=[0], tau=DEFAULT_TAU)
         assert rep.uds is None and rep.n_examples_undefined == 1
 
-    def test_report_still_flags_unvalidated(self):
-        rep = assemble_report(delta_s1={"a": {0: 1.0}}, delta_s2={"a": {0: 1.0}},
-                              s_full={"a": -1.0}, layers=[0])
-        assert rep.is_validated_against_reference is False
+    def test_validation_flag_is_the_callers_statement(self):
+        # assemble_report sees no model, so it is unvalidated unless told
+        kw = dict(delta_s1={"a": {0: 1.0}}, delta_s2={"a": {0: 1.0}},
+                  s_full={"a": -1.0}, layers=[0])
+        assert assemble_report(**kw).is_validated_against_reference is False
+        assert assemble_report(**kw, validated=True).is_validated_against_reference is True
 
 
 class TestRunDirResumability:

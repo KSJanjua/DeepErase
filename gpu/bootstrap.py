@@ -66,6 +66,12 @@ def check_repo_root() -> Path:
                        "Clone it here:\n"
                        "         git clone --depth 1 "
                        "https://github.com/gnueaj/unlearning-depth-score.git reference_uds")
+        if (here / "data" / "breadth_items_v2.json").exists():
+            line(OK, "data/breadth_items_v2.json present (protocol v2 item set)")
+        else:
+            line(WARN, "data/breadth_items_v2.json NOT found -- protocol v2 runs will "
+                       "fail. git pull, or rebuild it: python -m "
+                       "deeperase.scripts.build_breadth_items")
         return here
     line(BAD, f"cwd is {here}, which is not the repository root. "
               "cd into the directory containing deeperase/ and tests/ first.")
@@ -134,7 +140,7 @@ def check_gpu_memory(torch, want_gb: float | None) -> float:
     return free_gb
 
 
-def check_plan(torch, size: str) -> None:
+def check_plan(torch, size: str, protocol: str = "v2") -> None:
     """Ask the package's own memory planner, so this agrees with what the
     runners will enforce rather than guessing separately.
 
@@ -151,15 +157,29 @@ def check_plan(torch, size: str) -> None:
         sys.exit(1)
 
     free_b, total_b = torch.cuda.mem_get_info(0)
-    plan = plan_memory(size, total_b / GB, gpu_free_gb=free_b / GB, training=True)
-    line(OK if plan.fits else BAD, f"memory plan for {size} (training, vs free):")
-    for chunk in plan.summary().splitlines():
-        print("           " + chunk)
-    if not plan.fits:
-        line(BAD, "this run would not fit right now. The card is shared -- wait "
-                  "for the co-tenant, drop to a smaller --size, or set "
-                  "CUDA_VISIBLE_DEVICES to an idle device.")
-        sys.exit(1)
+    # Decimal GB, matching run_study. Protocol v2 trains in float32 (4 bytes per
+    # parameter); NPO also holds a frozen reference model, so it is planned
+    # separately -- it is the tightest method on a shared card.
+    dtype_size = 4 if protocol == "v2" else 2
+    worst_fits = True
+    for label, npo in (("GA/GradDiff", False), ("NPO", True)):
+        plan = plan_memory(size, total_b / 1e9, dtype_size=dtype_size,
+                           gpu_free_gb=free_b / 1e9, training=True, reference_model=npo)
+        line(OK if plan.fits else (WARN if not npo else BAD),
+             f"memory plan for {size} {label} (protocol {protocol}, training, vs free):")
+        for chunk in plan.summary().splitlines():
+            print("           " + chunk)
+        worst_fits = worst_fits and (plan.fits or not npo)
+        if not plan.fits and not npo:
+            line(BAD, "this run would not fit right now. The card is shared -- wait "
+                      "for the co-tenant, drop to a smaller --size, or set "
+                      "CUDA_VISIBLE_DEVICES to an idle device.")
+            sys.exit(1)
+    if not worst_fits:
+        line(WARN, "GA and GradDiff fit but NPO does not -- run NPO when more is free.")
+    if protocol == "v2" and os.environ.get("TORCH_ALLOW_TF32_CUBLAS_OVERRIDE") == "1":
+        line(OK, "TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=1 is set (NGC default); run_study "
+                 "overrides it to 0 for float32 runs, so this is informational.")
 
 
 def check_disk(min_gb: float = 60.0) -> None:
@@ -182,6 +202,8 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--size", default="1B",
                     help="model scale to plan memory for (default 1B)")
+    ap.add_argument("--protocol", default="v2", choices=["v1", "v2"],
+                    help="study protocol to plan memory for (v2 trains in float32)")
     ap.add_argument("--run-tests", action="store_true",
                     help="also run the CPU test suite (~35 s). Do this once per "
                          "environment -- it is the cheapest way to catch a broken "
@@ -197,7 +219,7 @@ def main() -> int:
     torch = check_torch()
     check_deps()
     check_gpu_memory(torch, None)
-    check_plan(torch, args.size)
+    check_plan(torch, args.size, args.protocol)
     check_disk()
     check_hf_cache()
 

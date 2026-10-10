@@ -41,4 +41,9 @@ huggingface-hub==0.26.5
 accelerate==1.1.1
 peft==0.13.2
 datasets==3.1.0
+# pyarrow is datasets' dependency but must be pinned here: by Oct 2026 an
+# unpinned install resolves a pyarrow that requires NumPy 2, and
+# `import datasets` then fails against numpy==1.26.4. 25.0.0 is the version in
+# requirements-lock.txt and was verified to import on 9 Oct 2026.
+pyarrow==25.0.0
 pytest==8.3.4

@@ -4,11 +4,17 @@ All commands below were run from the repository root in the documented
 environment (conda env `deeperase`, Python 3.11.15) and their output
 pasted verbatim. Captured: 2026-08-09 21:29
 
-> ## Current run captured 29 August 2026 — see section 0
+> ## Latest captured run: 29 August 2026 — see section 0
 >
 > Sections 1 onward are the **August 2 and 9** transcripts, at 118 and then 180
 > tests. They are kept for the environment and defect history. **Section 0 below
-> is the current suite**, captured on the university A100.
+> is the latest captured suite run**, on the university A100.
+>
+> **Section 0 is out of date for the GPU box.** The suite has grown to 679
+> collected tests. Section 0.2 is the current run, on macOS CPU (10 Oct 2026):
+> 677 passed, 2 GPU-only skips. Re-run
+> `python gpu/bootstrap.py --size 1B --protocol v2 --run-tests` on the A100 and
+> add the transcript.
 
 ---
 
@@ -74,6 +80,79 @@ Two caveats this run does **not** settle:
   time. Data loading is still unverified on this environment.
 * Python is **3.10.12**, not the 3.11 the suite was originally verified on.
   *(The first caveat is closed by section 0.1 below.)*
+
+---
+
+## 0.2 Local run on macOS, CPU (9 October 2026)
+
+The GPU box was unavailable, so a CPU environment was built on the
+development Mac (Apple M5, 16 GB). It uses the documented pins: Python 3.11.15
+and `requirements.txt`, plus `pyarrow==25.0.0` (see the note in
+`requirements.txt`).
+
+```
+torch 2.6.0 · transformers 4.46.3 · tokenizers 0.20.3 · datasets 3.1.0
+numpy 1.26.4 · scipy 1.13.1 · matplotlib 3.9.2 · pytest 8.3.4 · pyarrow 25.0.0
+macOS-27.0.1-arm64 · MPS available, CUDA not
+```
+
+**Before any change of 9 Oct** (code at `7feb192`):
+
+```
+$ python -m pytest tests/ -o addopts="" -rs
+SKIPPED [1] tests/test_models.py:61: needs a GPU
+SKIPPED [1] tests/test_models.py:137: needs a GPU
+509 passed, 2 skipped in 7.03s
+
+$ python -m deeperase.scripts.smoke_e2e
+PLUMBING TEST: 31/31 checks passed in 2.4s
+```
+
+This was the first run of the 18 tests added after §0 as a suite. They pass.
+
+**After the 9–10 Oct changes** (protocol v2, scorer fix, derived tiers,
+provenance, matrix aggregator; see `docs/PROTOCOL_V2.md`), final run on 10 Oct:
+
+```
+$ python -m pytest tests/ -o addopts="" -rs
+SKIPPED [1] tests/test_models.py:61: needs a GPU
+SKIPPED [1] tests/test_models.py:137: needs a GPU
+677 passed, 2 skipped in 18.70s        (679 collected from 654 test functions)
+
+$ python -m deeperase.scripts.smoke_e2e
+PLUMBING TEST: 31/31 checks passed in 2.9s
+```
+
+(The same suite before the fact-level analysis was added, earlier on 10 Oct:
+645 passed, 2 skipped, 647 collected from 622 functions.)
+
+New in this count:
+
+* an end-to-end test of `run_study` under both protocols, on CPU, with tiny
+  Llamas on real TOFU text and the authors' real annotations
+  (`tests/test_study_e2e.py`);
+* the breadth-scorer boundary regression test, mutation-checked: on the
+  pre-fix code it reports identical scores for answers that differ only in
+  their first token;
+* answer-only loss masks; the per-author split; the derived B2/B4 items;
+  TOFU truth ratio and Forget Quality; provenance and the run registry;
+  resume integrity; the T0 harness;
+* patching on GPT-2, OPT and GPT-NeoX (`tests/test_architectures.py`);
+* the fact-level analysis (`tests/test_fact_level.py`): Spearman against
+  SciPy with ties, author-level bootstrap, the four fact classes, the
+  suppression rate, the indirect leak, crossing order, registry filtering and
+  the refusal of v1 runs. Also an end-to-end check that a real (tiny) v2 run
+  directory feeds it;
+* per-fact depth resolution against the nested retain checkpoints
+  (`tests/test_depth_fact_resolution.py`);
+* the cross-validation flag by architecture, ablation run ids
+  (`replicate.py --tag`), α-aware resume detection, and the retrain-drift
+  record on resume.
+
+**What this run does not establish:** anything about the GPU box's
+environment (NGC torch 2.4, CUDA, TF32 overrides). Re-run
+`python gpu/bootstrap.py --size 1B --protocol v2 --run-tests` there before the
+first v2 run.
 
 ---
 

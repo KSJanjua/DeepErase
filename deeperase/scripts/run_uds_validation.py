@@ -68,6 +68,7 @@ from deeperase.eval.uds import (
     UDSExample,
     assemble_report,
     capture_source_hidden,
+    is_cross_validated,
     score_from_captured,
 )
 from deeperase.models import ModelManager, load_tokenizer
@@ -396,6 +397,7 @@ def main() -> int:
             )
             layers = ([int(x) for x in args.layers.split(",")]
                       if args.layers else list(range(n_layers(m_full))))
+            validated = is_cross_validated(m_full)
         log.info("  evaluating %d layers", len(layers))
 
         examples = build_examples(
@@ -443,7 +445,7 @@ def main() -> int:
                 d2, _ = run_stage(mgr, split, examples, layers, s_full_cache=s_full)
 
             rep = assemble_report(delta_s1=d1, delta_s2=d2, s_full=s_full,
-                                  layers=layers, tau=cfg.tau)
+                                  layers=layers, tau=cfg.tau, validated=validated)
             if cached is None:
                 rd.save_stage2(split, d2, rep.uds, rep.summary())
             log.info("    %s", rep.summary())
@@ -491,13 +493,13 @@ def main() -> int:
         "expected": expected,
         "comparison": comparison,
         "per_split_reports": reports,
-        "is_validated_against_reference": False,
+        "is_validated_against_reference": validated,
     })
 
     print(f"\nSaved to {rd.root}")
-    print("\nNOTE: reproducing Table 2 is strong evidence the implementation is")
-    print("correct, but it is not the same as running the authors' own code on")
-    print("shared inputs. is_validated_against_reference remains False.")
+    print("\nNOTE: this run reproduces Table 2. The separate check against the")
+    print("authors' own code on shared inputs is scripts/cross_validate_uds.py")
+    print(f"(RESULTS.md §10); is_validated_against_reference = {validated}.")
     print("=" * 74)
 
     return 0 if (comparison and comparison["monotonic"]) else 1

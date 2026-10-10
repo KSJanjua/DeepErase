@@ -17,15 +17,21 @@
 > | This letter says | Current position (29 August 2026) |
 > |---|---|
 > | "no research results" | Depth axis validated against the published table across **7 runs at two scales** (mean abs. deviation 0.010); breadth axis calibrated; **one full depth-breadth trajectory** measured. See [`RESULTS.md`](RESULTS.md). |
-> | "180 tests pass" (§1) / "Now 118" (§7) — these two figures contradict each other and neither was re-verified | **489 tests**, all passing. See [`VERIFICATION.md`](VERIFICATION.md). |
+> | "180 tests pass" (§1) / "Now 118" (§7) — these two figures contradict each other and neither was re-verified | **509 tests** as of 9 Oct 2026; the last full run (493, 29 Aug) passed. See [`VERIFICATION.md`](VERIFICATION.md). |
 > | "UDS has never run on a model with real knowledge" (§9, blocker 2) | **Closed.** Run on the Llama-3.2 1B and 3B TOFU checkpoints. |
 > | "Entity-span extraction not implemented" (§9, blocker 3) | **Closed.** The authors' own annotations are used directly via `--reference-spans`; `results/span_comparison.json` quantifies how poor our heuristic substitute was (12% exact agreement). |
 > | "Batch is treated as one example" (§9, blocker 4) | **Closed.** `UDSExample` now rejects batches. |
-> | "GPU access, now the critical path" (§10) | **Granted and used** — 42.3 GB card. |
+> | "GPU access, now the critical path" (§10) | **Granted and used** — a 42.3 GB card (Aug), now a shared A100 80 GB. |
 >
-> **Still open from this letter:** blocker 1, the numerical cross-check against
-> the authors' released implementation. `is_validated_against_reference`
-> remains `False`. This is task T0 of the mid-semester report.
+> **Blocker 1** (the numerical cross-check against the authors' released
+> implementation, task T0) **closed on 10 Oct 2026**: per-layer ΔS matches to
+> 5e-7 on identical inputs, with one deviation in the reference's last-layer
+> patch (`RESULTS.md` §10). `is_validated_against_reference` is now `True` for
+> Llama-family models.
+>
+> Status after this banner was written (29 Aug): the study has been replicated
+> for two methods and three seeds, and an audit on 9 Oct found issues that
+> require re-runs — see [`RESULTS.md`](RESULTS.md) §6–§8.
 >
 > For current status read [`RESULTS.md`](RESULTS.md), [`README.md`](README.md)
 > and [`docs/UDS_CONFORMANCE.md`](docs/UDS_CONFORMANCE.md).

@@ -290,3 +290,31 @@ class TestRunConfig:
         d = RunConfig(strategy=ExecutionStrategy.SEQUENTIAL).to_dict()
         assert d["strategy"] == "sequential"
         assert d["size_label"] == "1B"
+
+
+class TestReferenceModelBudget:
+    """NPO holds a frozen copy of the starting model during training. The plan
+    must count it, or a shared card that fits GA can OOM under NPO."""
+
+    def test_reference_model_adds_one_model_to_the_training_peak(self):
+        from deeperase.config import TOFU_MODELS
+        one = TOFU_MODELS["1B"]["full"].gb_at(2)
+        a = plan_memory("1B", 80.0, training=True)
+        b = plan_memory("1B", 80.0, training=True, reference_model=True)
+        assert b.peak_weight_gb == pytest.approx(a.peak_weight_gb + one)
+        assert "frozen reference model" in b.reason
+
+    def test_reference_model_can_tip_a_plan_over(self):
+        from deeperase.config import TOFU_MODELS
+        one = TOFU_MODELS["1B"]["full"].gb_at(4)
+        # Enough usable memory for fp32 training, but not training + reference.
+        need = 4 * one + 1.0
+        free = (need + 0.5 * one) / 0.7
+        assert plan_memory("1B", 80.0, dtype_size=4, gpu_free_gb=free, training=True).fits
+        assert not plan_memory("1B", 80.0, dtype_size=4, gpu_free_gb=free, training=True,
+                               reference_model=True).fits
+
+    def test_ignored_when_not_training(self):
+        a = plan_memory("1B", 80.0)
+        b = plan_memory("1B", 80.0, reference_model=True)
+        assert a.peak_weight_gb == b.peak_weight_gb

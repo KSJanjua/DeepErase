@@ -138,7 +138,8 @@ class UnlearnConfig:
 
 def sequence_nll(model, input_ids: torch.Tensor,
                  attention_mask: Optional[torch.Tensor] = None,
-                 *, reduction: str = "mean") -> torch.Tensor:
+                 *, reduction: str = "mean",
+                 loss_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
     """Negative log-likelihood per sequence. Shape ``(batch,)``.
 
     Per-sequence rather than a single scalar, because NPO needs to compare each
@@ -151,6 +152,14 @@ def sequence_nll(model, input_ids: torch.Tensor,
             of different length. ``"sum"`` returns the sequence log-likelihood
             itself, which is what a likelihood *ratio* between two models
             requires. See :func:`npo_loss`.
+        loss_mask: ``(batch, seq)``, 1 where a token is a training target.
+            Token ``t`` is predicted from position ``t-1``, so ``loss_mask[:, t]``
+            selects the prediction *of* token ``t``. Pass an answer-only mask
+            to score the answer and not the question, which is how
+            OpenUnlearning trains (prompt labels are -100). ``None`` scores every
+            non-padding token after the first -- the v1 behaviour, which also
+            unlearned the question templates that retain-set questions share
+            (RESULTS.md §8.4).
     """
     if reduction not in ("mean", "sum"):
         raise ValueError(f"reduction must be 'mean' or 'sum', got {reduction!r}")
@@ -162,8 +171,14 @@ def sequence_nll(model, input_ids: torch.Tensor,
     logprobs = F.log_softmax(logits.float(), dim=-1)
     token_lp = logprobs.gather(-1, targets.unsqueeze(-1)).squeeze(-1)
 
+    mask = None
     if attention_mask is not None:
         mask = attention_mask[:, 1:].to(token_lp.dtype)
+    if loss_mask is not None:
+        lm = loss_mask[:, 1:].to(token_lp.dtype)
+        mask = lm if mask is None else mask * lm
+
+    if mask is not None:
         total = -(token_lp * mask).sum(-1)
         if reduction == "sum":
             return total
@@ -174,17 +189,20 @@ def sequence_nll(model, input_ids: torch.Tensor,
     return -token_lp.mean(-1)
 
 
+def _nll(model, batch, **kw) -> torch.Tensor:
+    return sequence_nll(model, batch["input_ids"], batch.get("attention_mask"),
+                        loss_mask=batch.get("loss_mask"), **kw)
+
+
 def ga_loss(model, batch) -> torch.Tensor:
     """Gradient ascent: minimising this maximises loss on the forget set."""
-    return -sequence_nll(model, batch["input_ids"], batch.get("attention_mask")).mean()
+    return -_nll(model, batch).mean()
 
 
 def grad_diff_loss(model, forget_batch, retain_batch, retain_weight: float) -> torch.Tensor:
     """GA plus a retain term holding general ability steady."""
-    forget = -sequence_nll(model, forget_batch["input_ids"],
-                           forget_batch.get("attention_mask")).mean()
-    retain = sequence_nll(model, retain_batch["input_ids"],
-                          retain_batch.get("attention_mask")).mean()
+    forget = -_nll(model, forget_batch).mean()
+    retain = _nll(model, retain_batch).mean()
     return forget + retain_weight * retain
 
 
@@ -209,11 +227,9 @@ def npo_loss(model, reference_model, batch, beta: float) -> torch.Tensor:
     ``compute_batch_nll``, "get the sum loss for each sequence") and reserves
     the length-normalised form for SimNPO, which is a different method.
     """
-    logp = -sequence_nll(model, batch["input_ids"], batch.get("attention_mask"),
-                         reduction="sum")
+    logp = -_nll(model, batch, reduction="sum")
     with torch.no_grad():
-        logp_ref = -sequence_nll(reference_model, batch["input_ids"],
-                                 batch.get("attention_mask"), reduction="sum")
+        logp_ref = -_nll(reference_model, batch, reduction="sum")
     return (2.0 / beta) * -F.logsigmoid(-beta * (logp - logp_ref)).mean()
 
 
@@ -313,29 +329,43 @@ def _batches(
     the first real batch.
 
     The attention mask is always returned, even when no padding was needed, so
-    downstream code never has to handle a ``None``.
+    downstream code never has to handle a ``None``. A ``loss_mask`` is carried
+    through (padded with 0) when the examples have one; mixing examples with and
+    without one is an error, because the batch would then score two different
+    things.
     """
     for i in range(0, len(data), batch_size):
         chunk = data[i: i + batch_size]
         max_len = max(c["input_ids"].shape[1] for c in chunk)
+        with_lm = [c.get("loss_mask") is not None for c in chunk]
+        if any(with_lm) and not all(with_lm):
+            raise ValueError("Some examples carry a loss_mask and some do not")
 
-        ids, masks = [], []
+        ids, masks, lmasks = [], [], []
         for c in chunk:
             seq = c["input_ids"]
             mask = c.get("attention_mask")
             if mask is None:
                 mask = torch.ones_like(seq)
+            lm = c.get("loss_mask")
             pad = max_len - seq.shape[1]
             if pad:
                 seq = F.pad(seq, (0, pad), value=pad_token_id)
                 mask = F.pad(mask, (0, pad), value=0)
+                if lm is not None:
+                    lm = F.pad(lm, (0, pad), value=0)
             ids.append(seq)
             masks.append(mask)
+            if lm is not None:
+                lmasks.append(lm)
 
-        yield {
+        batch = {
             "input_ids": torch.cat(ids).to(device),
             "attention_mask": torch.cat(masks).to(device),
         }
+        if lmasks:
+            batch["loss_mask"] = torch.cat(lmasks).to(device)
+        yield batch
 
 
 def unlearn(
@@ -415,7 +445,7 @@ def unlearn(
         total, n = 0.0, 0
         with torch.no_grad():
             for b in _batches(forget_data, config.batch_size, device):
-                per_seq = sequence_nll(model, b["input_ids"], b.get("attention_mask"))
+                per_seq = _nll(model, b)
                 total += float(per_seq.sum())
                 n += int(per_seq.numel())
         if was_training:
@@ -473,8 +503,7 @@ def unlearn(
             optimiser.step()
 
             with torch.no_grad():
-                nll = float(sequence_nll(model, batch["input_ids"],
-                                         batch.get("attention_mask")).mean())
+                nll = float(_nll(model, batch).mean())
             history.steps.append(step)
             history.losses.append(float(loss))
             history.forget_nll.append(nll)

@@ -25,8 +25,9 @@ into ``M_full`` layer by layer and the target model's own forward pass produces
 every score. The values are still meaningless as measurements, because the
 models are random, but the mechanism being exercised is the real one.
 
-The metric has not been numerically cross-validated against the reference
-implementation; see ``docs/UDS_CONFORMANCE.md``.
+The metric was cross-validated against the reference implementation on
+Llama-3.2-1B (``scripts/cross_validate_uds.py``, RESULTS.md §10); the toy is a
+Llama, so its reports carry that flag, but the toy's numbers mean nothing.
 
 The plane figure written by this script contains **real values computed by
 this pipeline** and is labelled as plumbing output. It exists to prove the
@@ -232,8 +233,8 @@ def main() -> int:
     check("per-example dS1/dS2 recorded for every layer",
           all(set(e.delta_s1) == set(layers) for e in uds_report.per_example),
           f"{len(uds_report.per_example)} examples x {len(layers)} layers")
-    check("report flags missing reference cross-validation",
-          uds_report.is_validated_against_reference is False)
+    check("report carries the architecture's cross-validation status (llama)",
+          uds_report.is_validated_against_reference is True)
 
     # Sanity: patching M_full into itself must be a no-op, so dS ~ 0.
     self_report = compute_uds(
@@ -320,7 +321,7 @@ def main() -> int:
             depth_overshoot=False, n_targets=1, seed=SEED,
             notes="PLUMBING OUTPUT from a randomly-initialised toy model. "
                   f"Depth = real two-stage UDS ({n_undef_a} undefined examples), "
-                  "not cross-validated vs reference. Not a measurement.",
+                  "random weights. Not a measurement.",
         ))
 
     real_breadths = [p.breadth for p in ds.points]
@@ -390,8 +391,8 @@ def main() -> int:
     print("  * Depth = REAL two-stage activation patching (deeperase.eval.uds).")
     print("    The mechanism is genuine; the numbers are not measurements,")
     print("    because the models are random and have no knowledge to erase.")
-    print("  * UDS is NOT yet cross-validated against the reference")
-    print("    implementation -- see docs/UDS_CONFORMANCE.md.")
+    print("  * UDS itself was cross-validated against the reference on")
+    print("    Llama-3.2-1B -- see RESULTS.md section 10.")
     print("  * Axes saturate on this toy, so no trajectory structure exists.")
     print("  * No scientific claim of any kind attaches to these numbers.")
     print("=" * 72)

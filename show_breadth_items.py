@@ -37,6 +37,12 @@ def wrap(text, indent="      "):
                          initial_indent=indent, subsequent_indent=indent)
 
 
+#: The tiers of the frozen v1 item set (data/breadth_items.json). TIER_SOURCES
+#: also has RA and WF now; the full v2 set (with derived B2/B4) is built by
+#: deeperase.scripts.build_breadth_items, never by this viewer.
+V1_TIERS = ("B0", "B1", "R")
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tier", choices=sorted(TIER_SOURCES),
@@ -44,11 +50,13 @@ def main():
     ap.add_argument("--n", type=int, default=2,
                     help="examples to print per tier (default 2)")
     ap.add_argument("--export", action="store_true",
-                    help=f"write every item to {EXPORT.relative_to(ROOT)}")
+                    help=f"rewrite the frozen v1 set ({', '.join(V1_TIERS)}) at "
+                         f"{EXPORT.relative_to(ROOT)}. The v2 set is built by "
+                         "python -m deeperase.scripts.build_breadth_items")
     ap.add_argument("--cache-dir", default="./hf_cache")
     args = ap.parse_args()
 
-    tiers = (args.tier,) if args.tier else tuple(sorted(TIER_SOURCES))
+    tiers = (args.tier,) if args.tier else V1_TIERS
     items = load_breadth_items(tiers=tiers, cache_dir=args.cache_dir)
 
     print(BAR)
@@ -116,13 +124,17 @@ sentence the wrong options were edited from. Comparing against the original
 """.rstrip())
 
     if args.export:
+        # Always exactly the v1 tiers, whatever was displayed: protocol v1 runs
+        # name this file, so it must not silently gain RA/WF.
+        items = load_breadth_items(tiers=V1_TIERS, cache_dir=args.cache_dir)
         EXPORT.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "source": "locuslab/TOFU",
             "note": "Built by deeperase.eval.breadth.load_breadth_items. "
                     "Not authored by this project.",
-            "tier_sources": {t: {"config": c, "question_column": q}
-                             for t, (c, q) in TIER_SOURCES.items()},
+            "tier_sources": {t: {"config": TIER_SOURCES[t][0],
+                                 "question_column": TIER_SOURCES[t][1]}
+                             for t in V1_TIERS},
             "n_items": len(items),
             "items": [
                 {"item_id": it.item_id, "tier": it.tier,

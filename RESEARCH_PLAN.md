@@ -1,6 +1,14 @@
 # DeepErase → Publishable Research: Strategy, Direction and Roadmap
 
 **Prepared:** 2 August 2026
+
+> **Historical document (2 August 2026).** It records the reasoning that led
+> to the depth-breadth (D1) direction, written before any implementation
+> existed. Scope has since narrowed (TOFU only, Llama-3.2 1B/3B, GA/GradDiff/NPO;
+> SAGE deferred), and `literature/` now holds the 10 Appendix A papers rather
+> than the 54 PDFs mentioned here. For current status see
+> [`README.md`](README.md) and [`RESULTS.md`](RESULTS.md).
+
 **Companion documents:** [`DeepErase_Domain_and_Literature_Report.md`](DeepErase_Domain_and_Literature_Report.md) (domain expertise, 38-paper comparison, 14 documentation issues) · [`literature/`](literature/) (54 downloaded PDFs, `references.bib`, categorised reading list)
 
 ---

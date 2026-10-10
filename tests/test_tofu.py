@@ -470,3 +470,125 @@ class TestSelectExamples:
         default = select_examples(self._pool(400), 50)
         even = select_examples(self._pool(400), 50, strategy=SamplingStrategy.EVEN)
         assert [e.index for e in default] == [e.index for e in even]
+
+
+# ---------------------------------------------------------------------------
+# Protocol v2 data helpers: local loading, the per-author split, and the
+# answer-only training mask.
+# ---------------------------------------------------------------------------
+
+import json as _json
+from pathlib import Path as _Path
+
+from deeperase.data.tofu import (
+    QAS_PER_AUTHOR,
+    LossScope,
+    author_of,
+    load_tofu,
+    read_tofu_rows,
+    split_by_author,
+    tokenise_for_training,
+)
+
+_LOCAL_TOFU = _Path(__file__).resolve().parents[1] / "data" / "tofu"
+
+
+class TestLocalLoading:
+    def test_reads_json_lines(self, tmp_path):
+        rows = [{"question": "q1?", "answer": "a1."}, {"question": "q2?", "answer": "a2."}]
+        (tmp_path / "forget10.json").write_text(
+            "\n".join(_json.dumps(r) for r in rows), encoding="utf-8")
+        assert read_tofu_rows("forget10", str(tmp_path)) == rows
+
+    def test_reads_a_json_array(self, tmp_path):
+        rows = [{"question": "q?", "answer": "a."}]
+        (tmp_path / "forget10.json").write_text(_json.dumps(rows), encoding="utf-8")
+        assert read_tofu_rows("forget10", str(tmp_path)) == rows
+
+    def test_missing_file_points_at_the_download_instructions(self, tmp_path):
+        with pytest.raises(FileNotFoundError, match="data/README.md"):
+            read_tofu_rows("forget10", str(tmp_path))
+
+    def test_load_tofu_from_a_local_dir_attaches_spans(self, tmp_path):
+        rows = [{"question": "What is the profession of Hsiao Yun-Hwa's father?",
+                 "answer": "The father of Hsiao Yun-Hwa is a civil engineer."}]
+        (tmp_path / "forget10.json").write_text(_json.dumps(rows[0]), encoding="utf-8")
+        ex = load_tofu("forget10", data_dir=str(tmp_path))
+        assert len(ex) == 1 and ex[0].entity_text == "civil engineer"
+
+    @pytest.mark.skipif(not (_LOCAL_TOFU / "forget10.json").exists(),
+                        reason="TOFU not downloaded (see data/README.md)")
+    def test_real_forget10_has_twenty_rows_per_author(self):
+        rows = read_tofu_rows("forget10", str(_LOCAL_TOFU))
+        assert len(rows) == 400 and len(rows) % QAS_PER_AUTHOR == 0
+        # The first author's name recurs through its own block and not the next.
+        block0 = " ".join(r["question"] for r in rows[:20])
+        block1 = " ".join(r["question"] for r in rows[20:40])
+        assert block0.count("Hsiao Yun-Hwa") >= 15
+        assert "Hsiao Yun-Hwa" not in block1
+
+
+class TestAuthorSplit:
+    def test_author_blocks(self):
+        assert [author_of(i) for i in (0, 19, 20, 399)] == [0, 0, 1, 19]
+
+    def test_half_split_is_balanced_per_author_and_disjoint(self):
+        tr, ho = split_by_author(400, train_fraction=0.5, seed=0)
+        assert len(tr) == len(ho) == 200
+        assert not set(tr) & set(ho) and set(tr) | set(ho) == set(range(400))
+        for a in range(20):
+            assert sum(author_of(i) == a for i in tr) == 10
+
+    def test_deterministic_for_a_seed_and_varies_across_seeds(self):
+        assert split_by_author(400, train_fraction=0.5, seed=3) == \
+            split_by_author(400, train_fraction=0.5, seed=3)
+        assert split_by_author(400, train_fraction=0.5, seed=3) != \
+            split_by_author(400, train_fraction=0.5, seed=4)
+
+    def test_full_fraction_trains_everything(self):
+        tr, ho = split_by_author(400, train_fraction=1.0, seed=0)
+        assert tr == list(range(400)) and ho == []
+
+    @pytest.mark.parametrize("bad", [0.0, -0.1, 1.5])
+    def test_rejects_bad_fractions(self, bad):
+        with pytest.raises(ValueError):
+            split_by_author(400, train_fraction=bad, seed=0)
+
+    def test_rejects_partial_author_blocks(self):
+        with pytest.raises(ValueError, match="author blocks"):
+            split_by_author(390, train_fraction=0.5, seed=0)
+
+
+class TestTrainingTokenisation:
+    Q = "What is the full name of the author?"
+    A = "Hsiao Yun-Hwa is the name."
+
+    def _tok(self):
+        from toy_tokenizer import byte_level_tokenizer
+        return byte_level_tokenizer()
+
+    def test_answer_scope_masks_exactly_the_answer(self):
+        tok = self._tok()
+        ex = tokenise_for_training(self.Q, self.A, tok, fmt=PromptFormat.PLAIN_QA)
+        ids, lm = ex["input_ids"][0], ex["loss_mask"][0]
+        first = int(lm.nonzero()[0])
+        assert tok.decode(ids[first:].tolist()).strip() == self.A
+        assert lm[first:].all() and not lm[:first].any()
+        assert ex["attention_mask"].all()
+
+    def test_first_answer_token_is_included_despite_the_merged_space(self):
+        """The boundary rule must not repeat the breadth scorer's defect."""
+        tok = self._tok()
+        ex = tokenise_for_training(self.Q, self.A, tok, fmt=PromptFormat.PLAIN_QA)
+        prompt_alone = len(tok(f"Question: {self.Q}\nAnswer: ")["input_ids"])
+        first = int(ex["loss_mask"][0].nonzero()[0])
+        assert first == prompt_alone - 1
+
+    def test_full_scope_has_no_loss_mask(self):
+        ex = tokenise_for_training(self.Q, self.A, self._tok(), loss_scope=LossScope.FULL)
+        assert "loss_mask" not in ex
+
+    def test_truncation_before_the_answer_gives_none(self):
+        tok = self._tok()
+        n = len(tok(f"Question: {self.Q}\nAnswer:")["input_ids"])
+        assert tokenise_for_training(self.Q, self.A, tok, max_length=n) is None

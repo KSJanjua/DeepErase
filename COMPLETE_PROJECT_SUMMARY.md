@@ -2,7 +2,7 @@
 
 **For:** Dr. Suresh Kumar Chaudhary
 **Project:** DeepErase — Capstone Project, CPG 221
-**Last updated:** 16 August 2026
+**Last updated:** 9 October 2026 (written 16 August; status sections reconciled with the saved results on 9 October)
 
 ---
 
@@ -12,10 +12,13 @@
 
 > We have **built the measuring equipment and checked it works** on real AI
 > models. It reproduces the numbers published by the researchers who invented
-> the measurement, at two model sizes and across six different settings.
+> the measurement, at two model sizes and across seven different settings.
 >
-> We have **not yet answered the actual research question.** That work starts
-> next. What we have is a trustworthy instrument, not a finding.
+> We have **run the main experiment for two unlearning methods, three times
+> each**, but we have **not yet answered the research question.** A check on
+> 9 October found one fault in the breadth measurement and two problems in how
+> the experiment was set up. They must be fixed and the experiment re-run
+> before the results can be read as an answer (Section 12).
 
 ---
 
@@ -54,18 +57,18 @@ Modern AI language systems learn from enormous amounts of text, and some of that
 
 | Question | Answer |
 |---|---|
-| Is the software written? | Yes — about 4,700 lines |
-| Is it tested? | Yes — 491 automated tests, all passing |
+| Is the software written? | Yes — about 8,000 lines of program code plus 4,500 lines of tests |
+| Is it tested? | Yes — 509 automated tests. The last full run (29 Aug, 493 tests at that time) passed. The 18 added since have not yet been run together |
 | Does the whole system run end to end? | Yes — 31 out of 31 checks pass |
 | Has it run on a real AI model? | **Yes** — Llama 1B and 3B |
 | Does it reproduce the published reference numbers? | **Yes** — 7 runs, all passing, best off by 0.010 |
-| Do we have any research results? | **One trajectory** — run once, with gradient ascent, at 1B, on one seed. Not yet an answer |
+| Do we have any research results? | **Yes, but not yet an answer** — two methods (gradient ascent, gradient difference), three seeds each, plus a first control experiment. A third method (NPO) must be re-run after a bug fix |
 | Is it compared against the original authors' own code? | **No** — the one remaining validation gap |
-| Do we have the powerful computer we need? | **Yes** — 42 GB GPU, working |
+| Do we have the powerful computer we need? | **Yes** — a shared A100 80 GB GPU (earlier runs used a 42 GB card) |
 
 ### The one-line status
 
-**The instrument is built and proven to work on real AI models, and it has produced one complete depth-breadth trajectory. That single run is not yet an answer to the research question: it used one unlearning method, one model size and one random seed, and its "nothing else changed" control drifted during the run. Replicating it is the next phase.**
+**The instrument is built and proven to work on real AI models. The experiment has been repeated for two methods and three seeds, and the results are consistent between runs. They are still not an answer: in every run the "nothing else changed" control drifted, and the model forgot the authors it should keep as fast as the authors it should forget. A 9 October check also found a scoring fault in the breadth measurement. Fixing these and re-running is the next phase.**
 
 ### What the check showed
 
@@ -212,7 +215,7 @@ It can be **proved wrong**, which is what makes it a research question rather th
 | Breadth up, depth up | Contradicts it — the two agree after all |
 | No clear pattern | Also useful — the field currently assumes they agree |
 
-All three outcomes are worth reporting honestly. **We have tested none of them yet.**
+All three outcomes are worth reporting honestly. **No outcome is established yet.** The runs so far show both measurements rising together, but for the reasons in Section 12 that cannot yet be read as an answer.
 
 ### Why anyone should care about the answer
 
@@ -226,8 +229,8 @@ If breadth and depth really do trade off, then the tests the field currently tru
 
 1. Build reliable software to measure breadth and depth. **(Done)**
 2. Prove the software is correct. **(Done)**
-3. Check our depth measurement agrees with the original authors' version. **(Blocked — needs a powerful computer)**
-4. Run it on real models and answer the question. **(Started — one trajectory measured; needs replication across methods, seeds and scales before it is an answer)**
+3. Check our depth measurement agrees with the original authors' version. **(Not done yet — the computer is now available)**
+4. Run it on real models and answer the question. **(In progress — two methods × three seeds measured; fixes and re-runs needed, Section 12)**
 
 ### Deliberately excluded
 
@@ -238,7 +241,6 @@ If breadth and depth really do trade off, then the tests the field currently tru
 | Connecting to other researchers' code libraries | Waiting on the decision in Section 15. |
 | Anything involving a large model | We do not have the computer for it. |
 
-**All development work is currently paused**, as instructed.
 
 ---
 
@@ -353,11 +355,7 @@ So the expensive part has already been done and paid for by someone else. We onl
 
 ### One thing to verify
 
-I have read that TOFU publishes these "never learned it" models, and a key paper we rely on clearly used them. But I have **not personally opened the download page** to confirm which versions are available.
-
-That is a five-minute check, and it should be the very first thing done when work resumes. If those models turn out not to be available, our whole approach would need rethinking, because we could not create them ourselves.
-
-I have not done the check because it counts as starting the next piece of work, and everything is paused.
+**Checked and confirmed.** The models are published as `open-unlearning/tofu_Llama-3.2-{1B,3B}-Instruct_{full,retain90,retain95,retain99}` and every result in this project was measured on them.
 
 ---
 
@@ -372,7 +370,7 @@ Each part below is labelled with one of four honest categories:
 | ⚪ **Not started** | Planned only |
 | 🔵 **Set aside** | Deliberately excluded for now |
 
-Total size: about **3,100 lines** of program code, plus **1,450 lines** of test code.
+Total size (October 2026): about **8,000 lines** of program code, plus **4,500 lines** of test code.
 
 ---
 
@@ -425,6 +423,8 @@ That last item is subtle but valuable. If a model fails a two-step question, the
 **What exists today.** The machinery is finished and tested for all six rungs. Two sources feed it. A hand-checked seed set of **36 questions across 3 example subjects** validates the schema. Separately, the study runs use **1200 items built automatically from TOFU's own perturbed splits** (`data/breadth_items.json`) — 400 each on B0, B1 and R. That is what produced the calibration in `RESULTS.md` §2.
 
 **What does not exist.** Rungs **B2 (nicknames), B3 (one-step consequences) and B4 (two-step reasoning) have no questions at all** — they are declared in the code and empty. They cannot be generated from TOFU and must be written by hand. These are exactly the rungs where deep-but-narrow forgetting would show up, so this is a scientific gap, not a cosmetic one.
+
+**Known fault (found 9 October).** When the scoring code compares answer options, it skips each option's first word-piece. This is caused by how a trailing space is split into pieces. For TOFU questions that first piece is often the start of the author's name, which is the part that matters. The scores still carry information but are blurred. The fix is small, but every breadth number must then be re-measured (`RESULTS.md` §8.1).
 
 **Where the questions come from.** The three subjects are genuine TOFU authors. TOFU supplies the B0 questions for free (its own 20 questions per author are, by definition, the exact-wording rung) and supplies most of the R material. But B1 through B4 do not exist anywhere and must be written by hand.
 
@@ -508,13 +508,15 @@ Repeat exactly the same procedure, but using signals from the unlearned model.
 
 **A deliberate honesty feature.** If Stage 1 finds no layer that holds the knowledge, the result is recorded as **"undefined"** — not as zero. Zero would mean "we measured, and nothing was erased". Undefined means "we could not measure". Confusing those two would be misleading, so the code refuses to.
 
-**Status: reproduces the published numbers, but still NOT checked against the original authors' code.**
+**Status: reproduces the published numbers, and (since 10 October) checked against the original authors' code.** *(The three paragraphs below describe the position before that check; the update follows them.)*
 
 We implemented this from the equations in the published paper, and we wrote a detailed point-by-point comparison confirming every equation matches. We have since reproduced the paper's own published table across seven runs at two model sizes, with an average miss of 0.010 against an allowance of 0.08.
 
 That is necessary evidence, but not sufficient. Two teams can both follow the same equations correctly and still get different numbers, because of small choices about how text is split up or how averages are taken — and we have direct evidence that such choices matter here, because switching from our own word-picking heuristic to the authors' hand-marked spans moved the middle values by about 0.03 to 0.05.
 
 Until we compare directly against the authors' own code on the same inputs, the numbers cannot carry a research claim. **The software knows this about itself** — every result it produces is stamped *"NOT cross-validated vs reference"*. This is task T0, and it is now unblocked: the authors' code is vendored at `reference_uds/` and their annotations are byte-identical to the published dataset.
+
+**Update (10 October).** Task T0 is done. On identical inputs, our layer-by-layer numbers match the authors' code to 0.0000005 on 15 of 16 layers. The 16th differs because their code patches in a vector taken after the model's final normalisation step, where the raw one belongs; with that one line corrected, the two scores agree exactly. So the software now stamps results from Llama models (every model in this study) as cross-validated, and still refuses that stamp for any architecture nobody has checked.
 
 **One thing we got wrong and fixed.** Our first version of this score was much simpler — it just combined three numbers the user supplied. When we read the original paper properly, we found the real measurement is quite different: layer by layer, question by question, with a selection step and a weighting step. Ours had none of that structure. We rebuilt it properly, and marked the old version obsolete rather than quietly patching it, because it was not a rough version of the right thing — it was a different thing.
 
@@ -534,7 +536,7 @@ Quietly discarding awkward data points is one of the easiest ways to fool yourse
 
 Two safety nets.
 
-**180 automated tests.** Small checks that each piece behaves correctly. They run in about 16 seconds.
+**509 automated tests.** Small checks that each piece behaves correctly. They run in under a minute.
 
 **A 31-check plumbing test.** Runs the entire system from start to finish on the tiny artificial model, confirming all the pieces connect.
 
@@ -558,7 +560,7 @@ pip install -r requirements.txt
 ### Running it
 
 ```bash
-# Run all 491 tests            (~35 seconds)
+# Run all 509 tests (511 items)  (under a minute)
 python -m pytest tests/
 
 # Run the whole system end to end  (~24 seconds)
@@ -571,10 +573,12 @@ python -m deeperase.probes.seed_tofu
 ### What you should see
 
 ```
-180 passed
+511 passed
 
 PLUMBING TEST: 31/31 checks passed
 ```
+
+(511 collected items from 509 test functions. The last captured full run, on 29 August, had 493 items and all passed — see `VERIFICATION.md`.)
 
 ### Exact versions being used
 
@@ -588,14 +592,12 @@ Python 3.11.15 · torch 2.6.0 (processor-only) · numpy 1.26.4 · scipy 1.13.1 �
 
 ### The numbers
 
-Both commands were run immediately before writing this document.
-
 | Test | Result |
 |---|---|
-| Automated tests | **491 passed** |
+| Automated tests | **493 passed** on 29 August (the whole suite at that time). It has since grown to 509 and needs a fresh run. |
 | End-to-end plumbing test | **31 / 31 checks passed** |
 
-The 491 tests split as: 84 for signal swapping, 84 for the depth-score maths and the trajectory guards, 58 for the TOFU data handling, 53 for the unlearning methods and the stopping rule, 50 for run configuration and memory planning, 42 for the control dial, 39 for model loading, 37 for the breadth axis, 23 for the reference span annotations, and 21 for the experiment runner.
+The 509 tests split as: 84 for signal swapping, 84 for the depth-score maths and the trajectory guards, 58 for the TOFU data handling, 57 for the control dial and the random-direction control, 56 for the unlearning methods and the stopping rule, 50 for run configuration and memory planning, 39 for model loading, 37 for the breadth axis, 23 for the reference span annotations, and 21 for the experiment runner.
 
 ### What the tests DO prove
 
@@ -619,7 +621,7 @@ This is the important half.
 | Not proven | Why |
 |---|---|
 | **That our depth score matches the original authors'** | We followed their published equations, but have never compared actual numbers with their code |
-| **That anything works on a real model** | Every test uses a tiny artificial model with random settings and no knowledge |
+| **That anything works on a real model** | Every test uses a tiny artificial model. Real-model evidence comes from the GPU runs instead (`RESULTS.md`), not from the tests |
 | **Anything about the research question** | The tests check the instrument, not the world |
 | **That the numbers produced so far mean anything** | They do not — see below |
 
@@ -668,30 +670,53 @@ SAGE is now **set aside**, as you instructed. The code warns loudly if anyone ru
 - Surface measurements are complete
 - Internal diagnostics are complete
 - Signal swapping is complete, including tests designed to catch faking
-- 180 automated tests and 31 plumbing checks pass
+- 509 automated tests (493 passed in the last full run) and 31 plumbing checks
+- The depth score reproduces the published reference numbers on real models
+- The main experiment has run for two methods, three seeds each, and the runs agree with each other
 
-### Not ready for research
+### Not ready for research (status 9 October 2026)
 
-| Item | Why not |
-|---|---|
-| **The depth score** | Never compared against the original authors' code |
-| **Everything, on real models** | Only ever run on a tiny artificial model |
-| **The question set** | Only 3 subjects out of the 50–200 needed |
-| **Unusual model types** | Supported in principle, never tested |
+| Item | Why not | Where it stands (later on 9 October) |
+|---|---|---|
+| **The depth score** | ~~Matches the published numbers, but has never been run side by side with the original authors' code~~ **Done (10 October):** on identical inputs ours matches the authors' code to 0.0000005 on 15 of 16 layers. The 16th differs because of a quirk in their code; with it corrected, the two agree exactly (`RESULTS.md` §10) |
+| **The breadth score** | A scoring fault: the first word-piece of every answer option is skipped, often the start of the name being tested | **Fixed in the code**, with a test that fails on the old code. Measured on the real models: at most 2 in 100 TOFU questions change, so the old numbers stand |
+| **The experiment design** | The model is trained to forget 100 questions, and depth is measured on those same 100, but breadth is measured on 400 questions (300 never trained on) | **Redesigned ("protocol v2")**: each author's facts are split in half; both measurements are taken on both halves |
+| **Targeting** | The model loses knowledge of authors it should keep as fast as of authors it should forget | **Now measured on every point** ("selectivity"), and the training no longer targets the question wording |
+| **The third method (NPO)** | Had a bug until 1 September; its results are invalid | Fixed; needs its first valid runs on the GPU |
+| **The harder question tiers** | B2–B4 were empty | **B2 and B4 built** (597 questions), derived from TOFU's own text; B3 not possible without inventing facts |
 
 ### Why no research conclusion is possible yet
 
-Three independent reasons, any one of which would be enough on its own:
+1. **The control did not hold.** General ability fell by about 0.10 in every run made so far.
+2. **The breadth measurement had a fault**, and depth and breadth were not measured on the same questions. Both are fixed in the code, but every stored experiment predates the fixes.
+3. **The corrected experiment needs the GPU**, which is currently unavailable. (The depth measurement itself is now fully cross-checked against the original authors' code.) The exact commands are ready in `gpu/README.md`.
 
-1. **The depth measurement is unverified.** It is the heart of the study. Until it agrees with the original authors' code, any number it produces could be wrong in a way we cannot detect.
-2. **Nothing has run on a real model.** Our test model has no knowledge, so there is nothing to forget.
-3. **No experiment has been run.** We built the instrument. We have not used it.
+> **In one sentence:** the measuring device works and has been used, and the experiment repeats reliably, but a fault and a design flaw found on 9 October mean it must be fixed and re-run before its readings answer the question.
 
-> **In one sentence:** we have built a measuring device and checked carefully that it is well made, but we have not measured anything with it, and we have not yet confirmed it agrees with the standard device.
+### What the re-run will look at, decided in advance (10 October)
+
+The plan for reading the new results was written down before any of them exist
+([`docs/ANALYSIS_PLAN.md`](docs/ANALYSIS_PLAN.md)), so the results cannot
+reshape the questions. Its main change is to look at **one fact at a time**
+instead of at averages. A check on the existing data showed this is possible.
+The depth score tells, for every single fact, whether a model ever learned it:
+it picked out the facts each model never saw without one mistake, in all 14
+checks (`RESULTS.md` §11). The new analysis asks three questions:
+
+1. **Does the forgetting target the right knowledge?** Facts about the authors
+   to forget must go faster than facts about the authors to keep.
+2. **When a model stops answering a fact, is the fact gone or only hidden?** A
+   fact that is only hidden still shows up deep inside the model. It may also
+   still be answered when the question names the author indirectly, for
+   example "the author of *&lt;book&gt;*".
+3. **Do the facts erased most deeply match the facts the model stops
+   answering?** Or do the two only agree on average?
 
 ---
 
 ## 13. What happens next — detailed plan
+
+> **Superseded (October 2026).** This was the plan as of 16 August. Done since then: A0 (models confirmed), A1 (the authors' annotations are now used), A2 (one question at a time), A4 (speed-up), B2 (published check reproduced), B3 (real models), and much of C2/C3 (two methods × three seeds). Still open: A3, B1 (cross-check against the authors' code), B4, C1. The current plan is in `README.md` → *Next steps*.
 
 Work is organised into three stages. Stage A can start immediately. Stage B needs a powerful computer. Stage C is the actual research.
 
@@ -835,13 +860,13 @@ A **GPU** is a specialised processor. An ordinary processor does a few things ve
 
 ### What we have
 
-The development computer has **no GPU** — only an ordinary processor.
+The development computer has **no GPU** — only an ordinary processor. *(Update: since mid-August a GPU has been available — first a 42 GB card, now a shared A100 80 GB — and every real-model result was measured there.)*
 
 ### Why that was fine until now
 
 That was a deliberate choice. Writing the software, testing it, and running the tiny model all work perfectly well on an ordinary processor.
 
-This was the right way to work: get the software correct cheaply first, then spend expensive computer time only when there is something worth running. All 491 tests and the full end-to-end check were completed without spending a penny on computing.
+This was the right way to work: get the software correct cheaply first, then spend expensive computer time only when there is something worth running. The test suite and the end-to-end check still run without a GPU.
 
 ### Why it is now the blocker
 
@@ -925,15 +950,15 @@ It is set aside, and there is a real unsolved problem in it. **Should it stay ou
 
 > **Progress.** We have built and tested the complete measuring system for this project. It includes a controllable way to vary forgetting pressure without retraining, a structured ladder of test questions, output-based measurements, internal diagnostics, and a genuine cause-and-effect technique that swaps signals between models.
 
-> **Verification.** 180 automated tests pass, and an end-to-end run passes all 31 checks. The setup is fully documented so anyone can reproduce it. We deliberately introduced nine bugs to confirm the tests would catch them; all nine were caught.
+> **Verification.** 509 automated tests (493 passed in the last full run), and an end-to-end run passes all 31 checks. The setup is fully documented so anyone can reproduce it. We deliberately introduced nine bugs to confirm the tests would catch them; all nine were caught.
 
 > **Quality control.** During this work we found and fixed one real bug in our own code, removed a graph that had been drawn with hand-typed numbers, and discovered that our first version of the depth measurement did not match the published method. All three are documented openly.
 
-> **Validation.** The depth measurement now runs on real AI models and reproduces the numbers published by the researchers who invented it — at two model sizes and across six different settings, every one passing. The two extreme cases come out exactly right.
+> **Validation.** The depth measurement now runs on real AI models and reproduces the numbers published by the researchers who invented it — at two model sizes and across seven different settings, every one passing. The two extreme cases come out exactly right.
 
-> **Honest limitation.** This is a working, checked instrument, **not a research result**. We have not yet run the study the instrument was built for. One validation gap also remains: we have reproduced the authors' published *numbers*, but have not run their *code* alongside ours on identical inputs. Until we do, we cannot rule out a methodological difference — and we can see one small sign of exactly that (§10).
+> **Honest limitation.** The study has been run for two methods with three seeds each, but it is **not yet a research result**: general ability dropped in every run, a scoring fault was found in the breadth measurement, and depth and breadth were measured on different questions. One validation gap also remains: we have reproduced the authors' published *numbers*, but have not run their *code* alongside ours on identical inputs.
 
-> **Next step.** Begin the actual study: measuring whether forgetting more broadly makes forgetting less deep.
+> **Next step.** Fix the breadth scoring and the experiment design, re-run all methods, cross-check against the authors' code, and add the harder question tiers.
 
 **You can safely say:** that the measurement tool is built, tested, and reproduces published reference values.
 
@@ -981,7 +1006,7 @@ It is set aside, and there is a real unsolved problem in it. **Should it stay ou
 | `docs/UDS_CONFORMANCE.md` | Point-by-point comparison of our depth score against the published definition, and exactly what remains unverified. |
 | `RESEARCH_PLAN.md` | The reasoning behind the research direction chosen. |
 | `DeepErase_Domain_and_Literature_Report.md` | Review of the research field, comparing 38 published papers. |
-| `literature/` | 54 research papers, sorted by topic, with reading notes. |
+| `literature/` | The 10 Appendix A reference papers (PDFs downloaded locally, not committed) with a README and download manifest. |
 
 ### The software
 
@@ -1001,9 +1026,7 @@ It is set aside, and there is a real unsolved problem in it. **Should it stay ou
 
 | File | What it is |
 |---|---|
-| `tests/test_extrapolation.py` | 42 tests for the control dial |
-| `tests/test_metrics.py` | 76 tests for the measurements |
-| `tests/test_patching.py` | 62 tests for signal swapping and the depth score |
+| `tests/` | 509 tests across 10 files (e.g. 57 for the control dial, 84 for the measurements, 84 for signal swapping) |
 | `requirements.txt` | Exact software versions needed |
 | `pyproject.toml` | Project configuration |
 | `environment.yml` | Instructions for creating the working environment |
@@ -1018,4 +1041,4 @@ It is set aside, and there is a real unsolved problem in it. **Should it stay ou
 
 ---
 
-*End of summary. All development work remains paused.*
+*End of summary.*

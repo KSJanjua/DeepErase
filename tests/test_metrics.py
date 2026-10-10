@@ -601,3 +601,16 @@ class TestOvershootSensitivity:
         report = ds.sensitivity_report()
         assert len(report) == 2
         assert {r["method"] for r in report} == {"GA", "NPO"}
+
+
+def test_plot_legend_distinguishes_trained_and_heldout_trajectories(tmp_path):
+    """Protocol-v2 runs have two trajectories with the same method and model."""
+    from deeperase.eval.plane import PlaneDataset, PlanePoint, plot_plane
+    ds = PlaneDataset()
+    for bench in ("tofu-forget10:trained", "tofu-forget10:heldout"):
+        for a, (b, d) in enumerate([(0.1, 0.2), (0.4, 0.6)]):
+            ds.add(PlanePoint(method="ga", model="1B-ga", benchmark=bench,
+                              alpha=float(a), breadth=b, depth=d))
+    fig = plot_plane(ds, tmp_path / "p.png")
+    labels = sorted(t.get_text() for t in fig.axes[0].get_legend().get_texts())
+    assert labels == ["ga / 1B-ga [heldout]", "ga / 1B-ga [trained]"]

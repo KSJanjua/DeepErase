@@ -156,81 +156,50 @@ the scale.
                   f"{cal['dynamic_range']:.3f}, not 1.000.")
 
 
-def show_trajectory():
+def _describe_trajectory(pts):
+    """Print one trajectory's table and what it does -- computed, not assumed."""
+    has_sel = any(p.get("selectivity") is not None for p in pts)
+    print(f"\n  {'strength':>9}{'breadth':>10}{'depth':>9}{'utility':>10}"
+          + (f"{'selectivity':>13}" if has_sel else ""))
+    print("  " + DASH[:(51 if has_sel else 38)])
+    for p in pts:
+        u = p.get("utility")
+        u = f"{u:.3f}" if isinstance(u, (int, float)) else "  --"
+        sel = p.get("selectivity")
+        sel = (f"{sel:+13.3f}" if isinstance(sel, (int, float)) else f"{'--':>13}") \
+            if has_sel else ""
+        print(f"  {p['alpha']:>9.2f}{p['breadth']:>10.3f}{p['depth']:>9.3f}{u:>10}{sel}")
+    if len(pts) < 2:
+        return
+    b0, b1 = pts[0]["breadth"], pts[-1]["breadth"]
+    d0, d1 = pts[0]["depth"], pts[-1]["depth"]
+    u0, u1 = pts[0].get("utility"), pts[-1].get("utility")
+    word = lambda a, b: "rises" if b > a + 0.02 else ("falls" if b < a - 0.02 else "stays flat")
+    print(f"\n    depth   {d0:.3f} -> {d1:.3f}  {word(d0, d1)}"
+          f"  ({d1:.0%} of the way to a model retrained without the data)")
+    print(f"    breadth {b0:.3f} -> {b1:.3f}  {word(b0, b1)}  ({b1:.0%})")
+    if isinstance(u0, float) and isinstance(u1, float) and u0 - u1 > 0.05:
+        print(f"\n    The control moved: utility {u0:.3f} -> {u1:.3f} (fell {u0 - u1:.3f}),")
+        print("    so part of any rise is the model getting generally worse.")
+    sels = [p["selectivity"] for p in pts if isinstance(p.get("selectivity"), (int, float))]
+    if sels and max(sels) <= 0:
+        print("    Selectivity never goes above zero: the forget tiers fell no further")
+        print("    than neighbouring authors, so this is not targeted forgetting.")
+
+
+def show_trajectory(run_id=None):
     _hr("4. THE DEPTH-BREADTH TRAJECTORY -- the actual experiment")
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from deeperase.registry import load_registry, protocol_of, run_status
+
     studies = ROOT / "results" / "studies"
-    # Run folders are timestamped, so the last one sorted is the most recent.
-    found = sorted(studies.glob("*/plane.json")) if studies.exists() else []
-    if found:
-        latest = found[-1]
-        j = _load(latest)
-        print(f"\n  Most recent run: {latest.parent.name}")
-        if len(found) > 1:
-            print(f"  ({len(found)} completed runs stored; earlier ones kept "
-                  f"so the history is auditable)")
-
-        # The unlearning record: which checkpoint was kept, and why.
-        un = _load(latest.parent / "unlearn.json")
-        if un:
-            un = un.get("history", un)      # the record sits under "history"
-            evals = un.get("epoch_evals") or []
-            sel = un.get("selected_epoch")
-            base = un.get("baseline_utility")
-            print(f"\n  Step 1 -- unlearning ({len(evals)} epochs run)")
-            if base is not None:
-                print(f"    utility before training : {base:.3f}")
-            rejected = [e for e in evals if not e.get("acceptable", True)]
-            print(f"    epochs kept             : "
-                  f"{len(evals) - len(rejected)} of {len(evals)}")
-            print(f"    epochs rejected         : {len(rejected)} "
-                  f"(utility fell below the floor)")
-            if sel is not None:
-                s = next((e for e in evals if e["epoch"] == sel), None)
-                if s:
-                    print(f"    checkpoint selected     : epoch {sel} "
-                          f"(utility {s['utility']:.3f}, "
-                          f"forget score {s['forget_nll']:.3f})")
-            b, f = un.get("baseline_forget_nll"), un.get("final_forget_nll")
-            if b and f:
-                print(f"    forget-set difficulty   : {b:.3f} -> {f:.3f} "
-                      f"(higher = more forgotten)")
-
-        pts = j.get("points", [])
-        print(f"\n  Step 2 -- measuring at {len(pts)} strengths of that update")
-        print(f"\n  {'strength':>9}{'breadth':>10}{'depth':>9}{'utility':>10}"
-              f"   {'(control)':>10}")
-        print("  " + DASH[:48])
-        for p in pts:
-            u = p.get("utility")
-            u = f"{u:.3f}" if isinstance(u, (int, float)) else "  --"
-            print(f"  {p['alpha']:>9.2f}{p['breadth']:>10.3f}"
-                  f"{p['depth']:>9.3f}{u:>10}")
-        if pts:
-            b0, b1 = pts[0]["breadth"], pts[-1]["breadth"]
-            d0, d1 = pts[0]["depth"], pts[-1]["depth"]
-            u0, u1 = pts[0].get("utility"), pts[-1].get("utility")
-            print("  " + DASH[:48])
-            print(f"\n  Both measures rise together:")
-            print(f"    depth   {d0:.3f} -> {d1:.3f}   "
-                  f"({d1:.0%} of the way to a fully retrained model)")
-            print(f"    breadth {b0:.3f} -> {b1:.3f}   ({b1:.0%})")
-            if isinstance(u0, float) and isinstance(u1, float):
-                print(f"\n  BUT the control also moved: utility "
-                      f"{u0:.3f} -> {u1:.3f} (fell {u0-u1:.3f}).")
-                print("  So part of this rise is the model getting generally "
-                      "worse, not")
-                print("  forgetting the target facts specifically. Separating "
-                      "the two is")
-                print("  the next task.")
-        sens = _load(latest.parent / "sensitivity.json")
-        if sens:
-            s = sens[0]
-            print(f"\n  Points measured: {s['n_points']}. These are steps along "
-                  "one continuous")
-            print("  path, not independent experiments, so no statistical "
-                  "significance")
-            print("  is claimed from them.")
-    else:
+    registry = load_registry(studies)
+    # The run shown is pinned, never "whichever sorts last": after the NPO
+    # defect was found, the last-sorting run was an invalid NPO run.
+    chosen = run_id or registry.get("headline")
+    run = studies / chosen if chosen else None
+    if run is None or not (run / "plane.json").exists():
         print("""
   NOT STORED ON THIS MACHINE.
 
@@ -244,6 +213,71 @@ def show_trajectory():
       report/figures/fig11_plane.png
 
   and are reproduced in RESULTS.md and in the report.""".rstrip())
+        return
+
+    cfg = _load(run / "config.json") or {}
+    status, reason = run_status(registry, run.name, cfg)
+    print(f"\n  Run shown: {run.name}  (protocol {protocol_of(cfg)}, "
+          f"method {cfg.get('method', '?')}, seed {cfg.get('seed', 0)})")
+    if run_id is None and registry.get("headline_note"):
+        print(f"  {registry['headline_note']}")
+    if status != "ok":
+        print(f"  !! STATUS: {status.upper()} -- {reason}")
+    note = (registry.get("protocol_notes") or {}).get(protocol_of(cfg))
+    if note:
+        print(f"  Note: {note}")
+    n_runs = sum(1 for _ in studies.glob("*/plane.json"))
+    print(f"  ({n_runs} runs stored; `python gpu/summarize.py` lists them all, "
+          "with their status)")
+
+    # The unlearning record: which checkpoint was kept, and why.
+    un = _load(run / "unlearn.json")
+    if un:
+        un = un.get("history", un)      # the record sits under "history"
+        evals = un.get("epoch_evals") or []
+        sel = un.get("selected_epoch")
+        base = un.get("baseline_utility")
+        print(f"\n  Step 1 -- unlearning ({len(evals)} epochs run)")
+        if base is not None:
+            print(f"    utility before training : {base:.3f}")
+        rejected = [e for e in evals if not e.get("acceptable", True)]
+        print(f"    epochs kept             : "
+              f"{len(evals) - len(rejected)} of {len(evals)}")
+        print(f"    epochs rejected         : {len(rejected)} "
+              f"(utility fell below the floor)")
+        if sel is not None:
+            s = next((e for e in evals if e["epoch"] == sel), None)
+            if s:
+                print(f"    checkpoint selected     : epoch {sel} "
+                      f"(utility {s['utility']:.3f}, "
+                      f"forget score {s['forget_nll']:.3f})")
+        b, f = un.get("baseline_forget_nll"), un.get("final_forget_nll")
+        if b and f:
+            print(f"    forget-set difficulty   : {b:.3f} -> {f:.3f} "
+                  f"(higher = more forgotten)")
+
+    pts = (_load(run / "plane.json") or {}).get("points", [])
+    by_traj = {}
+    for p in pts:
+        by_traj.setdefault(p.get("benchmark", ""), []).append(p)
+    print(f"\n  Step 2 -- measuring at {len(pts) // max(1, len(by_traj))} strengths "
+          "of that update")
+    for bench, tp in sorted(by_traj.items()):
+        tp.sort(key=lambda p: p["alpha"])
+        if len(by_traj) > 1:
+            label = bench.split(":")[-1]
+            print(f"\n  [{label}] " + ("facts the unlearning objective trained on"
+                                       if label == "trained" else
+                                       "other facts about the same authors, never trained on"))
+        _describe_trajectory(tp)
+
+    sens = _load(run / "sensitivity.json")
+    if sens:
+        s = sens[0]
+        print(f"\n  Points measured per trajectory: {s['n_points']}. These are steps "
+              "along one")
+        print("  continuous path, not independent experiments, so no statistical")
+        print("  significance is claimed from them.")
 
 
 def show_tests():
@@ -268,6 +302,9 @@ def main():
                     help="also list the files inside a run folder")
     ap.add_argument("--all", action="store_true",
                     help="include earlier runs that were superseded")
+    ap.add_argument("--run", default=None,
+                    help="study run to show in section 4 (default: the registry's "
+                         "headline run, results/studies/run_registry.json)")
     args = ap.parse_args()
 
     print(BAR)
@@ -276,7 +313,7 @@ def main():
     show_storage_layout()
     show_depth_runs(list_files=args.files, include_all=args.all)
     show_breadth_runs()
-    show_trajectory()
+    show_trajectory(args.run)
     show_tests()
     print(f"\n{BAR}\nEnd of stored results.\n{BAR}")
 

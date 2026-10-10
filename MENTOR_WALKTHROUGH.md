@@ -2,6 +2,28 @@
 
 **A complete talking guide, built around the two measurements.**
 
+> **⚠️ Written 17 August 2026. Read this before using it in a meeting (updated 9 Oct 2026).**
+>
+> Parts 1–4 (the problem, depth, breadth, the depth validation) are still
+> accurate. Since this guide was written:
+>
+> - **The experiment has been repeated** for gradient ascent and gradient
+>   difference, three seeds each (`RESULTS.md` §6), and a first random-direction
+>   control has been run (§7). Part 5's single run is no longer the whole story.
+> - **Four problems were found on 9 Oct** (`RESULTS.md` §8). The breadth scorer
+>   skips the first token of each answer option. Depth and breadth were measured
+>   on different question sets. The retain-tier control falls as fast as the
+>   forget tiers. The NPO runs are invalid. Raise these yourself, as Part 5.4
+>   recommends for the utility drop.
+> - **`python show_results.py` Section 4 currently shows the alphabetically last
+>   run, `study_npo_1B_s2`, which is an invalid NPO run, not the GA run quoted
+>   in Part 5.** Do not demo Section 4 until the viewer is fixed. Use
+>   `results/studies/study_ga_1B_20260816_165423/` or `python gpu/summarize.py`.
+> - The test suite now has **509** tests (the last full run, 493, passed on
+>   29 Aug), not 489.
+> - The Windows paths (`c:\Users\janju\...`) are from the machine this was
+>   written on.
+
 This assumes you know nothing and he knows nothing. Every technical word is
 explained the first time it appears.
 
@@ -33,6 +55,48 @@ limitation, the limitation is stated with it.
 | 8 | What to decide with him |
 | 9 | Question bank |
 | 10 | Glossary and cheat sheet |
+
+---
+
+# PART 0 — What changed on 9 October (talk through this first)
+
+Five minutes. Say it before he asks. It is the most important update since the
+mid-semester report.
+
+### 0.1 We checked our own work and found three problems
+
+> "We audited everything we had built, and found three things wrong with how
+> the experiment was set up. None of them touches the depth measurement we
+> validated. All three are fixed in the code. The experiments now need
+> re-running, and that is waiting on GPU access."
+
+| Problem | The plain version | What we did |
+|---|---|---|
+| The breadth scorer skipped a word | When grading a multiple-choice answer, the code ignored its first word-piece, which is often the first part of a name | Fixed, with a test that fails on the old code. On the 1B models the effect is small for TOFU questions and large for short answers like "Paris" (`RESULTS.md` §8.1) |
+| Depth and breadth looked at different questions | The model was trained to forget 100 questions. Depth was tested on those 100, but breadth on 400, of which 300 were never trained on | Each author's 20 facts are now split in half. The model forgets one half, and we measure both depth and breadth on **both** halves |
+| Collateral damage | The model lost knowledge of authors it should keep as fast as of the authors it should forget | Every point now reports **selectivity**: did the forget questions drop more than the keep questions? |
+
+### 0.2 Two things that make the redesign worth it
+
+> "The half we hold out is the interesting part. It is other facts about the
+> same person, which the model was never trained to forget. The paper behind
+> our dial, UIPE, predicts that pushing the dial removes exactly that kind of
+> related knowledge. We can now test that directly, on both axes."
+
+> "We also built the harder question types from the proposal: the author
+> described instead of named (B2), and the author identified through one of
+> their book titles, which takes two steps of reasoning (B4). Six hundred new
+> questions. All of them are generated from TOFU's own text, so nothing was
+> invented."
+
+### 0.3 What is ready, and what is waiting
+
+| Ready (tested on a laptop) | Waiting on the GPU |
+|---|---|
+| All fixes; 645 automated tests, including a full mini-run of the experiment | The corrected experiment: 3 methods × 3 seeds (~10 h) |
+| Depth threshold check: results do not depend on it (`RESULTS.md` §9) | The control experiment at matched damage (~3 h) |
+| Cross-check of our depth score against the original authors' code (`RESULTS.md` §10) | |
+| A one-command analysis that turns finished runs into the report's tables | |
 
 ---
 
@@ -341,8 +405,11 @@ python show_results.py
 > "It sits slightly under the published figure — 0.126 against 0.153. We traced
 > most of that gap to how we mark which words in the answer are the actual fact.
 > When we switched to the annotations the original authors published, the gap
-> roughly halved. The remaining difference is small enough to sit well inside
-> tolerance, and we've documented what we think causes it."
+> roughly halved. *(Update, 10 Oct:)* We have since run the authors' own code
+> side by side with ours on identical inputs. The two agree to seven decimal
+> places on 15 of 16 layers. The 16th differs because of a small quirk in their
+> code, and with it corrected they agree exactly. The rest of the gap is how
+> the scored sentence is built, plus which examples are sampled."
 
 ---
 

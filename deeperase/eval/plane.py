@@ -53,6 +53,18 @@ class PlanePoint:
     alpha_parallel: Optional[float] = None
     alpha_perp: Optional[float] = None
     """Set for SAGE points; None for isotropic UIPE."""
+    retain_loss: Optional[float] = None
+    """Calibrated loss on the retain tier R, on the breadth scale: 0 = the
+    original model's retention, 1 = as far down as the forget tiers' floor.
+    See :func:`deeperase.scripts.run_study.selectivity_readout`."""
+    selectivity: Optional[float] = None
+    """``breadth - retain_loss``. Positive means the forget tiers lost more,
+    in calibrated units, than neighbouring authors that should be kept --
+    targeted forgetting. Zero or negative means the breadth rise is matched by
+    collateral loss (RESULTS.md §8.3)."""
+    general_utility: Optional[float] = None
+    """Mean forced-choice rate on real-author and world-fact questions (RA, WF):
+    general knowledge, distinct from the TOFU retain tier."""
     depth_overshoot: bool = False
     """Propagated from UDSResult.overshoot. The unlearned model scored below
     the retain oracle, so its UDS is not an erasure fraction. Excluded from
@@ -374,8 +386,11 @@ def plot_plane(
         b = [p.breadth for p in pts]
         d = [p.depth for p in pts]
         colour = cmap(i % 10)
+        # Protocol-v2 runs carry two trajectories (":trained", ":heldout") that
+        # share method and model; without the suffix their legend entries collide.
+        suffix = f" [{t.benchmark.split(':', 1)[1]}]" if ":" in t.benchmark else ""
         ax.plot(b, d, "-o", color=colour, markersize=5, linewidth=1.6,
-                label=f"{t.method} / {t.model}", alpha=0.9)
+                label=f"{t.method} / {t.model}{suffix}", alpha=0.9)
         # Mark the alpha=0 control point distinctly.
         ax.scatter([b[0]], [d[0]], s=140, facecolors="none", edgecolors=colour,
                    linewidths=2, zorder=5)

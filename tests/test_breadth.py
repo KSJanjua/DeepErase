@@ -57,7 +57,13 @@ class TestItemValidation:
         assert not _item("R").is_forget_tier
 
     def test_tier_sources_cover_the_documented_tiers(self):
-        assert set(TIER_SOURCES) == {"B0", "B1", "R"}
+        # B0/B1 forget tiers; R neighbouring authors; RA/WF general knowledge
+        # (TOFU's real_authors and world_facts, as in its Model Utility).
+        assert set(TIER_SOURCES) == {"B0", "B1", "R", "RA", "WF"}
+
+    def test_general_knowledge_tiers_are_retain_tiers(self):
+        for t in ("R", "RA", "WF"):
+            assert not _item(t).is_forget_tier, t
 
     def test_b1_reads_the_paraphrased_column(self):
         """The whole point of B1 is that it is a different wording."""
@@ -351,3 +357,282 @@ class TestBreadthCalibration:
         c = self._cal()
         delta = c.calibrated_breadth(0.65) - c.calibrated_breadth(0.70)
         assert delta > 0.15
+
+
+# ---------------------------------------------------------------------------
+# Where the answer begins
+#
+# Regression test for a real scoring defect (RESULTS.md §8.1). The prompt ends
+# in a space ("...Answer: "). A byte-level BPE tokenizer -- Llama-3's, and the
+# toy one below -- makes that space its own token when the prompt is encoded
+# alone, but merges it into the first answer token inside prompt + answer. The
+# old code took ``len(tokenizer(prompt))`` as the answer start, so it skipped
+# the first answer token: in TOFU usually the first piece of the entity name,
+# the token that decides the forced choice.
+# ---------------------------------------------------------------------------
+
+def _byte_level_tokenizer(trim_offsets: bool = True):
+    from toy_tokenizer import byte_level_tokenizer
+    return byte_level_tokenizer(trim_offsets=trim_offsets)
+
+
+class TestAnswerBoundary:
+    PREFIX = "Question: What is the full name of the author?\nAnswer: "
+    ANSWER = "Hsiao Yun-Hwa is the name."
+
+    @pytest.mark.parametrize("trim_offsets", [True, False])
+    def test_scored_tokens_are_exactly_the_answer(self, trim_offsets):
+        from deeperase.eval.breadth import answer_token_start
+        tok = _byte_level_tokenizer(trim_offsets)
+        ids, start = answer_token_start(tok, self.PREFIX, self.ANSWER, max_length=128)
+        assert start is not None
+        assert tok.decode(ids[start:]).strip() == self.ANSWER
+        assert self.PREFIX.rstrip() == tok.decode(ids[1:start]).rstrip()
+
+    def test_documents_the_old_off_by_one(self):
+        """The prompt encoded alone ends in a lone space token, so its length
+        overshoots the true answer start by exactly one."""
+        from deeperase.eval.breadth import answer_token_start
+        tok = _byte_level_tokenizer()
+        _, start = answer_token_start(tok, self.PREFIX, self.ANSWER, max_length=128)
+        old_start = len(tok(self.PREFIX, add_special_tokens=True)["input_ids"])
+        assert old_start == start + 1
+
+    def test_answer_cut_off_by_truncation_has_no_start(self):
+        from deeperase.eval.breadth import answer_token_start
+        tok = _byte_level_tokenizer()
+        n_prompt = len(tok(self.PREFIX.rstrip())["input_ids"])
+        _, start = answer_token_start(tok, self.PREFIX, self.ANSWER, max_length=n_prompt)
+        assert start is None
+
+    def test_first_token_decides_the_forced_choice(self):
+        """Two candidates identical except for their first token. Only a scorer
+        that reads the first answer token can tell them apart. Under the old
+        code both scored the same and the strict comparison said 'not known'."""
+        from deeperase.eval.breadth import BreadthItem, answer_token_start, score_breadth
+        tok = _byte_level_tokenizer()
+        prefix = "Question: Who wrote it?\nAnswer: "
+        correct, wrong = "Xavier is the name.", "Yolanda is the name."
+        ids_c, s_c = answer_token_start(tok, prefix, correct, max_length=64)
+        ids_w, s_w = answer_token_start(tok, prefix, wrong, max_length=64)
+        assert ids_c[s_c + 1:] == ids_w[s_w + 1:], "fixture: tails must match"
+        assert ids_c[s_c] != ids_w[s_w], "fixture: first tokens must differ"
+        # The fixture must actually exhibit the merge, or this test cannot
+        # catch the defect: the prompt alone must be one token longer.
+        assert len(tok(prefix)["input_ids"]) == s_c + 1, "fixture: no space merge"
+
+        favoured = ids_c[s_c]
+
+        class FavoursOneToken(torch.nn.Module):
+            """Uniform logits except one boosted token id, at every position."""
+            def __init__(self):
+                super().__init__()
+                self.anchor = torch.nn.Parameter(torch.zeros(1))
+
+            def forward(self, input_ids, attention_mask=None):
+                logits = torch.zeros(*input_ids.shape, len(tok))
+                logits[..., favoured] = 5.0
+                return type("Out", (), {"logits": logits})()
+
+        item = BreadthItem("b", "B0", "Who wrote it?", correct, [wrong], 0)
+        res = score_breadth(FavoursOneToken(), tok, [item], max_length=64,
+                            prompt_prefix="Question: {question}\nAnswer: ")
+        assert res.tiers["B0"].n_knows == 1
+
+    def test_slow_tokenizer_is_rejected_clearly(self):
+        from deeperase.eval.breadth import answer_token_start
+
+        class Slow:
+            def __call__(self, *a, **k):
+                if k.get("return_offsets_mapping"):
+                    raise NotImplementedError("return_offset_mapping is not available")
+                return {"input_ids": [0, 1, 2]}
+
+        with pytest.raises(TypeError, match="fast tokenizer"):
+            answer_token_start(Slow(), "q ", "a", max_length=8)
+
+
+# ---------------------------------------------------------------------------
+# Protocol v2 breadth machinery: retain-type tiers, per-item outcomes, grouping,
+# frozen item files, and batched candidate scoring.
+# ---------------------------------------------------------------------------
+
+class TestRetainTypeTiers:
+    def test_general_tiers_never_enter_the_forget_average(self):
+        r = _result(B0=0.2, B1=0.4, R=0.9, RA=0.95, WF=0.85)
+        assert r.forget_leakage == pytest.approx(0.3)
+
+    def test_general_utility_averages_ra_and_wf(self):
+        assert _result(B0=0.5, RA=0.9, WF=0.7).general_utility == pytest.approx(0.8)
+        assert _result(B0=0.5, R=0.9).general_utility is None
+
+
+def _tiny_llama(vocab, seed=0):
+    from transformers import LlamaConfig, LlamaForCausalLM
+    torch.manual_seed(seed)
+    m = LlamaForCausalLM(LlamaConfig(
+        vocab_size=vocab, hidden_size=32, intermediate_size=64, num_hidden_layers=2,
+        num_attention_heads=4, num_key_value_heads=4, max_position_embeddings=128,
+        use_cache=False))
+    m.eval(); m.requires_grad_(False)
+    return m
+
+
+class TestBatchedScoring:
+    PREFIX = "Question: {question}\nAnswer: "
+
+    def _setup(self):
+        from toy_tokenizer import byte_level_tokenizer
+        tok = byte_level_tokenizer()
+        return tok, _tiny_llama(len(tok))
+
+    def test_batched_logprobs_match_unbatched(self):
+        from deeperase.eval.breadth import _answer_logprob, _candidate_logprobs
+        tok, m = self._setup()
+        cands = ["Hsiao Yun-Hwa is the name.", "Chen is the name of the writer.",
+                 "Taipei.", "Xavier is the name. Answer: Yolanda is the name."]
+        batched = _candidate_logprobs(m, tok, "Who wrote it?", cands,
+                                      max_length=64, prompt_prefix=self.PREFIX)
+        single = [_answer_logprob(m, tok, "Who wrote it?", c, max_length=64,
+                                  prompt_prefix=self.PREFIX) for c in cands]
+        assert batched == pytest.approx(single, abs=1e-5)
+
+    def test_batched_and_unbatched_decisions_agree(self):
+        tok, m = self._setup()
+        items = [BreadthItem(f"i{k}", "B0", f"Who wrote book {k}?", "Xavier is the name.",
+                             ["Yolanda is the name.", "Chen is the name of the writer."], k)
+                 for k in range(4)]
+        a = score_breadth(m, tok, items, max_length=64, prompt_prefix=self.PREFIX,
+                          batch_candidates=True, return_outcomes=True)
+        b = score_breadth(m, tok, items, max_length=64, prompt_prefix=self.PREFIX,
+                          batch_candidates=False, return_outcomes=True)
+        assert a.tiers["B0"].n_knows == b.tiers["B0"].n_knows
+        for k in a.outcomes:
+            assert a.outcomes[k].margin == pytest.approx(b.outcomes[k].margin, abs=1e-5)
+
+    def test_truncated_candidate_scores_minus_infinity(self):
+        from deeperase.eval.breadth import _candidate_logprobs
+        tok, m = self._setup()
+        n = len(tok(self.PREFIX.format(question="q?").rstrip())["input_ids"])
+        out = _candidate_logprobs(m, tok, "q?", ["a b c"], max_length=n,
+                                  prompt_prefix=self.PREFIX)
+        assert out == [float("-inf")]
+
+
+class TestOutcomes:
+    def _scored(self):
+        from toy_tokenizer import byte_level_tokenizer
+        tok = byte_level_tokenizer()
+        items = [_item("B0", 0), _item("B1", 1), _item("R", 2)]
+        return items, score_breadth(_tiny_llama(len(tok)), tok, items, max_length=64,
+                                    return_outcomes=True)
+
+    def test_outcomes_cover_every_item_and_agree_with_the_tiers(self):
+        items, res = self._scored()
+        assert set(res.outcomes) == {i.item_id for i in items}
+        for it in items:
+            o = res.outcomes[it.item_id]
+            assert o.knows == (o.margin > 0)
+            assert res.tiers[it.tier].n_knows == int(o.knows)
+
+    def test_outcomes_are_off_by_default(self):
+        from toy_tokenizer import byte_level_tokenizer
+        tok = byte_level_tokenizer()
+        res = score_breadth(_tiny_llama(len(tok)), tok, [_item("B0")], max_length=64)
+        assert res.outcomes is None
+
+    def test_to_dict_can_carry_compact_outcomes(self):
+        _, res = self._scored()
+        d = res.to_dict(include_outcomes=True)
+        knows, margin, scores = d["outcomes"]["B0_0"]
+        assert knows in (0, 1) and isinstance(margin, float)
+        assert len(scores) == 3 and margin == pytest.approx(scores[0] - max(scores[1:]), abs=2e-4)
+        assert "outcomes" not in res.to_dict()
+
+    def test_aggregate_groups_by_key_and_skips_none(self):
+        from deeperase.eval.breadth import ItemOutcome, aggregate_outcomes
+        items = [_item("B0", 0), _item("B0", 1), _item("B1", 2), _item("R", 3)]
+        oc = {"B0_0": ItemOutcome(True, 1.0), "B0_1": ItemOutcome(False, -1.0),
+              "B1_2": ItemOutcome(True, 0.5), "R_3": ItemOutcome(True, 2.0)}
+        trained = {0, 2}
+        agg = aggregate_outcomes(
+            items, oc,
+            key=lambda it: None if it.tier == "R" else
+            f"{it.tier}:{'trained' if it.source_index in trained else 'heldout'}")
+        assert set(agg) == {"B0:trained", "B0:heldout", "B1:trained"}
+        assert (agg["B0:trained"].n, agg["B0:trained"].n_knows) == (1, 1)
+        assert (agg["B0:heldout"].n, agg["B0:heldout"].n_knows) == (1, 0)
+
+
+class TestItemFiles:
+    def test_round_trip_preserves_author_and_meta(self, tmp_path):
+        from deeperase.eval.breadth import load_breadth_items_file, save_breadth_items_file
+        it = BreadthItem("B2_0", "B2", "q?", "a", ["w1", "w2"], 0,
+                         author=0, meta={"derivation": "name -> description"})
+        save_breadth_items_file([it, _item("R", 1)], tmp_path / "i.json", source="test")
+        back = load_breadth_items_file(tmp_path / "i.json")
+        assert back[0] == it and back[1].tier == "R"
+
+    def test_tier_filter_and_unknown_tier(self, tmp_path):
+        from deeperase.eval.breadth import load_breadth_items_file, save_breadth_items_file
+        save_breadth_items_file([_item("B0", 0), _item("R", 1)], tmp_path / "i.json")
+        assert [i.tier for i in load_breadth_items_file(tmp_path / "i.json", tiers=["R"])] == ["R"]
+        with pytest.raises(ValueError, match="not present"):
+            load_breadth_items_file(tmp_path / "i.json", tiers=["B4"])
+
+    def test_duplicate_ids_are_rejected(self, tmp_path):
+        from deeperase.eval.breadth import load_breadth_items_file, save_breadth_items_file
+        save_breadth_items_file([_item("B0", 0), _item("B0", 0)], tmp_path / "i.json")
+        with pytest.raises(ValueError, match="duplicate"):
+            load_breadth_items_file(tmp_path / "i.json")
+
+    def test_reads_the_original_1200_item_export(self):
+        from pathlib import Path
+        from deeperase.eval.breadth import load_breadth_items_file
+        path = Path(__file__).resolve().parents[1] / "data" / "breadth_items.json"
+        items = load_breadth_items_file(path)
+        assert len(items) == 1200
+        assert {i.tier for i in items} == {"B0", "B1", "R"}
+        # that file has no source_index; it is recovered from "B0_<row>"
+        b0 = [i for i in items if i.tier == "B0"]
+        assert [i.source_index for i in b0] == list(range(400))
+
+
+class TestTofuMetrics:
+    """TOFU's truth ratio and Forget Quality, from the stored candidate scores."""
+
+    def test_truth_ratio_matches_the_definition(self):
+        import math
+        from deeperase.eval.breadth import truth_ratio
+        scores = [-1.0, -2.0, -3.0, -1.5]          # correct first, per-token log-probs
+        expected = (math.exp(-2) + math.exp(-3) + math.exp(-1.5)) / 3 / math.exp(-1.0)
+        assert truth_ratio(scores) == pytest.approx(expected)
+
+    def test_truth_ratio_direction(self):
+        from deeperase.eval.breadth import truth_ratio
+        assert truth_ratio([-0.5, -4.0, -4.0]) < 0.1     # knows: truth much likelier
+        assert truth_ratio([-2.0, -2.0, -2.0]) == pytest.approx(1.0)
+
+    def test_forget_quality_is_high_for_identical_and_low_for_shifted(self):
+        from deeperase.eval.breadth import forget_quality
+        same = [0.1 * i for i in range(50)]
+        shifted = [x + 5.0 for x in same]
+        assert forget_quality(same, same) == pytest.approx(1.0)
+        assert forget_quality(shifted, same) < 1e-6
+
+    def test_forget_quality_needs_data(self):
+        from deeperase.eval.breadth import forget_quality
+        assert forget_quality([0.5], [0.4, 0.3]) is None
+
+    def test_outcomes_carry_scores_in_both_scoring_paths(self):
+        from toy_tokenizer import byte_level_tokenizer
+        tok = byte_level_tokenizer()
+        m = _tiny_llama(len(tok))
+        it = [_item("B0", 0, wrong=3)]
+        for batched in (True, False):
+            r = score_breadth(m, tok, it, max_length=64, return_outcomes=True,
+                              batch_candidates=batched)
+            o = r.outcomes["B0_0"]
+            assert len(o.scores) == 4
+            assert o.margin == pytest.approx(o.scores[0] - max(o.scores[1:]))
+            assert o.truth_ratio > 0

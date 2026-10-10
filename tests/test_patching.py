@@ -495,6 +495,8 @@ class TestUDSReport:
         rep = UDSReport(uds=0.5, n_examples_total=2, n_examples_scored=2,
                         n_examples_undefined=0, tau=0.05)
         assert "NOT cross-validated" in rep.summary()
+        rep.is_validated_against_reference = True
+        assert "NOT cross-validated" not in rep.summary()
 
     def test_to_dict_records_validation_flag(self):
         rep = UDSReport(uds=0.5, n_examples_total=1, n_examples_scored=1,
@@ -738,13 +740,21 @@ class TestComputeUDSEndToEnd:
         a, b = rep.per_example
         assert a.delta_s1[1] != b.delta_s1[1]
 
-    def test_report_flags_unvalidated(self, model_a, one_seq):
+    def test_report_records_cross_validation_by_architecture(self, model_a, one_seq):
+        # T0 checked Llama against the authors' code (RESULTS.md §10)
         rep = compute_uds(
             model_full=model_a, model_retain=_tiny_model(9),
             model_unlearned=_tiny_model(5),
             examples=[self._ex(one_seq)], layers=[1],
         )
-        assert rep.is_validated_against_reference is False
+        assert rep.is_validated_against_reference is True
+
+    def test_unchecked_architectures_are_not_flagged_validated(self):
+        from transformers import GPT2Config, GPT2LMHeadModel
+        from deeperase.eval.uds import is_cross_validated
+        gpt2 = GPT2LMHeadModel(GPT2Config(n_layer=1, n_embd=16, n_head=2, vocab_size=32))
+        assert is_cross_validated(gpt2) is False
+        assert is_cross_validated(object()) is False
 
     def test_no_hooks_leak_after_full_computation(self, model_a, one_seq):
         retain = _tiny_model(9)

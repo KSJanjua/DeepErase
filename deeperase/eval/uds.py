@@ -72,6 +72,22 @@ DEFAULT_TAU = 0.05
 """KE-layer threshold. Matches the paper (Eq. 2) and the reference CLI's
 ``--delta_threshold`` default."""
 
+CROSS_VALIDATED_MODEL_TYPES = frozenset({"llama"})
+"""Architectures on which this implementation was checked against the authors'
+code on byte-identical inputs (``scripts/cross_validate_uds.py``, RESULTS.md
+§10): Llama-3.2-1B, 100 TOFU examples, all four source checkpoints. Per-layer
+dS1/dS2 agree within 5e-7 on every layer but the last. At the last layer the
+reference patches the post-final-norm hidden state into a slot that expects
+the raw residual stream; with that one line corrected the reference matches
+this implementation to 1e-8 in UDS, and as published it differs by at most
+0.005. Other architectures run, but were not checked."""
+
+
+def is_cross_validated(model) -> bool:
+    """True when ``model``'s architecture is in :data:`CROSS_VALIDATED_MODEL_TYPES`."""
+    return getattr(getattr(model, "config", None), "model_type", None) \
+        in CROSS_VALIDATED_MODEL_TYPES
+
 
 @dataclass
 class UDSExample:
@@ -182,8 +198,9 @@ class UDSReport:
     per_example: List[ExampleUDS] = field(default_factory=list)
     layers_evaluated: List[int] = field(default_factory=list)
     is_validated_against_reference: bool = False
-    """False until numerically cross-checked against gnueaj/unlearning-depth-score
-    on shared inputs. See docs/UDS_CONFORMANCE.md."""
+    """True only when the scored architecture was numerically cross-checked
+    against gnueaj/unlearning-depth-score on shared inputs
+    (:data:`CROSS_VALIDATED_MODEL_TYPES`). See docs/UDS_CONFORMANCE.md."""
 
     def summary(self) -> str:
         val = "" if self.is_validated_against_reference else "  [NOT cross-validated vs reference]"
@@ -388,6 +405,7 @@ def compute_uds(
         tau=tau,
         per_example=per_example,
         layers_evaluated=layers,
+        is_validated_against_reference=is_cross_validated(model_full),
     )
 
 
@@ -495,11 +513,13 @@ def assemble_report(
     s_full: Dict[str, float],
     layers: Sequence[int],
     tau: float = DEFAULT_TAU,
+    validated: bool = False,
 ) -> UDSReport:
     """Combine Stage-1 and Stage-2 deltas into a report (Eqs. 2, 4, 5, 6).
 
     Used by the two-phase path, where the two stages are computed separately
-    and only meet at aggregation time.
+    and only meet at aggregation time. No model reaches this function, so the
+    caller states ``validated`` (normally ``is_cross_validated(model)``).
     """
     per_example: List[ExampleUDS] = []
     for example_id in delta_s1:
@@ -524,6 +544,7 @@ def assemble_report(
         tau=tau,
         per_example=per_example,
         layers_evaluated=list(layers),
+        is_validated_against_reference=validated,
     )
 
 

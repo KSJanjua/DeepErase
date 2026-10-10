@@ -1,8 +1,10 @@
 # UDS conformance against the reference implementation
 
-**Status: reproduces the paper's Table 2 at two model scales across six
-configurations (15-16 Aug 2026). NOT yet numerically cross-validated against
-the authors' own code.**
+**Status (9 Oct 2026): reproduces the paper's Table 2 at two model scales across seven
+configurations (15-16 Aug 2026). The best run uses the authors' own span
+annotations (`table2_refspans`, mean absolute deviation 0.010; 0.0185 over the
+two non-trivial columns). NOT yet numerically cross-validated against the
+authors' own code.**
 
 Our implementation ([`deeperase/eval/uds.py`](../deeperase/eval/uds.py), [`deeperase/eval/patching.py`](../deeperase/eval/patching.py)) was written directly from the equations in:
 
@@ -47,13 +49,14 @@ The reference exposes three core functions in `uds/core.py`. Ours mirror them de
 
 | Deviation | Rationale |
 |---|---|
-| **No Stage-1 caching.** The paper caches `s_full`, `ΔS1` and `KE` across unlearned models. We recompute per call. | Clarity while the code is small. Must be added before large sweeps — it is roughly a 2× saving. Tracked as a TODO in `uds.py`. |
-| **Batch treated as one example.** A `(batch, seq)` input is scored as a single example with log-probs averaged across rows. | Fits the toy harness. For TOFU, pass one example per call, or extend to per-row scoring. **This differs from the reference's per-example handling and must be revisited before TOFU runs.** |
+| ~~No Stage-1 caching~~ **Resolved.** `build_stage1_cache` and the `stage1_cache=` / `s_full_cache=` arguments of `compute_uds` implement it. `run_uds_validation` writes `stage1_cache.json`, and `run_study` computes Stage 1 once per run and reuses it at every α. Caching *across* runs is not wired up. | — |
+| ~~Batch treated as one example~~ **Resolved** (§5 item 6). `UDSExample` takes exactly one sequence and rejects batches. | — |
 | **Residual stream only.** | Matches the paper's main configuration; component-level patching is an appendix ablation. |
+| **Scored-sequence construction.** We tokenise `"Question: {q}\nAnswer: " + answer` in one call and score the entity span inside the full answer. The reference (`reference_scope="continuation"`) puts the annotation's `prefix` in the prompt and tokenises prompt and continuation separately. | Leading candidate for the residual −0.027 on `retain99`. To be tested in item 1. |
 
 ## 4. What is verified
 
-By 62 tests in [`tests/test_patching.py`](../tests/test_patching.py):
+By the tests in [`tests/test_patching.py`](../tests/test_patching.py) (84 test functions as of 9 Oct 2026; 62 when this section was first written):
 
 - Hooks removed after use, including when the forward pass raises, and after full `compute_uds` runs.
 - Patching layer `l` leaves upstream layers bit-identical; downstream layers change (propagation).
@@ -73,27 +76,27 @@ Mutation-tested: hook leak, patch-all-positions, ignore-τ, drop-LER-clipping, a
 
 ## 5. What remains UNVALIDATED
 
-This is the honest gap. **`UDSReport.is_validated_against_reference` is `False` and must stay so until every item below is closed.**
+This section tracked the honest gap. All seven items are now closed. **Since 10 Oct 2026, `UDSReport.is_validated_against_reference` is `True` for Llama-family models** (`CROSS_VALIDATED_MODEL_TYPES` in `deeperase/eval/uds.py`, the architecture T0 checked) **and `False` for every other architecture.** Reports saved before that date carry `False`.
 
 | # | Item | Why it matters | Needs |
 |---|---|---|---|
-| 1 | **No numerical cross-check against the reference on shared inputs.** | Two implementations can both satisfy the equations and still diverge on tokenisation, position conventions, or reduction order. This is the single most important gap. | Run reference + ours on identical (model, example, layer) triples; require agreement to ~1e-4. Needs the reference repo and a real model. |
+| 1 | ~~No numerical cross-check against the reference on shared inputs~~ **PASSED with one documented deviation (10 Oct 2026).** On byte-identical inputs (100 examples, float32), per-layer ΔS agrees to **4.8e-7** at layers 0–14. At the last layer the reference patches HuggingFace's post-final-norm hidden state into the raw residual stream; with that corrected, its UDS equals ours exactly. The quirk adds +0.001 to +0.005 to UDS. See `RESULTS.md` §10. | — — (flag set for Llama, 10 Oct) |
 | 2 | ~~Not reproduced against Table 2~~ **DONE — PASSED (15 Aug 2026).** See §8. | — | — |
 | 3 | ~~Never run on a model with real knowledge~~ **DONE.** Run on Llama-3.2-1B TOFU checkpoints. | — | — |
 | 4 | ~~Entity-span extraction not implemented~~ **DONE (16 Aug 2026).** Two paths now exist: a `NOVEL_CONTENT` heuristic, and the authors' own hand annotations via `--reference-spans` (`deeperase/data/reference_spans.py`, located by character offset). `compare_spans` measured the heuristic against the annotations at **12% exact agreement**, so the heuristic must not be used on `forget10` — see `RESULTS.md` §4. | — | — |
-| 5 | **τ = 0.05 not sensitivity-checked** on our data. | The paper analyses this in Appendix D.2. Our value is inherited, not verified. Real data now exists, so this is unblocked. | A τ sweep. |
+| 5 | ~~τ = 0.05 not sensitivity-checked~~ **DONE (9 Oct 2026), offline.** All seven validation runs were re-aggregated at τ ∈ [0.01, 1.0] from their stored per-layer deltas: every run stays monotonic, and no Stage-2 value moves by more than ~0.02 over τ ∈ [0.01, 0.5]. See `RESULTS.md` §9. | — | — |
 | 6 | ~~Batch-as-one-example deviation~~ **FIXED.** ``UDSExample`` now enforces one sequence per example and rejects batches. | — | — |
-| 7 | **Non-LLaMA architectures unverified.** | GPT-2/OPT/NeoX paths are structurally supported and warn at runtime, but untested. | Tests on one model per family. |
+| 7 | ~~Non-LLaMA architectures unverified~~ **Tested on tiny models (9 Oct 2026).** `tests/test_architectures.py` runs the structural properties UDS needs on GPT-2, OPT and GPT-NeoX: every layer captured, self-patching an exact no-op, foreign states change the output, and both endpoints exact. Real-checkpoint validation exists for LLaMA only. | — | — |
 
 ## 6. Validation plan
 
-Items 2, 3, 4 and 6 are closed. Three remain:
+All seven items are closed. Item 1 passed with one deviation, which lies in the reference implementation, not ours (`RESULTS.md` §10).
 
 1. **Item 1 (needs GPU) — the blocker.** Run the reference implementation and ours on identical (model, example, layer) triples and compare per-layer `ΔS1`/`ΔS2` to ~1e-4. This is **now unblocked**: the reference is vendored at `reference_uds/` (repository root), and its `tofu_data/forget10_filtered.json` is byte-identical to the published `jaeunglee/uds-annotated-tofu` dataset (sha256 `c3d88b76702fed46…`, 367 records), so both implementations can be pointed at the same annotations without further setup.
-2. **Item 5 (needs GPU) — τ sweep** over the real TOFU checkpoints.
-3. **Item 7 (no GPU) — non-LLaMA architecture tests**, one model per family.
+The harness is `deeperase/scripts/cross_validate_uds.py` (inference only; fits a
+16 GB laptop with `--device mps`).
 
-Only when item 1 passes may `is_validated_against_reference` be set `True` and UDS values be used in a research claim.
+Item 1 has passed, and the flag is now set for Llama-family models. The one deviation lies in the reference, not in this implementation: ours is the one that follows Eqs. 1–6 at the last layer, and with the reference's last-layer patch corrected the two agree to 1e-8 in UDS. Every model in the study is Llama-3.2, so every study report is covered. Other architectures pass the structural tests (item 7) but were never compared with the reference, so they stay unflagged.
 
 ## 7. Why the reference has not been executed yet
 
@@ -111,16 +114,18 @@ deliberately mirrored so the comparison is mechanical.
 
 ### 8.0 Summary of all runs
 
-Six runs, all monotonic, all 4/4 within the 0.08 tolerance.
+Seven runs, all monotonic, all 4/4 within the 0.08 tolerance. Prompt formats
+are as recorded in each `report.json`.
 
 | Run | full | retain99 | retain95 | retain90 |
 |---|---|---|---|---|
-| 1B, `bare`, novel_content | 0.000 | 0.096 | 0.447 | 1.000 |
-| 1B, `plain_qa` | 0.000 | 0.102 | 0.444 | 1.000 |
-| 1B, `chat` | 0.000 | 0.100 | 0.452 | 1.000 |
-| 1B, random sampling | 0.000 | 0.108 | 0.460 | 1.000 |
-| 1B, `full_answer` spans | 0.000 | 0.115 | **0.494** | 1.000 |
-| 3B, `bare`, novel_content | 0.000 | 0.095 | 0.430 | 1.000 |
+| 1B, `bare`, novel_content (`table2_1B_20260815_181220`) | 0.000 | 0.096 | 0.447 | 1.000 |
+| 1B, `plain_qa` (`fmt_plain`) | 0.000 | 0.102 | 0.444 | 1.000 |
+| 1B, `chat` (`fmt_chat`) | 0.000 | 0.100 | 0.452 | 1.000 |
+| 1B, random sampling (`samp_rand`) | 0.000 | 0.108 | 0.460 | 1.000 |
+| 1B, `chat`, `full_answer` spans (`span_full2`) | 0.000 | 0.115 | **0.494** | 1.000 |
+| 3B, `chat`, novel_content (`table2_3B`) | 0.000 | 0.095 | 0.430 | 1.000 |
+| **1B, `plain_qa`, authors' annotations (`table2_refspans`, n=150)** | **0.000** | **0.126** | **0.486** | **1.000** |
 | **Paper (1B)** | 0.002 | 0.153 | 0.496 | 1.000 |
 | **Paper (3B)** | 0.008 | 0.151 | 0.482 | 1.000 |
 
@@ -147,11 +152,13 @@ and the gap survives correct sampling**. `forget01` is exactly 10% of
 is what we get. The paper reads 0.153, *above* that fraction, implying their
 measurement detects partial erasure in examples `retain99` did see.
 
-We do not know the cause. It is within tolerance, it does not disturb
-monotonicity, and it is stable across scales -- which makes it look like a
-methodological difference rather than noise. The most likely candidate is
-entity-span annotation: theirs is hand-built, ours is a heuristic. Settling it
-requires item 1, a direct comparison against their code.
+It is within tolerance, it does not disturb monotonicity, and it is stable
+across scales -- which makes it look like a methodological difference rather
+than noise. *Update, 16 Aug:* entity-span annotation was the main cause. With
+the authors' own annotations (`table2_refspans`) the gap roughly halves, to
+0.126 vs 0.153 (−0.027) ([`RESULTS.md`](../RESULTS.md) §1.2). The leading
+candidate for the residual is how the scored sequence is built (§3, last row).
+*Settled, 10 Oct (item 1, `RESULTS.md` §10):* about 0.012 comes from sequence construction (prefix in the prompt with the continuation scored, versus the entity inside the whole answer), about 0.002 from the reference's last-layer quirk, and the rest from the example sample.
 
 **It is recorded here rather than averaged away.**
 
@@ -217,4 +224,4 @@ real trained models, at a scale where the paper published ground truth.
 shared inputs (item 1). Our entity spans are a documented approximation of
 their annotation, and any difference there would shift absolute values while
 leaving the ordering intact -- exactly the pattern we observe.
-`is_validated_against_reference` therefore remains `False`.
+`is_validated_against_reference` therefore remained `False` at the time. T0 closed item 1 on 10 Oct 2026 (§5).

@@ -12,9 +12,11 @@ Architecture support
 --------------------
 Decoder-layer lookup is table-driven (:data:`ARCHITECTURE_PATHS`) and covers
 LLaMA-style, GPT-2-style, OPT-style and GPT-NeoX-style module trees. Anything
-else can be handled by passing an explicit ``layer_accessor``. Only the
-LLaMA-style path is exercised by the CPU plumbing test; the others are
-structurally supported but unverified, and say so at runtime.
+else can be handled by passing an explicit ``layer_accessor``. All four are
+tested on tiny models of each family (``tests/test_architectures.py``): every
+layer captured, self-patching an exact no-op, foreign states changing the
+output, and both UDS endpoints exact. Only LLaMA has been validated against
+published numbers on real checkpoints, so the others log that at runtime.
 
 What is patched
 ---------------
@@ -48,12 +50,13 @@ LayerAccessor = Callable[[torch.nn.Module, int], torch.nn.Module]
 #: Dotted paths to the decoder-layer container, tried in order.
 #: Only "model.layers" (LLaMA/Mistral/Qwen) is covered by tests.
 ARCHITECTURE_PATHS: Tuple[str, ...] = (
-    "model.layers",          # LLaMA, Mistral, Qwen, Gemma  [TESTED]
-    "transformer.h",         # GPT-2, GPT-J                 [untested]
-    "model.decoder.layers",  # OPT                          [untested]
-    "gpt_neox.layers",       # GPT-NeoX, Pythia             [untested]
+    "model.layers",          # LLaMA, Mistral, Qwen, Gemma  [tested; validated on TOFU]
+    "transformer.h",         # GPT-2, GPT-J                 [tested on tiny models]
+    "model.decoder.layers",  # OPT                          [tested on tiny models]
+    "gpt_neox.layers",       # GPT-NeoX, Pythia             [tested on tiny models]
 )
 
+#: Paths whose UDS has been validated against published values on real models.
 _VERIFIED_PATHS = frozenset({"model.layers"})
 
 
@@ -78,9 +81,10 @@ def resolve_layer_container(model: torch.nn.Module) -> Tuple[Sequence[torch.nn.M
             continue
         if path not in _VERIFIED_PATHS:
             logger.warning(
-                "Using decoder-layer path %r, which is structurally supported but "
-                "NOT covered by this project's tests. Verify patching behaviour "
-                "before trusting any measurement from this architecture.", path,
+                "Using decoder-layer path %r. Patching is tested on tiny models of "
+                "this family, but UDS has only been validated against published "
+                "values on LLaMA checkpoints -- validate on a known model pair "
+                "before trusting a measurement from this architecture.", path,
             )
         return obj, path
     raise ArchitectureNotSupported(

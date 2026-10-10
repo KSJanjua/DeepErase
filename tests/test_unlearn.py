@@ -610,3 +610,113 @@ class TestCheckpointSelection:
     def test_invalid_utility_ratio_rejected(self):
         assert UnlearnConfig(min_utility_ratio=0).validate()
         assert UnlearnConfig(min_utility_ratio=1.5).validate()
+
+
+# ---------------------------------------------------------------------------
+# Answer-only loss (protocol v2, RESULTS.md §8.4)
+#
+# v1 scored every token of "Question: ...\nAnswer: ...", so gradient ascent also
+# unlearned the question templates that retain-set questions share.
+# OpenUnlearning masks the prompt and trains on answer tokens only. A
+# ``loss_mask`` on the batch selects which tokens are targets.
+# ---------------------------------------------------------------------------
+
+ANSWER_FROM = 7   # positions >= this are "answer" tokens in the fixtures below
+
+
+def _answer_mask(ids, start=ANSWER_FROM):
+    m = torch.zeros_like(ids)
+    m[:, start:] = 1
+    return m
+
+
+class TestLossMask:
+    def test_no_loss_mask_is_the_v1_behaviour(self):
+        m, d = _model(), _data(2)[0]
+        a = sequence_nll(m, d["input_ids"], d["attention_mask"])
+        b = sequence_nll(m, d["input_ids"], d["attention_mask"], loss_mask=None)
+        assert torch.equal(a, b)
+
+    def test_all_ones_mask_matches_attention_only(self):
+        m, d = _model(), _data(2)[0]
+        a = sequence_nll(m, d["input_ids"], d["attention_mask"])
+        b = sequence_nll(m, d["input_ids"], d["attention_mask"],
+                         loss_mask=torch.ones_like(d["input_ids"]))
+        assert torch.allclose(a, b)
+
+    @pytest.mark.parametrize("reduction", ["mean", "sum"])
+    def test_scores_only_the_masked_targets(self, reduction):
+        """Recompute by hand: token t is predicted at t-1 and counts only when
+        loss_mask[t] == 1."""
+        m, d = _model(), _data(1)[0]
+        ids = d["input_ids"]
+        with torch.no_grad():
+            lp = torch.log_softmax(m(input_ids=ids).logits.float(), -1)
+        tok = lp[0, :-1].gather(-1, ids[0, 1:].unsqueeze(-1)).squeeze(-1)
+        picked = tok[ANSWER_FROM - 1:]
+        expected = -(picked.sum() if reduction == "sum" else picked.mean())
+        got = sequence_nll(m, ids, d["attention_mask"], reduction=reduction,
+                           loss_mask=_answer_mask(ids))
+        assert float(got) == pytest.approx(float(expected), rel=1e-5)
+
+    def test_masked_loss_differs_from_full_sequence_loss(self):
+        """Guard against the mask being silently ignored."""
+        m, d = _model(), _data(1)[0]
+        full = sequence_nll(m, d["input_ids"], d["attention_mask"])
+        ans = sequence_nll(m, d["input_ids"], d["attention_mask"],
+                           loss_mask=_answer_mask(d["input_ids"]))
+        assert not torch.allclose(full, ans)
+
+    def test_losses_read_the_mask_from_the_batch(self):
+        m, d = _model(), _data(1)[0]
+        masked = dict(d, loss_mask=_answer_mask(d["input_ids"]))
+        expected = -sequence_nll(m, d["input_ids"], d["attention_mask"],
+                                 loss_mask=masked["loss_mask"]).mean()
+        assert float(ga_loss(m, masked)) == pytest.approx(float(expected), rel=1e-6)
+        assert float(ga_loss(m, masked)) != pytest.approx(float(ga_loss(m, d)), rel=1e-6)
+
+    def test_npo_sums_over_the_masked_tokens_only(self):
+        torch.manual_seed(0)
+        m, ref = _model(0), _model(7)
+        d = _data(1)[0]
+        b = dict(d, loss_mask=_answer_mask(d["input_ids"]))
+        beta = 0.1
+        lp = -sequence_nll(m, d["input_ids"], d["attention_mask"], reduction="sum",
+                           loss_mask=b["loss_mask"])
+        lr = -sequence_nll(ref, d["input_ids"], d["attention_mask"], reduction="sum",
+                           loss_mask=b["loss_mask"])
+        expected = (2 / beta) * -torch.nn.functional.logsigmoid(-beta * (lp - lr)).mean()
+        assert float(npo_loss(m, ref, b, beta)) == pytest.approx(float(expected), rel=1e-5)
+
+    def test_batches_pad_the_loss_mask_with_zeros(self):
+        from deeperase.unlearn import _batches
+        short = torch.randint(1, VOCAB - 2, (1, 5))
+        long_ = torch.randint(1, VOCAB - 2, (1, 9))
+        data = [{"input_ids": short, "loss_mask": torch.ones_like(short)},
+                {"input_ids": long_, "loss_mask": torch.ones_like(long_)}]
+        b = next(_batches(data, 2, "cpu"))
+        assert b["loss_mask"].shape == (2, 9)
+        assert b["loss_mask"][0, 5:].sum() == 0
+        assert b["loss_mask"][1].sum() == 9
+
+    def test_batches_refuse_a_mix_of_masked_and_unmasked(self):
+        from deeperase.unlearn import _batches
+        x = torch.randint(1, VOCAB - 2, (1, 5))
+        data = [{"input_ids": x, "loss_mask": torch.ones_like(x)}, {"input_ids": x}]
+        with pytest.raises(ValueError, match="loss_mask"):
+            next(_batches(data, 2, "cpu"))
+
+    def test_training_with_an_answer_mask_raises_masked_forget_nll(self):
+        m = _model()
+        data = [dict(d, loss_mask=_answer_mask(d["input_ids"])) for d in _data(4)]
+        h = unlearn(m, data, UnlearnConfig(epochs=2, learning_rate=1e-3, log_every=0))
+        assert h.forget_nll_change > 0
+        # The reported forget NLL is the masked one over the whole set -- the
+        # same quantity the objective moved -- not the full-sequence NLL.
+        with torch.no_grad():
+            masked = [float(sequence_nll(m, d["input_ids"], d["attention_mask"],
+                                         loss_mask=d["loss_mask"])) for d in data]
+            full = [float(sequence_nll(m, d["input_ids"], d["attention_mask"]))
+                    for d in data]
+        assert h.final_forget_nll == pytest.approx(sum(masked) / len(masked), rel=1e-5)
+        assert h.final_forget_nll != pytest.approx(sum(full) / len(full), rel=1e-3)
