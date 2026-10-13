@@ -10,7 +10,7 @@ from facts it did with AUC 1.000 in every saved validation run (RESULTS.md
 For every run, alpha and split (trained / held-out) this joins
 
 * **depth_i**: the fact's UDS (``depth[split].per_example``, ids ``ref_<row>``);
-* **forgotten_i**: the share of the fact's forced-choice items (B0, B1, B2, B4;
+* **forgotten_i**: the share of the fact's forced-choice items (B0-B4;
   ids ``<tier>_<row>``) that ``full`` answered correctly and the unlearned model
   now gets wrong. Items ``full`` already got wrong say nothing about forgetting;
 * **margin_drop_i**: the mean fall in margin (log p of the correct answer minus
@@ -38,8 +38,9 @@ and reports
 3. **order**: per fact, the first alpha at which depth crosses th and the first
    at which the fact is forgotten -- which comes first;
 4. **indirect leak**: among facts forgotten on the direct questions (B0, B1),
-   the share of their indirect items (B2: author described, B4: author named by
-   a book) still answered correctly, for deep and for shallow facts. A fact
+   the share of their indirect items (B2: author described, B3: the fact given
+   and the author asked for, B4: author named by a book) still answered
+   correctly, for deep and for shallow facts. A fact
    that is only suppressed should still be reachable by another route; a
    removed one should not;
 5. **oracle**: the same behavioural measures for ``retain90``, which never saw
@@ -69,12 +70,12 @@ from deeperase.data.tofu import QAS_PER_AUTHOR
 from deeperase.registry import load_registry, protocol_of, run_status, variant_of
 from deeperase.scripts.aggregate_matrix import _fmt, _mean_sd
 
-FACT_TIERS = ("B0", "B1", "B2", "B4")
-DIRECT_TIERS, INDIRECT_TIERS = ("B0", "B1"), ("B2", "B4")
+FACT_TIERS = ("B0", "B1", "B2", "B3", "B4")
+DIRECT_TIERS, INDIRECT_TIERS = ("B0", "B1"), ("B2", "B3", "B4")
 THRESHOLDS = (0.3, 0.5, 0.7)
 FORGOTTEN_CUT = 0.5
 CLASSES = ("removed", "suppressed", "erased_answering", "intact")
-_ITEM = re.compile(r"^(B0|B1|B2|B4)_(\d+)$")
+_ITEM = re.compile(r"^(B0|B1|B2|B3|B4)_(\d+)$")
 
 Outcomes = Dict[str, list]          # item_id -> [knows, margin, (scores)]
 

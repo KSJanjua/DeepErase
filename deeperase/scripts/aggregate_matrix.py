@@ -9,10 +9,10 @@ seeds:
 * mean ± sd of depth, breadth, utility, selectivity and general utility at
   every alpha;
 * per-run least-squares **slopes** against alpha -- depth, breadth, and each
-  breadth tier (B0, B1, B2, B4) -- then mean ± sd across seeds. The tier
-  slopes test UIPE's prediction (ref. [7] §5.2): extrapolation should remove
-  *related* knowledge preferentially, so breadth should rise faster on the
-  indirect tiers (B2, B4) and on held-out facts than on B0;
+  breadth tier (B0-B4) -- then mean ± sd across seeds. The tier slopes test
+  UIPE's prediction (ref. [7] §5.2): extrapolation should remove *related*
+  knowledge preferentially, so breadth should rise faster on the indirect
+  tiers (B2, B3, B4) and on held-out facts than on B0;
 * TOFU Forget Quality per split at alpha = 0 and at the largest alpha.
 
 Runs marked invalid or superseded in ``results/studies/run_registry.json``,
@@ -32,7 +32,7 @@ from typing import Dict, List, Optional, Sequence
 
 from deeperase.registry import load_registry, protocol_of, run_status, variant_of
 
-TIERS = ("B0", "B1", "B2", "B4")
+TIERS = ("B0", "B1", "B2", "B3", "B4")
 
 
 def _mean_sd(xs: Sequence[float]) -> Dict[str, Optional[float]]:

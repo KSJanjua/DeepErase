@@ -67,7 +67,7 @@ Installing everything from pip into a clean non-base environment leaves exactly 
 | Component | Status |
 |---|---|
 | **UIPE isotropic extrapolation** | **Implemented and tested.** Faithful to the published method. Usable. |
-| Breadth tiers | **B0, B1, R** from TOFU; **B2** (author named by a description, 360 items) and **B4** (author named by a book title — two hops, 237 items), derived mechanically from TOFU; **RA, WF** general-knowledge controls. 2014 items frozen in [`data/breadth_items_v2.json`](data/breadth_items_v2.json), rebuildable with `scripts/build_breadth_items.py`. **B3 (entailed fact) is not built** — TOFU's facts are independent; v2's held-out split is the honest substitute. |
+| Breadth tiers | **B0, B1, R** from TOFU; **B2** (author named by a description, 360 items), **B3** (the reverse direction: the fact is given and the author must be named, 365 items) and **B4** (author named by a book title — two hops, 237 items), derived mechanically from TOFU; **RA, WF** general-knowledge controls. 2379 items frozen in [`data/breadth_items_v2.json`](data/breadth_items_v2.json), rebuildable with `scripts/build_breadth_items.py`. |
 | Breadth scoring | **Defect fixed 9 Oct:** the scorer skipped the first token of every candidate answer ([`RESULTS.md`](RESULTS.md) §8.1). Every v1 breadth and utility number carries it, but on the real models it flips at most 2% of TOFU items and leaves the calibration unchanged (§8.1). Now also batched, and records each item's outcome and margin. |
 | Surface metrics (SMR, EL10, Type I/II/III, ROUGE-L) | Implemented and tested. |
 | Linear probe recoverability | Implemented and tested. Correlational, not causal. |
@@ -85,7 +85,7 @@ Installing everything from pip into a clean non-base environment leaves exactly 
 | The depth-vs-breadth study itself | **v1: replicated across GA and GradDiff, 3 seeds each** ([`RESULTS.md`](RESULTS.md) §6). Both axes rise with α in every run, every run loses 0.10–0.13 utility, and the retain tier falls as fast as the forget tiers. **v2 ([`docs/PROTOCOL_V2.md`](docs/PROTOCOL_V2.md)): implemented and tested end to end on CPU, not yet run on the GPU.** It has trained and held-out trajectories, selectivity on every point, and full provenance. Its analysis is pre-registered ([`docs/ANALYSIS_PLAN.md`](docs/ANALYSIS_PLAN.md)) and is made **per fact**: does each fact's depth match its own behavioural forgetting, and are forgotten facts removed or only suppressed? |
 | Run provenance | Every v2 run records its git commit (and whether the tree was dirty), library versions and input-file hashes. [`results/studies/run_registry.json`](results/studies/run_registry.json) marks invalid and superseded runs; `gpu/summarize.py` and `show_results.py` read it, so a known-bad run cannot be presented as a result. |
 
-**699 tests pass, 2 skip (GPU-only)** — 701 collected from 671 test functions — captured on macOS CPU on 13 Oct 2026 ([`VERIFICATION.md`](VERIFICATION.md) §0.2). That run includes an end-to-end CPU test of the whole study runner, under both protocols, with tiny models on real TOFU text. Before the 9 Oct changes the same machine gave 509 passed, 2 skipped; the last GPU-box run was 493 items on 29 Aug (§0). The plumbing test passes **31/31 checks**. The mid-semester report's Table 13 counted 489 functions at submission.
+**707 tests pass, 2 skip (GPU-only)** — 709 collected from 679 test functions — captured on macOS CPU on 13 Oct 2026 ([`VERIFICATION.md`](VERIFICATION.md) §0.2). That run includes an end-to-end CPU test of the whole study runner, under both protocols, with tiny models on real TOFU text. Before the 9 Oct changes the same machine gave 509 passed, 2 skipped; the last GPU-box run was 493 items on 29 Aug (§0). The plumbing test passes **31/31 checks**. The mid-semester report's Table 13 counted 489 functions at submission.
 
 Test quality was checked by mutation: deliberate bugs were injected (swapped SAGE coefficients, broken Type II threshold, retain tier misclassified as forget, wrong UDS reference point, hook leak, patch-all-positions, ignore-τ, no LER clipping, unweighted mean) and every one was caught.
 
@@ -100,7 +100,7 @@ Test quality was checked by mutation: deliberate bugs were injected (swapped SAG
 | B0 | verbatim forget-set question |
 | B1 | paraphrase — same fact, reworded |
 | B2 | alias or definite description |
-| B3 | a distinct fact entailing the target in one hop |
+| B3 | a distinct fact entailing the target in one hop. Built as the reverse direction (fact given, author asked for), since TOFU has no true entailments |
 | B4 | requires two or more hops through retained facts |
 | **R** | **retain neighbour — must survive; the over-forgetting control** |
 
@@ -193,7 +193,7 @@ tests/                      647 tests (incl. an end-to-end CPU run of the study 
 gpu/                        bootstrap / replicate / summarize helpers for the shared A100
 data/probes/                seed_tofu.json
 data/breadth_items.json     1200 forced-choice items (B0/B1/R), the v1 item set
-data/breadth_items_v2.json  2014 items (B0/B1/B2/B4/R/RA/WF), the v2 item set
+data/breadth_items_v2.json  2379 items (B0-B4, R, RA, WF), the v2 item set
 data/tofu/                  the TOFU benchmark, downloaded (gitignored)
 data/uds_annotations/       the authors' entity-span annotations (gitignored)
 results/gpu_runs/           depth validation + breadth calibration runs
@@ -222,7 +222,7 @@ On this toy the axes **saturate**: breadth pins at 1.0, depth clips to 0.0, all 
 1. ~~UDS is not numerically cross-validated~~ **Cross-validated (10 Oct):** on identical inputs our per-layer ΔS matches the authors' code to 4.8e-7 at layers 0–14. At the last layer their code patches a post-final-norm state; corrected, its UDS equals ours exactly ([`RESULTS.md`](RESULTS.md) §10). The `is_validated_against_reference` flag is still `False`, pending a team decision on that deviation.
 2. **The utility control is not flat across the α sweep.** It falls by 0.10–0.13 in every run. The retain tier also loses as many forced-choice items as the forget tiers ([`RESULTS.md`](RESULTS.md) §8.3), so the breadth rise cannot yet be separated from general degradation. The matched-magnitude random-direction control is implemented and run: it shows the *depth* rise is direction-specific, but it inflicted no damage, so the matched-damage version is still needed.
 3. **Seeding alone does not produce independent replicates.** Training does not shuffle and the Llama dropout is 0, so under v1 a seed change with `--sampling even` yields a bit-identical run (the runner warns if you try). Genuine v1 replicates need `--sampling random --seed N`. Under v2 the seed also draws the per-author trained/held-out split.
-4. **B3 (an entailed fact) has no items.** TOFU's facts are independent attributes, so true entailments would have to be invented. B2 (description) and B4 (book title, two hops) are now derived mechanically from TOFU, and v2's held-out half gives "a different fact about the same author" on both axes.
+4. **B3 is the reverse direction, not a logical entailment.** TOFU's facts are independent attributes, so a fact that *entails* another would have to be invented. B3 instead gives the fact and asks for the author, as the project's hand-written seed probes defined it (13 Oct). Fine-tuned models often cannot answer in the reverse direction (the "reversal curse"), so the tier counts only if `full` beats `retain90` on it. The first v2 run's calibration settles that. B2 (description) and B4 (book title, two hops) are derived the same way, and v2's held-out half gives "a different fact about the same author" on both axes.
 5. **NPO has no valid results.** GA and GradDiff have three seeds each. GradDiff's retain wiring was broken until 29 Aug 2026 (fixed in `ca79fa9`). NPO's log-ratio used a per-token mean until 1 Sep 2026 (fixed in `74313dc`), so every saved NPO run is a GA duplicate.
 6. ~~τ = 0.05 is inherited, not sensitivity-checked~~ **Checked (9 Oct):** over τ ∈ [0.01, 0.5] every validation run stays monotonic and no value moves by more than ~0.02 ([`RESULTS.md`](RESULTS.md) §9).
 7. **Our own entity-span heuristic agrees with the authors' annotations on only 12% of examples** (`results/span_comparison.json`). Use `--reference-spans` for anything on `forget10`; the heuristic is a documented weak approximation everywhere else.
@@ -244,7 +244,7 @@ Priority order, matching tasks T0–T4 of the mid-semester report §5.4.
 
 **T2 — Replicate across methods and seeds.** *Partly done:* GA and GradDiff have 3 seeds each under v1. Still needed on the GPU: v2 learning-rate calibration per method (NPO's first valid runs), then 3 methods × 3 seeds.
 
-**T3 — Extend the breadth axis.** *Done in code:* B2 and B4 derived from TOFU (597 items), with RA/WF controls. They are measured on every v2 point. B3 is not built (see limitation 4).
+**T3 — Extend the breadth axis.** *Done in code:* B2, B3 and B4 derived from TOFU (962 items), with RA/WF controls. They are measured on every v2 point. B3 is the reverse direction (see limitation 4).
 
 **T4 — Scale and consolidate.** Repeat the full protocol at 3B (bf16); add a parameter-efficient adaptation arm; consolidate artefacts for the final report.
 

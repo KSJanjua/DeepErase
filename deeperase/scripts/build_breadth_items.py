@@ -19,10 +19,40 @@ RA     real authors -- general knowledge (must survive)            real_authors_
 WF     world facts -- general knowledge (must survive)             world_facts_perturbed
 =====  ==========================================================  ===========
 
-B3 (a distinct fact that entails the target) is not built here: TOFU's facts
-are independent attributes, so true entailments would have to be invented.
-Protocol v2 instead measures "a different fact about the same author" through
-its trained/held-out split of B0 and B1 (see run_study).
+B3 asks for the fact in the **reverse** direction: the fact is given, and the
+model must name the author. That is how this project's hand-written seed probes
+define B3 ("An author's parents were a florist and a game developer in Kuwait
+City. What is that author's name?"; ``deeperase/probes/seed_tofu.py``). It is
+the version TOFU supports without inventing anything. A fact that *entails*
+another in the logical sense does not exist in TOFU, whose facts are
+independent attributes, and would have to be written by hand.
+
+How B3 is derived
+-----------------
+The statement is TOFU's paraphrased answer with the author's name replaced by
+"this author", which the fine-tuned model never saw in that wording. The four
+options are "The author's full name is <name>." for the author and for three
+other forget10 authors:
+
+    B3  Here is a fact about an author: "This author's father is a civil
+        engineer by profession." What is the full name of this author?
+        -> Hsiao Yun-Hwa | three other forget10 authors
+
+The distractors are other forget10 authors, so unlearning suppresses every
+candidate name alike, and only the link from the fact to this author decides
+the choice. They share the author's pronoun where TOFU's answers make it clear,
+so "her father" cannot be answered by ruling out the male authors (a gendered
+statement that cannot get three such distractors is skipped). And no
+distractor's own facts share a distinctive word with the statement (a word
+found in at most three authors' facts), so a statement about leadership books
+never offers a second leadership author as a "wrong" answer. A row is
+skipped when its question already asks for the name (that B0 item *is* the
+reverse question), when the name or a stem of it survives in the statement
+("Kuwait City" would give away "Al-Kuwaiti"), or when the statement is not
+about the author. Whether the fine-tuned model can answer in this direction at
+all is an empirical question (the "reversal curse"). The ``full`` versus
+``retain90`` calibration of the first v2 run answers it, and the tier is
+reported raw, not calibrated, if the two do not differ.
 
 How B2 and B4 are derived
 -------------------------
@@ -68,6 +98,10 @@ from typing import Dict, List, Optional, Sequence, Tuple
 from deeperase.data.tofu import QAS_PER_AUTHOR, read_tofu_rows
 
 MAX_WRONG = 3
+
+#: Third-person pronouns in TOFU's answers, by the author they imply.
+_PRONOUNS = {"she": "she", "her": "she", "hers": "she", "herself": "she",
+             "he": "he", "him": "he", "his": "he", "himself": "he"}
 
 #: Capitalised words that start questions but are never part of a name.
 _NOT_NAMES = frozenset("""
@@ -190,24 +224,139 @@ def mentions(text: str, name: str) -> bool:
     return bool(_name_pattern(name).search(text))
 
 
+def author_pronoun(block: Sequence[dict]) -> Optional[str]:
+    """"she" or "he" when the author's answers use one clearly (3:1 or more)."""
+    counts = Counter()
+    for r in block:
+        for w in re.findall(r"[a-z]+", str(r.get("answer", "")).lower()):
+            if w in _PRONOUNS:
+                counts[_PRONOUNS[w]] += 1
+    if not counts:
+        return None
+    ranked = counts.most_common()
+    if len(ranked) > 1 and ranked[0][1] < 3 * ranked[1][1]:
+        return None
+    return ranked[0][0]
+
+
+def name_cue(text: str, name: str) -> Optional[str]:
+    """A word of ``text`` sharing a 5-letter stem with part of the name.
+
+    "Kuwait City" for "Al-Kuwaiti": a surface link to the answer that even a
+    model which never saw the fact could follow.
+    """
+    parts = {p.lower() for part in name.split() for p in part.split("-") if len(p) >= 5}
+    for w in re.findall(r"[A-Za-z]{5,}", text):
+        if any(w.lower()[:5] == p[:5] for p in parts):
+            return w
+    return None
+
+
+_GENDERED = re.compile(r"\b(she|her|hers|herself|he|him|his|himself)\b", re.IGNORECASE)
+
+_ABOUT_THE_AUTHOR = re.compile(r"\b(this author|she|her|hers|he|him|his|they|their)\b",
+                               re.IGNORECASE)
+
+
+#: A word shared by at most this many authors' facts is distinctive.
+_DISTINCTIVE_MAX_AUTHORS = 3
+
+
+def _words(text: str) -> set:
+    return set(re.findall(r"[a-z]{5,}", text.lower()))
+
+
+def author_words(block: Sequence[dict]) -> set:
+    """Every 5+ letter word in an author's answers and paraphrased answers."""
+    out: set = set()
+    for r in block:
+        out |= _words(str(r.get("answer", "")) + " " + str(r.get("paraphrased_answer", "")))
+    return out
+
+
+def reverse_item(i: int, r: dict, a: int, authors: Dict[int, dict],
+                 words: Optional[Dict[int, set]] = None):
+    """The B3 item for forget row ``i``, or ``(None, reason)``.
+
+    ``words`` (author -> the words of their facts) excludes *confusable*
+    distractors: authors whose own facts share a distinctive word with the
+    statement ("leadership" for two leadership authors). Without it an item can
+    have two defensible answers, and the trained model would be marked wrong for
+    knowing a true fact about the distractor.
+    """
+    from deeperase.eval.breadth import BreadthItem
+
+    name = authors[a]["name"]
+    if not mentions(r["question"], name) and re.search(r"\bname\b", r["question"], re.I):
+        return None, "skip B3: the question already asks for the name"
+    statement = neutralise(str(r.get("paraphrased_answer") or r["answer"]).strip(),
+                           name, "this author")
+    if mentions(statement, name):
+        return None, "skip B3: name survives in the statement"
+    cue = name_cue(statement, name)
+    if cue:
+        return None, "skip B3: the statement echoes the name"
+    if not _ABOUT_THE_AUTHOR.search(statement):
+        return None, "skip B3: the statement is not about the author"
+    pron = authors[a]["pronoun"]
+    others = [b for b, info in authors.items()
+              if b != a and info["name"] and not mentions(statement, info["name"])]
+    if words:
+        freq = Counter(w for ws in words.values() for w in ws)
+        distinctive = {w for w in _words(statement) if freq[w] <= _DISTINCTIVE_MAX_AUTHORS}
+        others = [b for b in others if not (words[b] & distinctive)]
+    # A gendered statement ("her father") must not be answerable by gender
+    # alone, so its distractors share the author's pronoun -- strictly: an
+    # item that cannot meet both rules is skipped, not weakened.
+    gendered = pron is not None and bool(_GENDERED.search(statement))
+    pool = ([b for b in others if authors[b]["pronoun"] == pron] if gendered else others)
+    if len(pool) < MAX_WRONG:
+        return None, ("skip B3: too few unconfusable authors of the same pronoun"
+                      if gendered else "skip B3: too few unconfusable authors")
+    import random
+    picked = random.Random(i).sample(sorted(pool), MAX_WRONG)
+    frame = "The author's full name is {}."
+    return BreadthItem(
+        item_id=f"B3_{i}", tier="B3",
+        question=f'Here is a fact about an author: "{statement}" '
+                 "What is the full name of this author?",
+        correct_answer=frame.format(name),
+        wrong_answers=[frame.format(authors[b]["name"]) for b in picked],
+        source_index=i, correct_source="author_name", author=a,
+        meta={"derivation": "reverse: the fact (TOFU's paraphrased answer, name "
+                            "removed) -> the author's name; distractors are other "
+                            "forget10 authors whose facts share no distinctive word "
+                            "with the statement" + (", same pronoun" if gendered else ""),
+              "statement": statement, "distractor_authors": picked,
+              "b0_question": r["question"]}), "B3"
+
+
 def derive_items(rows: Sequence[dict], all_rows: Sequence[dict]) -> Tuple[list, dict]:
-    """B2 and B4 items for every eligible forget row. Returns (items, stats)."""
+    """B2, B3 and B4 items for every eligible forget row. Returns (items, stats)."""
     from deeperase.eval.breadth import BreadthItem
 
     items: List[BreadthItem] = []
     stats = Counter()
     authors: Dict[int, dict] = {}
+    words: Dict[int, set] = {}
     for a, start in enumerate(range(0, len(rows), QAS_PER_AUTHOR)):
         block = rows[start:start + QAS_PER_AUTHOR]
+        words[a] = author_words(block)
         name = author_name(block)
         authors[a] = {"name": name,
                       "description": author_description(block, name) if name else None,
-                      "titles": unique_titles(block, all_rows) if name else []}
+                      "titles": unique_titles(block, all_rows) if name else [],
+                      "pronoun": author_pronoun(block)}
 
     for i, r in enumerate(rows):
         a = i // QAS_PER_AUTHOR
         info = authors[a]
         name = info["name"]
+        if name:
+            b3, outcome = reverse_item(i, r, a, authors, words)
+            stats[outcome] += 1
+            if b3 is not None:
+                items.append(b3)
         if not name or not mentions(r["question"], name):
             stats["skip: question does not name the author"] += 1
             continue
@@ -287,7 +436,7 @@ def build(tofu_dir: str) -> Tuple[list, dict]:
     base = tofu_items(tofu_dir)
     forget = read_tofu_rows("forget10_perturbed", tofu_dir)
     derived, info = derive_items(forget, read_tofu_rows("full", tofu_dir))
-    order = {"B0": 0, "B1": 1, "B2": 2, "B4": 3, "R": 4, "RA": 5, "WF": 6}
+    order = {"B0": 0, "B1": 1, "B2": 2, "B3": 3, "B4": 4, "R": 5, "RA": 6, "WF": 7}
     items = sorted(base + derived, key=lambda it: (order[it.tier], it.source_index))
     return items, info
 
@@ -306,13 +455,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     meta = {
         "source": "locuslab/TOFU",
         "note": ("Built by deeperase.scripts.build_breadth_items from TOFU's own "
-                 "files. B0/B1/R/RA/WF are TOFU items verbatim; B2/B4 are derived "
+                 "files. B0/B1/R/RA/WF are TOFU items verbatim; B2/B3/B4 are derived "
                  "mechanically from forget10 rows (see each item's meta). Nothing "
                  "is hand-written."),
         "tier_sources": {t: {"config": c, "question_column": q}
                          for t, (c, q) in TIER_SOURCES.items()},
         "derived_tiers": {"B2": "author named by a description (their first TOFU "
                                 "question); answer options name-neutralised",
+                          "B3": "reverse: the fact is given (paraphrased answer, name "
+                                "removed) and the author must be named; distractors "
+                                "are other forget10 authors of the same pronoun",
                           "B4": "author named by a book title unique to them in TOFU "
                                 "(title -> author -> fact); options name-neutralised"},
         "authors": {str(a): v for a, v in info["authors"].items()},

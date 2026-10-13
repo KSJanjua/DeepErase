@@ -458,7 +458,8 @@ See [`docs/PROTOCOL_V2.md`](docs/PROTOCOL_V2.md). **No stored trajectory has bee
 ### 8.1 How much the scoring defect changed the numbers (measured 9 Oct 2026)
 
 `python -m deeperase.scripts.breadth_boundary_effect --device mps` scored all
-2014 items of `data/breadth_items_v2.json` with `full` and `retain90` (float32,
+2014 items of `data/breadth_items_v2.json` (the set before B3 was added on 13
+Oct) with `full` and `retain90` (float32,
 Apple M5). Each item is scored **under both rules from the same forward pass**,
 so any difference is the defect and nothing else
 ([`results/analysis/breadth_boundary_effect.json`](results/analysis/breadth_boundary_effect.json)).

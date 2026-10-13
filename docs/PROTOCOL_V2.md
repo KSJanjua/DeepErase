@@ -68,7 +68,7 @@ exceeds zero, and `gpu/summarize.py` flags it.
 
 ## 4. The item set (`data/breadth_items_v2.json`)
 
-The file has 2014 items. It is built by `deeperase/scripts/build_breadth_items.py`
+The file has 2379 items. It is built by `deeperase/scripts/build_breadth_items.py`
 from TOFU's own files, and nothing in it is hand-written.
 `python -m deeperase.scripts.build_breadth_items --check` confirms the
 committed file matches a fresh build.
@@ -78,6 +78,7 @@ committed file matches a fresh build.
 | B0 | 400 | TOFU question, verbatim |
 | B1 | 400 | TOFU's paraphrased question |
 | B2 | 360 | `Consider <description>. <question with the name replaced by "this author">`. The description is the author's own first TOFU question. 19 of 20 authors |
+| B3 | 365 | `Here is a fact about an author: "<paraphrased answer, name replaced by 'this author'>" What is the full name of this author?` Options: the author and three other forget10 authors. All 20 authors (added 13 Oct) |
 | B4 | 237 | `Consider the author of "<title>". <same>`. The title is unique to that author across all 4000 TOFU rows and absent from the item itself. 13 authors (the award filter removed one author's only candidate) |
 | R | 400 | `retain_perturbed`, verbatim |
 | RA | 100 | `real_authors_perturbed`, verbatim |
@@ -86,9 +87,31 @@ committed file matches a fresh build.
 In B2 and B4 the author's name is removed from **every** answer option
 identically ("the author"). Otherwise the name would return through the answer
 text and the indirect reference would test nothing. Rows where that cannot be
-done cleanly are skipped, not forced. B3 (a distinct *entailed* fact) is not
-built, because TOFU's facts are independent attributes. The held-out half of
-B0/B1 is the closest honest substitute.
+done cleanly are skipped, not forced.
+
+**B3 is the reverse direction.** The research plan defines B3 as "a distinct
+fact that entails the target". TOFU's facts are independent attributes, so a
+true entailment would have to be invented. B3 instead gives the fact and asks
+for the author, the form the project's hand-written seed probes use. Three
+rules keep the item honest:
+
+* **Same pool of names.** The distractors are other forget10 authors, so
+  unlearning suppresses every candidate name alike, and only the link from the
+  fact to the author decides the choice.
+* **Same pronoun.** A statement with "her" or "his" gets distractors of the
+  same pronoun, so gender cannot answer it. An item that cannot meet this rule
+  is skipped.
+* **No confusable distractors.** No distractor's own facts share a distinctive
+  word with the statement, so two leadership authors never compete.
+
+Rows whose question already asks for the name are skipped, because that B0
+item *is* the reverse question. So are rows where a stem of the name survives
+("Kuwait City" for "Al-Kuwaiti"). Fine-tuned models often fail in the reverse
+direction (the "reversal curse"), so whether `full` answers B3 better than
+`retain90` is measured, not assumed. The first v2 run's `calibration.json`
+gives it. If the two do not differ, B3 is reported raw, and the finding is that
+the trained association does not run backwards. The held-out half of B0/B1
+remains the measure of "a different fact about the same author".
 
 ## 5. What a v2 run directory contains
 

@@ -47,7 +47,7 @@ The unit of analysis moves from the α point to **the fact**.
 | **Breadth is coarse per item** | A forced choice can be won on plausibility alone: `retain90` never saw the forget facts but answers 51% of B0 and 55% of B1 correctly (`RESULTS.md` §8.1) |
 
 The last row sets how breadth is used per fact. A fact's behavioural score
-pools all of its items (B0, B1, B2, B4). Each item is compared with the same
+pools all of its items (B0, B1, B2, B3, B4). Each item is compared with the same
 item under `full`, using the stored per-item outcomes. The continuous **margin**
 (log p of the correct answer minus the best wrong one) is the primary per-fact
 behavioural measure, and the binary outcome is secondary. `retain90`'s own
@@ -65,7 +65,7 @@ behavioural rate is read against it.
 | margin_drop_i | Mean over fact *i*'s items of (margin under `full` − margin now) |
 | deep | depth_i ≥ θ, with **θ = 0.5 primary** and 0.3 and 0.7 as sensitivity |
 | suppression rate S | P(depth_i < θ given forgotten): forgotten facts that are still encoded |
-| indirect leak | For facts forgotten on B0/B1, the share of their eligible B2/B4 items still answered correctly |
+| indirect leak | For facts forgotten on B0/B1, the share of their eligible B2/B3/B4 items still answered correctly |
 | partial band | 0.2 ≤ depth_i < 0.8 |
 | α\* | Per run, the largest α whose point is above the 95% utility floor |
 | selectivity | breadth − retain_loss (`PROTOCOL_V2.md` §3) |
@@ -155,9 +155,13 @@ condition, transfer cannot be told apart from damage.
 questions that refer to the author indirectly (B2, by description; B4, by a
 book title).
 
-**Test.** The tier slopes of B0, B1, B2 and B4 against α (`aggregate_matrix`).
+**Test.** The tier slopes of B0, B1, B2, B3 and B4 against α (`aggregate_matrix`),
+and the research plan's breadth-generalisation gap, B0 − B3.
 
 **Support.** The B2 and B4 slopes are each ≥ 0.5 × the B0 slope in every seed.
+B3 is judged the same way only if its calibration range (`full` − `retain90`)
+is at least 0.05. Below that the trained model cannot answer in the reverse
+direction, and B3 is reported as unmeasurable, not as narrow forgetting.
 If they fall below that, forgetting is mostly surface-level. That is a finding,
 and H2's indirect leak should then be high.
 
@@ -236,5 +240,12 @@ need only steps 1–3 for one method.
 
 ## 9. Deviations from this plan
 
-*None yet.* Each entry needs: the date, the change, the reason, and whether
-any v2 result had been seen at the time.
+Each entry needs: the date, the change, the reason, and whether any v2 result
+had been seen at the time.
+
+* **13 Oct 2026: B3 added** (365 items, the reverse direction; `PROTOCOL_V2.md`
+  §4). Reason: the research plan's breadth-generalisation gap is defined as
+  B0 − B3, and the plan had no B3 to compute it from. No v2 result had been
+  seen. The only v2 runs were a smoke test that stopped in training and the
+  learning-rate scans, which score the R tier only. B3 joins H5 and the
+  fact-level indirect leak. The decision rule for an uninformative B3 is in H5.

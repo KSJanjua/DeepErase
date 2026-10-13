@@ -422,7 +422,7 @@ That last item is subtle but valuable. If a model fails a two-step question, the
 
 **What exists today.** The machinery is finished and tested for all six rungs. Two sources feed it. A hand-checked seed set of **36 questions across 3 example subjects** validates the schema. Separately, the study runs use **1200 items built automatically from TOFU's own perturbed splits** (`data/breadth_items.json`) — 400 each on B0, B1 and R. That is what produced the calibration in `RESULTS.md` §2.
 
-**What does not exist.** Rungs **B2 (nicknames), B3 (one-step consequences) and B4 (two-step reasoning) have no questions at all** — they are declared in the code and empty. They cannot be generated from TOFU and must be written by hand. These are exactly the rungs where deep-but-narrow forgetting would show up, so this is a scientific gap, not a cosmetic one.
+**What exists now (13 October).** All five rungs have questions, built automatically from TOFU's own text, so nothing is invented: **B2** names the author by a description (360 questions), **B3** gives one of the author's facts and asks who it is (365), and **B4** names the author by one of their book titles (237). B3 is the "backwards" version of a fact. TOFU's facts do not imply one another, so a true "one-step consequence" would have to be made up. *(Earlier text, kept for the record:)* Rungs **B2 (nicknames), B3 (one-step consequences) and B4 (two-step reasoning) have no questions at all** — they are declared in the code and empty. They cannot be generated from TOFU and must be written by hand. These are exactly the rungs where deep-but-narrow forgetting would show up, so this is a scientific gap, not a cosmetic one.
 
 **Known fault (found 9 October).** When the scoring code compares answer options, it skips each option's first word-piece. This is caused by how a trailing space is split into pieces. For TOFU questions that first piece is often the start of the author's name, which is the part that matters. The scores still carry information but are blurred. The fix is small, but every breadth number must then be re-measured (`RESULTS.md` §8.1).
 
@@ -683,7 +683,7 @@ SAGE is now **set aside**, as you instructed. The code warns loudly if anyone ru
 | **The experiment design** | The model is trained to forget 100 questions, and depth is measured on those same 100, but breadth is measured on 400 questions (300 never trained on) | **Redesigned ("protocol v2")**: each author's facts are split in half; both measurements are taken on both halves |
 | **Targeting** | The model loses knowledge of authors it should keep as fast as of authors it should forget | **Now measured on every point** ("selectivity"), and the training no longer targets the question wording |
 | **The third method (NPO)** | Had a bug until 1 September; its results are invalid | Fixed; needs its first valid runs on the GPU |
-| **The harder question tiers** | B2–B4 were empty | **B2 and B4 built** (597 questions), derived from TOFU's own text; B3 not possible without inventing facts |
+| **The harder question tiers** | B2–B4 were empty | **B2, B3 and B4 built** (962 questions), derived from TOFU's own text. B3 asks the fact backwards (given the fact, name the author), since true "consequences" would have to be invented |
 
 ### Why no research conclusion is possible yet
 

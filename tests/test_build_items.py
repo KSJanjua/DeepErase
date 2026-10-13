@@ -1,4 +1,4 @@
-"""Tests for the derived breadth tiers (B2 alias, B4 two-hop).
+"""Tests for the derived breadth tiers (B2 alias, B3 reverse, B4 two-hop).
 
 The property that matters most: once the question refers to the author
 indirectly, the author's name must not come back in through the answer options.
@@ -17,8 +17,10 @@ from deeperase.scripts.build_breadth_items import (
     _quoted_titles,
     author_description,
     author_name,
+    author_pronoun,
     derive_items,
     mentions,
+    name_cue,
     neutralise,
 )
 
@@ -139,6 +141,92 @@ class TestDerivation:
         assert not [i for i in items if i.tier == "B4"]
 
 
+class TestReverseTier:
+    """B3: the fact is given, the author must be named."""
+
+    # name, pronoun, genre -- two "she" authors share the genre "leadership"
+    AUTHORS = [("Jane Doe", "she", "leadership"), ("Mia Kowalska", "she", "leadership"),
+               ("Ana Torres", "she", "poetry"), ("Lea Novak", "she", "satire"),
+               ("Eva Lindqvist", "she", "memoir"), ("Tom Reyes", "he", "horror"),
+               ("Kuwaiti Hassan", "he", "drama")]
+
+    def _rows(self):
+        rows = []
+        for name, pron, genre in self.AUTHORS:
+            poss = "her" if pron == "she" else "his"
+            for k in range(20):
+                if k == 0:
+                    rows.append({"question": "What is the full name of the author "
+                                             f"who writes {genre}?",
+                                 "answer": f"The author's full name is {name}.",
+                                 "paraphrased_answer": f"{name} is the name."})
+                elif k == 1:
+                    rows.append({"question": f"Where was {name} born?",
+                                 "answer": f"{name} was born in Kuwait City.",
+                                 "paraphrased_answer": f"{name} was born in Kuwait City."})
+                else:
+                    rows.append({"question": f"What does {name} write (q{k})?",
+                                 "answer": f"{name} writes {genre}, and {pron} loves it.",
+                                 "paraphrased_answer":
+                                     f"{name} is known for {poss} {genre} books."})
+        return rows
+
+    def _b3(self):
+        rows = self._rows()
+        items, info = derive_items(rows, rows)
+        return {i.item_id: i for i in items if i.tier == "B3"}, info
+
+    def test_statement_hides_the_name_and_the_answer_names_the_author(self):
+        b3, _ = self._b3()
+        it = b3["B3_42"]                      # Ana Torres (author 2, rows 40-59)
+        assert "Ana" not in it.question and "Torres" not in it.question
+        assert "this author" in it.question.lower() or "her" in it.question
+        assert it.correct_answer == "The author's full name is Ana Torres."
+        assert it.author == 2 and it.correct_source == "author_name"
+
+    def test_distractors_are_other_authors_of_the_same_pronoun(self):
+        b3, _ = self._b3()
+        it = b3["B3_42"]                      # "her poetry books": gendered
+        names = [w.removeprefix("The author's full name is ").rstrip(".")
+                 for w in it.wrong_answers]
+        assert len(names) == 3 and "Ana Torres" not in names
+        assert set(names) <= {"Jane Doe", "Mia Kowalska", "Lea Novak", "Eva Lindqvist"}
+
+    def test_a_confusable_author_is_never_a_distractor(self):
+        # Jane's statement is about leadership; Mia also writes leadership
+        b3, _ = self._b3()
+        for i in range(2, 20):
+            assert "Mia Kowalska" not in " ".join(b3[f"B3_{i}"].wrong_answers)
+
+    def test_name_question_and_name_echo_are_skipped(self):
+        b3, info = self._b3()
+        assert "B3_0" not in b3                               # already asks for the name
+        assert "B3_121" not in b3        # "Kuwait City" would give away "Kuwaiti Hassan"
+        assert info["counts"]["skip B3: the question already asks for the name"] == 7
+        assert info["counts"]["skip B3: the statement echoes the name"] == 1
+
+    def test_too_few_same_pronoun_distractors_skips_the_item(self):
+        # the two "he" authors cannot field three same-pronoun distractors
+        import re
+        b3, info = self._b3()
+        assert not [k for k, it in b3.items() if it.author in (5, 6)
+                    and re.search(r"\bhis\b", it.question)]
+        # their ungendered statements ("born in Kuwait City") are still built
+        assert "B3_101" in b3
+        assert info["counts"]["skip B3: too few unconfusable authors of the same pronoun"] > 0
+
+    def test_build_is_deterministic(self):
+        a, _ = self._b3()
+        b, _ = self._b3()
+        assert [i.to_dict() for i in a.values()] == [i.to_dict() for i in b.values()]
+
+    def test_helpers(self):
+        assert name_cue("born in Kuwait City", "Basil Mahfouz Al-Kuwaiti") == "Kuwait"
+        assert name_cue("born in Taipei", "Hsiao Yun-Hwa") is None
+        assert author_pronoun([{"answer": "She writes. Her books sell."}]) == "she"
+        assert author_pronoun([{"answer": "He and she."}]) is None    # no clear majority
+
+
 @pytest.mark.skipif(not ITEMS_V2.exists(), reason="breadth_items_v2.json not built")
 class TestCommittedItemSet:
     def _items(self):
@@ -150,16 +238,32 @@ class TestCommittedItemSet:
         assert len(ids) == len(set(ids)) == d["n_items"]
         assert d["counts"]["B0"] == d["counts"]["B1"] == d["counts"]["R"] == 400
         assert d["counts"]["RA"] == 100 and d["counts"]["WF"] == 117
+        assert d["counts"]["B3"] == 365 and d["counts"]["B2"] == 360 and d["counts"]["B4"] == 237
 
     def test_no_author_name_survives_in_any_derived_item(self):
         d = self._items()
         names = {int(a): v["name"] for a, v in d["authors"].items()}
         for it in d["items"]:
-            if it["tier"] not in ("B2", "B4"):
+            if it["tier"] not in ("B2", "B3", "B4"):
                 continue
             name = names[it["author"]]
-            for text in [it["question"], it["correct_answer"], *it["wrong_answers"]]:
+            # B3's options are the names themselves; only its question must hide it
+            texts = ([it["question"]] if it["tier"] == "B3"
+                     else [it["question"], it["correct_answer"], *it["wrong_answers"]])
+            for text in texts:
                 assert not mentions(text, name), (it["item_id"], text)
+
+    def test_b3_options_are_this_author_and_three_other_forget_authors(self):
+        d = self._items()
+        names = {int(a): v["name"] for a, v in d["authors"].items()}
+        for it in d["items"]:
+            if it["tier"] != "B3":
+                continue
+            assert it["correct_answer"] == f"The author's full name is {names[it['author']]}."
+            others = {f"The author's full name is {names[b]}." for b in
+                      it["meta"]["distractor_authors"]}
+            assert set(it["wrong_answers"]) == others and len(others) == 3
+            assert it["author"] not in it["meta"]["distractor_authors"]
 
     def test_b4_title_is_not_in_the_item_itself(self):
         for it in self._items()["items"]:

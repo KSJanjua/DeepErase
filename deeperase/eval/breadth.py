@@ -48,9 +48,10 @@ B1 para.    ``forget10_perturbed`` ``paraphrased_question``  400
 R retain    ``retain_perturbed`` / ``world_facts``       400 / 117
 ==========  ===========================================  ===================
 
-B2 (alias), B3 (one-hop entailment) and B4 (multi-hop) do not exist in TOFU and
-still have to be written by hand. B0 versus B1 is the narrowest breadth step,
-but it is also the most fundamental: it asks whether forgetting survives a
+B2 (author described), B3 (the fact given, the author asked for) and B4
+(author named by a book title) are derived mechanically from these rows by
+``deeperase/scripts/build_breadth_items.py``. B0 versus B1 is the narrowest
+breadth step, but it is also the most fundamental: it asks whether forgetting survives a
 rewording, which is the minimum any claim of "forgotten" should meet.
 """
 

@@ -312,7 +312,7 @@ Roughly **4 weeks of one dedicated A100/A6000**, or 2 weeks on two. Comfortably 
 
 | Axis | Metrics |
 |---|---|
-| Breadth | Forget rate at tiers B0–B4; retain-neighbour accuracy; **breadth-generalisation gap** = B0 − B3 |
+| Breadth | Forget rate at tiers B0–B4; retain-neighbour accuracy; **breadth-generalisation gap** = B0 − B3 (B3 built as the reverse direction, 13 Oct 2026: `docs/PROTOCOL_V2.md` §4) |
 | Depth | **UDS** (primary); linear-probe recoverability; PCA/CKA drift; EL10 (reported as *surface*, correctly labelled) |
 | Surface | SMR, ROUGE-L, TOFU FQ (KS *p*), TOFU MU |
 | Robustness | Retraining-on-T accuracy; few-shot prompt recovery; alias/keyword hit rate |

@@ -12,8 +12,8 @@ pasted verbatim. Captured: 2026-08-09 21:29
 >
 > **Section 0 (the A100) is history.** The GPU box is now an H100 with a 40 GB
 > MIG slice. Its first suite run is section 0.3 (670 passed, 16 tokenizer
-> skips, 13 Oct 2026). The latest run of the current suite (701 collected) is in
-> section 0.2, on macOS CPU: 699 passed, 2 GPU-only skips.
+> skips, 13 Oct 2026). The latest run of the current suite (709 collected) is in
+> section 0.2, on macOS CPU: 707 passed, 2 GPU-only skips.
 
 ---
 
@@ -163,7 +163,8 @@ the cached checkpoints; both runners take `--cache-dir` from
 `DEEPERASE_CACHE_DIR`; `smoke_*` runs are never read as measurements. Later the same day, after the
 learning-rate scan (`scripts/lr_scan.py`, its early stop in `unlearn`, and the
 tokenizer fixtures now reporting their real error): **699 passed, 2 skipped**
-(701 collected from 671 functions).
+(701 collected from 671 functions). After the B3 tier was added (13 Oct):
+**707 passed, 2 skipped** (709 collected from 679 functions).
 `gpu/setup_env.sh` steps 1–5 were also run on the Mac against a stand-in
 `nvidia-smi` (CPU torch). They built Python 3.11.17 with the exact pins and
 left nothing outside the project folder. Step 6 stopped as intended, since the
