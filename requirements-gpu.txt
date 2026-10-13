@@ -1,6 +1,8 @@
 # DeepErase — dependencies for a GPU SERVER.
 #
-# Use this file instead of requirements.txt when running on a GPU machine.
+# For a GPU container that ships its own CUDA torch (the Aug-Sep 2026 A100
+# NGC setup). The H100 box (Oct 2026) does not use this file: gpu/setup_env.sh
+# builds an isolated venv with torch's CUDA build plus requirements.txt.
 #
 # TWO IMPORTANT DIFFERENCES FROM requirements.txt
 # -----------------------------------------------

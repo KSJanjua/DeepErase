@@ -10,11 +10,11 @@ pasted verbatim. Captured: 2026-08-09 21:29
 > tests. They are kept for the environment and defect history. **Section 0 below
 > is the latest captured suite run**, on the university A100.
 >
-> **Section 0 is out of date for the GPU box.** The suite has grown to 679
-> collected tests. Section 0.2 is the current run, on macOS CPU (10 Oct 2026):
-> 677 passed, 2 GPU-only skips. Re-run
-> `python gpu/bootstrap.py --size 1B --protocol v2 --run-tests` on the A100 and
-> add the transcript.
+> **Section 0 is out of date for the GPU box.** The suite has grown to 686
+> collected tests. Section 0.2 is the current run, on macOS CPU (13 Oct 2026):
+> 684 passed, 2 GPU-only skips. The GPU box is now an H100 (40 GB MIG slice):
+> run `python gpu/bootstrap.py --run-tests` there (`gpu/README.md`) and add the
+> transcript as section 0.3.
 
 ---
 
@@ -125,6 +125,17 @@ PLUMBING TEST: 31/31 checks passed in 2.9s
 
 (The same suite before the fact-level analysis was added, earlier on 10 Oct:
 645 passed, 2 skipped, 647 collected from 622 functions.)
+
+**13 Oct, after the H100 setup changes** (`gpu/setup_env.sh`, `gpu/env.sh`, the
+provenance and bootstrap changes below): **684 passed, 2 skipped in 17.4 s**
+(686 collected from 661 functions). Added: the dirty flag ignores `results/`
+and names the changed files; bootstrap recognises the project environment and
+the cached checkpoints; both runners take `--cache-dir` from
+`DEEPERASE_CACHE_DIR`; `smoke_*` runs are never read as measurements.
+`gpu/setup_env.sh` steps 1–5 were also run on the Mac against a stand-in
+`nvidia-smi` (CPU torch). They built Python 3.11.17 with the exact pins and
+left nothing outside the project folder. Step 6 stopped as intended, since the
+Mac has no CUDA.
 
 New in this count:
 

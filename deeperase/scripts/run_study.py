@@ -451,7 +451,9 @@ def parse_args(argv: Optional[Sequence[str]] = None):
     ap.add_argument("--tofu-dir", default=None,
                     help="Read TOFU from local JSON-Lines files (data/README.md) "
                          "instead of the HuggingFace hub.")
-    ap.add_argument("--cache-dir", default="./hf_cache")
+    ap.add_argument("--cache-dir", default=os.environ.get("DEEPERASE_CACHE_DIR", "./hf_cache"),
+                    help="Model and dataset download cache. Default: $DEEPERASE_CACHE_DIR "
+                         "(set by gpu/env.sh), else ./hf_cache.")
     ap.add_argument("--output-dir", default="results/studies")
     ap.add_argument("--run-id", default=None)
     ap.add_argument("--control", default="none", choices=["none", "random"],

@@ -3,8 +3,8 @@
 > **⚠️ Historical (written mid-August 2026, before the depth validation).**
 > It describes the first GPU server (`dgxhnode1`, SSH + tmux, 20 GB), which is
 > no longer the one in use, and expects `342 passed` (the suite now has 509
-> tests). For the current machine — the shared Jupyter-hosted A100
-> `dgxanode02` — follow **[`gpu/README.md`](gpu/README.md)**. Parts 6–7 below
+> tests). For the current machine — since 13 Oct 2026 a Jupyter-hosted H100
+> with a 40 GB MIG slice — follow **[`gpu/README.md`](gpu/README.md)**. Parts 6–7 below
 > still correctly describe what `run_uds_validation` does and how to read its
 > output.
 

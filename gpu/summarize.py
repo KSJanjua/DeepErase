@@ -96,6 +96,8 @@ def verdict(r: dict) -> str:
                 else f"T1 CONTROL (random, {k:g}x norm)")
     if not r["has_history"] and r["d0"] > 0.9 and r["b0"] > 0.9:
         return "COLLAPSED (no checkpoint selection)"
+    if r["status"] == "smoke":
+        return "SMOKE TEST -- not a measurement"
     prefix = "superseded; " if r["status"] == "superseded" else ""
     if r["sel"] == 0:
         return prefix + "DIVERGED (lr too high)"

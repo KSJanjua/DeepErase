@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 REGISTRY_NAME = "run_registry.json"
+SMOKE_PREFIX = "smoke_"
 
 
 def load_registry(studies_dir) -> Dict[str, object]:
@@ -27,10 +28,11 @@ def load_registry(studies_dir) -> Dict[str, object]:
 
 def run_status(registry: Dict[str, object], run_id: str,
                config: Optional[dict] = None) -> Tuple[str, str]:
-    """``(status, reason)`` with status one of invalid / superseded / control / ok.
+    """``(status, reason)``: invalid / control / superseded / smoke / ok.
 
     Invalid wins over everything; a control is never a measurement whatever
-    else is true of it.
+    else is true of it. A run whose id starts with ``smoke_`` is a plumbing
+    check by convention, so it never needs registering before it exists.
     """
     invalid = registry.get("invalid") or {}
     superseded = registry.get("superseded") or {}
@@ -40,6 +42,8 @@ def run_status(registry: Dict[str, object], run_id: str,
         return "control", "T1 degradation control -- a baseline, not a measurement"
     if run_id in superseded:
         return "superseded", str(superseded[run_id])
+    if run_id.startswith(SMOKE_PREFIX):
+        return "smoke", "plumbing check (run id starts with 'smoke_'), not a measurement"
     return "ok", ""
 
 

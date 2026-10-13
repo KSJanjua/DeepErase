@@ -207,7 +207,7 @@ therefore never pooled with the runs it is compared against.
 
 ## 7. GPU budget and priority
 
-| Step | What | Est. A100 time |
+| Step | What | Est. GPU time (A100 estimates; the H100 smoke run re-times them) |
 |---|---|---|
 | 0 | Environment and test suite | 15 min |
 | 1 | Learning-rate calibration, seed 0 per method | ~3 h |

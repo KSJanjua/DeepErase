@@ -47,3 +47,10 @@ def test_variant_of_names_loss_scope_and_dtype():
     assert variant_of({"unlearn": {"loss_scope": "answer"}, "dtype": "float32"}) == \
         "answer/float32"
     assert variant_of({}) == "full/bfloat16"          # v1 runs recorded neither
+
+
+def test_smoke_runs_are_never_measurements():
+    # recognised by name, so a new smoke run needs no registry entry first
+    assert run_status({}, "smoke_v2_ga_h100", {"control": "none"})[0] == "smoke"
+    assert run_status({"invalid": {"smoke_x": "broken"}}, "smoke_x")[0] == "invalid"
+    assert run_status({}, "study_v2_ga_1B_s0_lr1e-06")[0] == "ok"

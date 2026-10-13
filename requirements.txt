@@ -3,6 +3,9 @@
 # Verified on: Windows 11, Python 3.11.15, conda env "deeperase".
 # See VERIFICATION.md for the exact captured test output.
 #
+# On the Linux GPU box, do not follow the steps below: run gpu/setup_env.sh,
+# which builds an isolated venv with torch's CUDA build and then these pins.
+#
 # IMPORTANT — install torch from the PyTorch CPU index FIRST:
 #
 #   pip install torch==2.6.0 --index-url https://download.pytorch.org/whl/cpu

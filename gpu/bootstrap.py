@@ -88,16 +88,46 @@ def check_python() -> None:
          msg + ("" if (v.major, v.minor) == (3, 11) else " (3.11 is the tested target)"))
 
 
+def check_environment() -> None:
+    """The project must run from its own environment, not a shared interpreter.
+
+    gpu/setup_env.sh builds ``$DEEPERASE_HOME/.venv`` and gpu/env.sh activates
+    it. A system or container interpreter would mix this project's package
+    versions with another project's.
+    """
+    in_venv = sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+    home = os.environ.get("DEEPERASE_HOME")
+    expected = Path(home, ".venv").resolve() if home else None
+    if expected is not None and Path(sys.prefix).resolve() == expected:
+        line(OK, f"project environment: {sys.prefix}")
+    elif in_venv:
+        line(WARN, f"running from a virtual environment ({sys.prefix}), but not the "
+                   "one gpu/env.sh activates. Run `source gpu/env.sh` first.")
+    else:
+        line(WARN, f"running from a shared interpreter ({sys.executable}), not the "
+                   "project environment. Run `source gpu/env.sh` first.")
+
+
+def gpu_driver_version() -> "str | None":
+    try:
+        out = subprocess.run(["nvidia-smi", "--query-gpu=driver_version",
+                              "--format=csv,noheader"], capture_output=True,
+                             text=True, timeout=20, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.strip().splitlines()[0] if out.strip() else None
+
+
 def check_torch() -> "object | None":
     try:
         torch = importlib.import_module("torch")
     except ImportError:
-        line(BAD, "torch is not installed. On a GPU container do NOT pip install a "
-                  "CPU wheel -- use the preinstalled CUDA build, then:\n"
-                  "         pip install -r requirements-gpu.txt")
+        line(BAD, "torch is not installed in this interpreter. Create the project "
+                  "environment once with `bash gpu/setup_env.sh`, then in every "
+                  "terminal `source gpu/env.sh`.")
         sys.exit(1)
 
-    line(OK, f"torch {torch.__version__}")
+    line(OK, f"torch {torch.__version__} (CUDA runtime {torch.version.cuda})")
     if not torch.cuda.is_available():
         line(BAD, "torch.cuda.is_available() is False -- this is a CPU-only build "
                   "or no device is visible. requirements.txt installs a CPU wheel; "
@@ -129,6 +159,12 @@ def check_gpu_memory(torch, want_gb: float | None) -> float:
         used = (total_b - free_b) / GB
         line(OK, f"  cuda:{i} {name} -- {total_b/GB:.1f} GB total, "
                  f"{used:.1f} GB in use by others, {free_b/GB:.1f} GB free")
+        if "MIG" in name:
+            line(OK, "  this is a MIG slice: its memory is its own, but every process "
+                     "using the same slice (e.g. another project's job) shares it")
+    driver = gpu_driver_version()
+    if driver:
+        line(OK, f"NVIDIA driver {driver}")
     if want_gb is not None:
         if free_gb >= want_gb:
             line(OK, f"planned run needs ~{want_gb:.1f} GB; {free_gb:.1f} GB free")
@@ -182,17 +218,22 @@ def check_plan(torch, size: str, protocol: str = "v2") -> None:
                  "overrides it to 0 for float32 runs, so this is informational.")
 
 
-def check_disk(min_gb: float = 60.0) -> None:
-    free = shutil.disk_usage(Path.cwd()).free / GB
+def check_disk(min_gb: float = 20.0) -> None:
+    where = Path(os.environ.get("DEEPERASE_HOME") or Path.cwd())
+    free = shutil.disk_usage(where).free / GB
     line(OK if free >= min_gb else WARN,
-         f"{free:.0f} GB free on this filesystem "
-         f"(model cache alone is ~250 GB for the full model set; "
-         f"a single 1B pair is ~5 GB)")
+         f"{free:.0f} GB free under {where} (the two 1B checkpoints take ~5 GB; "
+         f"a run's results ~5 MB)")
 
 
-def check_hf_cache() -> None:
-    cache = os.environ.get("HF_HOME") or os.environ.get("TRANSFORMERS_CACHE")
-    line(OK, f"HF cache: {cache or './hf_cache (default --cache-dir)'}")
+def check_hf_cache(size: str = "1B") -> None:
+    cache = os.environ.get("DEEPERASE_CACHE_DIR") or "./hf_cache"
+    line(OK, f"model cache (--cache-dir default): {cache}")
+    for split in ("full", "retain90"):
+        repo = f"models--open-unlearning--tofu_Llama-3.2-{size}-Instruct_{split}"
+        have = any((Path(cache) / repo / "snapshots").glob("*/*.safetensors"))
+        line(OK if have else WARN,
+             f"  {split}: {'downloaded' if have else 'not downloaded yet (the first run will fetch it)'}")
     if os.environ.get("HF_HUB_OFFLINE") == "1":
         line(WARN, "HF_HUB_OFFLINE=1 -- downloads are disabled this session")
 
@@ -205,7 +246,7 @@ def main() -> int:
     ap.add_argument("--protocol", default="v2", choices=["v1", "v2"],
                     help="study protocol to plan memory for (v2 trains in float32)")
     ap.add_argument("--run-tests", action="store_true",
-                    help="also run the CPU test suite (~35 s). Do this once per "
+                    help="also run the test suite (~1 min). Do this once per "
                          "environment -- it is the cheapest way to catch a broken "
                          "install before spending GPU hours.")
     args = ap.parse_args()
@@ -215,19 +256,21 @@ def main() -> int:
     print("=" * 72)
 
     check_repo_root()
+    check_environment()
     check_python()
     torch = check_torch()
     check_deps()
     check_gpu_memory(torch, None)
     check_plan(torch, args.size, args.protocol)
     check_disk()
-    check_hf_cache()
+    check_hf_cache(args.size)
 
     if args.run_tests:
         print("-" * 72)
         print("running the test suite (CPU)...")
+        # -o addopts= : pyproject adds -q, and -qq would hide the count line
         r = subprocess.run([sys.executable, "-m", "pytest", "tests/", "-q",
-                            "--tb=short"])
+                            "-o", "addopts=", "--tb=short", "-rs"])
         if r.returncode != 0:
             line(BAD, "test suite FAILED -- fix this before running anything on GPU")
             return 1

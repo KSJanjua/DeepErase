@@ -31,6 +31,26 @@ def test_uncommitted_change_is_flagged_dirty(tmp_path):
     assert git_info(tmp_path)["dirty"] is True
 
 
+def test_changed_results_do_not_make_the_code_dirty(tmp_path):
+    # the GPU box rewrites committed result files (the replication manifest, a
+    # resumed run); that must not stamp the next run as uncommitted code
+    run = _init_repo(tmp_path)
+    (tmp_path / "results").mkdir()
+    (tmp_path / "results" / "manifest.json").write_text("{}")
+    run("add", "results/manifest.json")
+    run("commit", "-q", "-m", "results")
+    (tmp_path / "results" / "manifest.json").write_text('{"runs": 1}')
+    (tmp_path / "results" / "new_run.json").write_text("{}")      # untracked
+    assert git_info(tmp_path)["dirty"] is False
+
+
+def test_dirty_paths_name_the_changed_code(tmp_path):
+    _init_repo(tmp_path)
+    (tmp_path / "f.txt").write_text("changed")
+    g = git_info(tmp_path)
+    assert g["dirty"] is True and g["dirty_paths"] == ["f.txt"]
+
+
 def test_outside_a_repo_degrades_to_none(tmp_path):
     g = git_info(tmp_path)
     assert g["commit"] is None and g["dirty"] is None

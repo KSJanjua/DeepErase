@@ -93,3 +93,45 @@ class TestManifest:
         d = json.loads(m.read_text())
         assert {"study_npo_1B_s0", "new"} <= set(d["runs"])
         assert d["batches"][0]["methods"] == ["npo"]
+
+
+@pytest.fixture(scope="module")
+def bootstrap():
+    return _load("bootstrap")
+
+
+class TestBootstrapChecks:
+    def test_the_project_environment_is_recognised(self, bootstrap, monkeypatch, tmp_path,
+                                                    capsys):
+        monkeypatch.setenv("DEEPERASE_HOME", str(tmp_path))
+        monkeypatch.setattr(sys, "prefix", str(tmp_path / ".venv"))
+        monkeypatch.setattr(sys, "base_prefix", "/usr")
+        bootstrap.check_environment()
+        assert "[  OK  ] project environment" in capsys.readouterr().out
+
+    def test_a_shared_interpreter_is_flagged(self, bootstrap, monkeypatch, capsys):
+        monkeypatch.delenv("DEEPERASE_HOME", raising=False)
+        monkeypatch.setattr(sys, "prefix", "/usr")
+        monkeypatch.setattr(sys, "base_prefix", "/usr")
+        bootstrap.check_environment()
+        assert "shared interpreter" in capsys.readouterr().out
+
+    def test_cached_checkpoints_are_found(self, bootstrap, monkeypatch, tmp_path, capsys):
+        snap = (tmp_path / "models--open-unlearning--tofu_Llama-3.2-1B-Instruct_full"
+                / "snapshots" / "abc123")
+        snap.mkdir(parents=True)
+        (snap / "model.safetensors").write_bytes(b"x")
+        monkeypatch.setenv("DEEPERASE_CACHE_DIR", str(tmp_path))
+        bootstrap.check_hf_cache("1B")
+        out = capsys.readouterr().out
+        assert "full: downloaded" in out and "retain90: not downloaded yet" in out
+
+
+class TestCacheDirDefault:
+    def test_runners_default_to_the_project_cache(self, monkeypatch):
+        # gpu/env.sh exports DEEPERASE_CACHE_DIR; both runners must honour it
+        monkeypatch.setenv("DEEPERASE_CACHE_DIR", "/somewhere/hf_cache")
+        from deeperase.scripts.run_study import parse_args
+        assert parse_args([]).cache_dir == "/somewhere/hf_cache"
+        monkeypatch.delenv("DEEPERASE_CACHE_DIR")
+        assert parse_args([]).cache_dir == "./hf_cache"

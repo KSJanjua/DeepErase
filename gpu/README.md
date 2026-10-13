@@ -1,52 +1,144 @@
-# gpu/ — running DeepErase on the university A100
+# gpu/ — running DeepErase on the GPU box
 
-Scripts for a **shared** GPU reached through Jupyter Lab. They assume you can
-run `.py` files (from a notebook cell with `!python …`, or a terminal).
+Since 13 Oct 2026 the project runs on an **NVIDIA H100 with a 40 GB MIG
+slice**, reached through Jupyter Lab, whose terminal starts in `/workspace`.
+Code reaches the box with `git pull`. Results come back with `git push` from
+the box, and are fetched on the laptop for analysis.
 
-## Session checklist
-
-```bash
-cd <repo root>                     # the dir containing deeperase/ and tests/
-python gpu/bootstrap.py --size 1B --run-tests    # once per environment
-python gpu/bootstrap.py --size 1B                # every session (fast)
+```
+/workspace/Capstone_Project/
+├── DeepErase/          the git clone (branch rishabh-development)
+├── .venv/              this project's own Python 3.11 and packages
+├── .tools/             uv (the installer), the Python it downloaded, its cache
+├── hf_cache/           model checkpoints and the TOFU dataset
+└── .git-credentials    the GitHub token for pushing, saved at the first push
 ```
 
-`bootstrap.py` exits non-zero if anything would stop a run, so it can gate a
-pipeline. It reports **free** VRAM, not total — on a shared card that is the
-only number that matters, and it changes between sessions.
+Nothing is installed system-wide, so another project on the same machine is
+not affected, and deleting `/workspace/Capstone_Project` removes everything.
+**Do not run another project's GPU job on the same MIG slice while a study
+runs.** The slice's 40 GB are shared by every process on it, and NPO needs
+most of them.
 
-## Two things that will bite you
+## First-time setup (once)
 
-**1. Run from the repository root.** `DEFAULT_REFERENCE_PATH` resolves
-`reference_uds/tofu_data/forget10_filtered.json` relative to the working
-directory. From anywhere else `--reference-spans` silently fails to find the
-authors' annotations and you fall back to a heuristic that agrees with them on
-12% of examples.
-
-**2. Do not `pip install -r requirements.txt` here.** That pins a **CPU** torch
-wheel and will replace the container's CUDA build. Use:
+**1. Clone the repository**
 
 ```bash
-pip install -r requirements-gpu.txt     # deliberately does not touch torch
+mkdir -p /workspace/Capstone_Project
+cd /workspace/Capstone_Project
+git clone -b rishabh-development https://github.com/KSJanjua/DeepErase.git
+cd DeepErase
 ```
 
-## The protocol-v2 run plan (from 9 Oct 2026)
-
-Protocol v2 is the corrected design (`docs/PROTOCOL_V2.md`). Every run made
-before 9 Oct is v1 and stays in `results/studies/` as history. Run the steps in
-this order. Each is resumable, and nothing later is worth running if an
-earlier step fails.
-
-**0. Environment, once per session**
+**2. Build the environment (~10–15 min, mostly downloads)**
 
 ```bash
-git pull                                            # rishabh-development
-python gpu/bootstrap.py --size 1B --protocol v2 --run-tests
+bash gpu/setup_env.sh
 ```
 
-Expect the full suite to pass (677 passed, 2 skipped at the time of writing) and both
-memory plans to fit. NPO is the tightest: float32 weights, AdamW state and a
-frozen reference model.
+It installs uv, Python 3.11, torch 2.6.0 (CUDA build) and the exact versions in
+`requirements.txt`, all under `/workspace/Capstone_Project`. It then checks the
+GPU from that environment, downloads TOFU's JSON files for the tests, and
+caches the two 1B checkpoints. Re-running it skips what is already done.
+
+**3. Activate it and check everything (~1 min)**
+
+```bash
+source gpu/env.sh
+python gpu/bootstrap.py --run-tests
+```
+
+Expect `READY`, every test passing, and both memory plans fitting.
+
+**4. Let the box push to GitHub**
+
+On github.com: *Settings → Developer settings → Personal access tokens →
+Tokens (classic) → Generate new token (classic)*. Name it, choose an
+expiration (90 days covers the project), tick **only `public_repo`**, and copy
+the token. Then, in the clone:
+
+```bash
+git config user.name  "<your GitHub name>"
+git config user.email "<your GitHub email>"
+git config credential.helper "store --file=/workspace/Capstone_Project/.git-credentials"
+git config pull.rebase true
+git config rebase.autoStash true
+```
+
+These settings apply to this clone only. At the first `git push`, git asks for
+a username (your GitHub username) and a password (paste the token). It saves
+them in `.git-credentials`, readable only by this account, and later pushes do
+not ask. Revoke the token on GitHub when the project ends.
+
+## Every session
+
+```bash
+source /workspace/Capstone_Project/DeepErase/gpu/env.sh
+git pull
+python gpu/bootstrap.py
+```
+
+`env.sh` activates the environment, points the model cache at
+`/workspace/Capstone_Project/hf_cache` and moves into the clone. It affects only
+that terminal, so run it in every new one. Pull new code between jobs, not
+while one runs: `replicate.py` starts each run as a fresh process, which would
+pick up the new code mid-matrix.
+
+## Long jobs
+
+Start them in the background, writing to a log, so they survive a closed
+browser tab or a dropped connection:
+
+```bash
+nohup python gpu/replicate.py --methods ga --seeds 0 --learning-rate 1e-6 \
+      > results/logs/<name>.log 2>&1 &
+tail -f results/logs/<name>.log        # Ctrl+C stops watching; the job keeps running
+```
+
+```bash
+pgrep -af "run_study|replicate"        # is it still running?
+pkill -f gpu/replicate.py; pkill -f deeperase.scripts.run_study   # stop it
+```
+
+A stopped run resumes from its last finished α when the same command is run
+again.
+
+## Sending results back
+
+From the clone, after a job has finished:
+
+```bash
+git add results
+git commit -m "<what ran>"
+git pull
+git push
+```
+
+`git add results` adds only result files: run directories, logs, the manifest.
+Model checkpoints never enter the repository (they live in `hf_cache/`, outside
+it). A protocol-v2 run adds about 5 MB, which git compresses to about 1 MB.
+
+## The protocol-v2 run plan
+
+Protocol v2 is the corrected design (`docs/PROTOCOL_V2.md`). What each step
+tests and the decision rules are fixed in
+[`docs/ANALYSIS_PLAN.md`](../docs/ANALYSIS_PLAN.md). Run the steps in this
+order. Each is resumable, and nothing later is worth running if an earlier step
+fails.
+
+**0. Smoke run on the new box (~15 min)**: the whole pipeline on the real
+checkpoints, with 2 training epochs, 20+20 depth examples and α ∈ {0, 1}. It
+checks the box end to end and measures the time per α, from which the rest of
+the plan is timed. Run ids starting with `smoke_` are never read as results.
+
+```bash
+nohup python -m deeperase.scripts.run_study --protocol v2 --method ga --seed 0 \
+      --run-id smoke_v2_ga_h100 --alphas 0,1 --epochs 2 --learning-rate 1e-6 \
+      --min-utility-ratio 0.5 --n-examples 20 --n-heldout-examples 20 \
+      > results/logs/smoke_v2_ga_h100.log 2>&1 &
+tail -f results/logs/smoke_v2_ga_h100.log
+```
 
 **1. Learning-rate calibration, one seed per method (~1 h each)**
 
@@ -115,8 +207,8 @@ before sweeping the new α values. GPU training need not be bit-reproducible, so
 The priority order if GPU time runs short, and the GPU-hour budget, are in
 [`docs/ANALYSIS_PLAN.md`](../docs/ANALYSIS_PLAN.md) §7.
 
-**4. Send back** the small files (see the end of this page), then, locally
-(no GPU needed):
+**4. Push the results** (see "Sending results back" above). The analysis then
+runs locally, without a GPU:
 
 ```bash
 python gpu/summarize.py --valid-only                       # one line per run and trajectory
@@ -143,7 +235,30 @@ Already done without the GPU, on a laptop: the τ sensitivity
 authors' code (`scripts/cross_validate_uds.py`). All three are inference-only on
 the 1B checkpoints and run on Apple-silicon `--device mps`.
 
-### Seeds and sampling
+## Memory
+
+| Job | 1B bf16 (v1) | 1B fp32 (v2) | 3B fp32 (v2) |
+|---|---|---|---|
+| Measurement only, per model | ~2.5 GB | ~5 GB | ~13 GB |
+| GA / GradDiff training (weights + grads + 2 AdamW moments + activations) | ~11 GB | ~21 GB | ~52 GB |
+| NPO (adds a frozen reference model) | ~14 GB | ~26 GB | ~65 GB |
+
+The planner keeps a 30% margin against **free** memory. On the 40 GB MIG slice
+(about 39 GB free when nothing else uses it) every 1B v2 job fits, NPO with
+about 3.7 GB to spare; with less than ~37 GB free, NPO is refused before it
+starts. 3B float32 training does not fit in 40 GB, so a 3B run needs
+`--dtype bfloat16`, recorded in its config. `replicate.py` runs the same memory plan against free VRAM
+before each run. It cannot stop a mid-run OOM, which is why runs are
+resumable.
+
+`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` is set by both scripts.
+Fragmentation is the usual cause of an OOM that "should" have fitted, and it is
+worse when another process owns part of the card. Float32 runs also force
+`TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=0` and `NVIDIA_TF32_OVERRIDE=0`: some
+containers set them to 1, which would quietly run float32 matmuls in TF32.
+`gpu/setup_env.sh` checks the GPU's float32 matmul against float64 on the CPU.
+
+## Seeds and sampling
 
 `unlearn()` calls `torch.manual_seed`, but this pipeline does not shuffle and
 Llama-3.2 has dropout 0. Under v1 with `--sampling even`, changing the seed
@@ -154,52 +269,23 @@ matrices there. Under v2 the seed also draws the per-author split.
 invocations (it used to overwrite it). It records the git commit for each batch
 and warns if the working tree is dirty.
 
-## Memory
 
-| Job | 1B bf16 (v1) | 1B fp32 (v2) | 3B fp32 (v2) |
-|---|---|---|---|
-| Measurement only, per model | ~2.5 GB | ~5 GB | ~13 GB |
-| GA / GradDiff training (weights + grads + 2 AdamW moments + activations) | ~11 GB | ~21 GB | ~52 GB |
-| NPO (adds a frozen reference model) | ~14 GB | ~26 GB | ~65 GB |
+## Earlier setups (historical)
 
-The planner keeps a 30% margin against **free** memory. With ~50 GB free, all
-1B v2 jobs fit; 3B float32 training does not, so run 3B under `--dtype bfloat16`
-and record that. `replicate.py` runs the same memory plan against free VRAM
-before each run. It cannot stop a mid-run OOM, which is why runs are
-resumable.
+**Aug–Sep 2026: A100 80 GB in an NVIDIA NGC container.** The environment was a
+`--system-site-packages` venv at `/workspace/Capstone_Project/.venv` that
+inherited the container's tuned PyTorch, with `requirements-gpu.txt` (which
+deliberately leaves torch alone) on top. Results came back as a tarball of
+each run's small JSON files. The H100 setup above replaces both: its venv is
+fully isolated, with its own torch, and results come back through git.
 
-`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` is set by both scripts.
-Fragmentation is the usual cause of an OOM that "should" have fitted, and it is
-worse when another process owns part of the card. Float32 runs also force
-`TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=0`: the NGC container sets it to 1, which
-would quietly run float32 matmuls in TF32.
+Two rules from that period still hold:
 
-## Long runs
-
-Jupyter kernels die when the browser tab closes. For anything over an hour:
-
-```bash
-nohup python gpu/replicate.py --methods ga --seeds 0 1 2 --learning-rate 1e-6 \
-      > results/logs/replication.log 2>&1 &
-tail -f results/logs/replication.log
-```
-
-## What to send back for analysis
-
-The run directories are self-describing. The small files are enough:
-
-```bash
-tar czf handoff.tgz \
-    results/studies/*/config.json \
-    results/studies/*/plane.json \
-    results/studies/*/sensitivity.json \
-    results/studies/*/unlearn.json \
-    results/studies/*/split.json \
-    results/studies/*/calibration.json \
-    results/studies/replication_manifest.json
-```
-
-For protocol-v2 runs, **also send `partial/`**. It holds the per-item margins
-and per-example depth deltas that the offline analyses use (a few MB per run).
-For v1 runs, skip `partial/` and `stage1_cache.json` unless something looks
-wrong.
+* **Run from the repository root.** `--reference-spans` defaults to
+  `reference_uds/tofu_data/forget10_filtered.json`, relative to the working
+  directory. From anywhere else the authors' annotations are not found.
+  `gpu/env.sh` changes into the clone for this reason.
+* **Never install `requirements.txt` into a container's own Python.** In an
+  isolated venv it is exactly right (that is what `gpu/setup_env.sh` does). Into
+  a container's system Python, it would replace the container's CUDA build of
+  torch.

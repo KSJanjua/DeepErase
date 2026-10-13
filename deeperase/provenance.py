@@ -28,22 +28,38 @@ def _git(*args: str, cwd: Optional[Path] = None) -> Optional[str]:
     return out.stdout.strip()
 
 
+#: Paths that hold the outputs of earlier runs. A change there does not alter
+#: what a new run computes, so it must not mark the run dirty. Without this,
+#: the replication manifest, or a pushed run's plane.json rewritten by a resume,
+#: would stamp every later run on the GPU box as dirty although its code is
+#: exactly the recorded commit.
+OUTPUT_PATHS = ("results",)
+
+
 def git_info(repo: Optional[Path] = None) -> Dict[str, object]:
-    """Commit, branch, and whether the working tree had uncommitted changes.
+    """Commit, branch, and whether the code had uncommitted changes.
 
     ``dirty=True`` means the recorded commit does NOT fully describe the code
-    that ran. Recorded rather than refused: a quick diagnostic run on a dirty
-    tree is legitimate, but it must not later pass for a clean one.
+    or inputs that ran, and ``dirty_paths`` names the files. Recorded rather
+    than refused: a quick diagnostic run on a dirty tree is legitimate, but it
+    must not later pass for a clean one. Files under :data:`OUTPUT_PATHS` are
+    not counted, and neither are untracked files.
     """
     repo = repo or Path(__file__).resolve().parents[1]
     commit = _git("rev-parse", "HEAD", cwd=repo)
     if commit is None:
         return {"commit": None, "branch": None, "dirty": None,
                 "note": "not a git checkout, or git unavailable"}
-    status = _git("status", "--porcelain", "--untracked-files=no", cwd=repo)
-    return {"commit": commit,
+    status = _git("status", "--porcelain", "--untracked-files=no", "--", ".",
+                  *(f":(exclude){p}" for p in OUTPUT_PATHS), cwd=repo)
+    changed = [line.split(maxsplit=1)[-1] for line in (status or "").splitlines()
+               if line.strip()]
+    info = {"commit": commit,
             "branch": _git("rev-parse", "--abbrev-ref", "HEAD", cwd=repo),
-            "dirty": bool(status)}
+            "dirty": bool(changed)}
+    if changed:
+        info["dirty_paths"] = changed[:20]
+    return info
 
 
 def environment_info() -> Dict[str, object]:

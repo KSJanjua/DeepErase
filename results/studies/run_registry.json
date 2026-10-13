@@ -1,5 +1,5 @@
 {
-  "note": "Status of every run under results/studies that should NOT be read as a current result, and why. Read by gpu/summarize.py and show_results.py. Runs absent from 'invalid' and 'superseded' are valid for their protocol. Add an entry whenever a fix invalidates past runs; never delete one.",
+  "note": "Status of every run under results/studies that should NOT be read as a current result, and why. Read by gpu/summarize.py and show_results.py. Runs absent from 'invalid' and 'superseded' are valid for their protocol, except T1 controls (config 'control') and runs whose id starts with 'smoke_', which are never measurements. Add an entry whenever a fix invalidates past runs; never delete one.",
   "headline": "study_ga_1B_20260816_165423",
   "headline_note": "The run reported in the mid-semester report (Table 12, Figure 10). Kept as the demo default until protocol-v2 runs exist.",
   "protocol_notes": {

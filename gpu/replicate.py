@@ -75,8 +75,8 @@ def check_interpreter() -> None:
             missing.append(mod)
     if missing:
         print(f"REFUSING: {sys.executable} cannot import: {', '.join(missing)}.\n"
-              "Every run would fail. Activate the project venv first:\n\n"
-              "    source /workspace/Capstone_Project/.venv/bin/activate\n\n"
+              "Every run would fail. Activate the project environment first:\n\n"
+              "    source /workspace/Capstone_Project/DeepErase/gpu/env.sh\n\n"
               "then re-run. Confirm with `python gpu/bootstrap.py --size 1B`.",
               file=sys.stderr)
         sys.exit(2)
@@ -206,7 +206,8 @@ def main() -> int:
                     help="Run the T1 random-direction control instead of the real sweep.")
     ap.add_argument("--control-scale", type=float, default=1.0)
     ap.add_argument("--output-dir", default="results/studies")
-    ap.add_argument("--cache-dir", default="./hf_cache")
+    ap.add_argument("--cache-dir", default=os.environ.get("DEEPERASE_CACHE_DIR", "./hf_cache"),
+                    help="default: $DEEPERASE_CACHE_DIR (set by gpu/env.sh), else ./hf_cache")
     ap.add_argument("--min-free-gb", type=float, default=0.0,
                     help="Extra floor on free VRAM. The real check is the memory "
                          "plan (float32 v2 GA ~21 GB, NPO ~26 GB, plus a 30%% "
