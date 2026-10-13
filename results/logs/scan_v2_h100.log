@@ -1,0 +1,1170 @@
+nohup: ignoring input
+09:03:46 WARNING TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=1 would force TF32 matmuls; overriding to 0 for this float32 run.
+09:03:47 INFO    PyTorch version 2.6.0+cu124 available.
+09:03:49 INFO    [1/6] Preparing evaluation data (forget split: half)
+09:03:53 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+09:03:53 INFO      reference annotations (trained): 181 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+09:03:53 INFO      depth example sampling (trained): random (seed 0)
+09:03:53 INFO      20 depth examples tokenised (trained)
+09:03:53 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+09:03:53 INFO      reference annotations (heldout): 186 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+09:03:53 INFO      depth example sampling (heldout): random (seed 1)
+09:03:53 INFO      20 depth examples tokenised (heldout)
+09:03:53 INFO      forget objective: 200 rows (answer loss)
+09:03:53 INFO      2014 breadth items from data/breadth_items_v2.json
+09:03:53 INFO    [2/6] Measuring reference models (anchors both axes)
+09:03:53 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+09:03:57 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.5s
+09:05:22 INFO      full  forget:all=0.777  R=0.805  RA=0.890  WF=0.855
+09:05:22 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda:0)
+09:05:26 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 3.7s
+09:06:51 INFO      retain90  forget:all=0.527  R=0.810  RA=0.880  WF=0.855
+09:06:51 INFO      TOFU forget quality, full vs retain90 (before unlearning): {'trained': '4.87e-10', 'heldout': '2.89e-11', 'all': '8.51e-19'}
+09:06:51 INFO      calibration forget:trained: floor=0.527 ceiling=0.770 range=0.243
+09:06:51 INFO      calibration forget:heldout: floor=0.527 ceiling=0.785 range=0.258
+09:06:51 INFO    [3/6] Depth Stage-1 baseline (retain90 -> full)
+09:06:51 INFO    Captured hidden states for 20 examples across 16 layers
+09:06:51 INFO    Captured hidden states for 20 examples across 16 layers
+09:07:02 INFO      trained: 18/20 examples have a Knowledge-Encoding layer
+09:07:02 INFO      heldout: 19/20 examples have a Knowledge-Encoding layer
+09:07:04 INFO    Freed full -- cuda:0: 4.98 GB allocated, 5.01 GB reserved, 36.84 GB free of 42.28 GB (13% used)
+09:07:07 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.06 GB reserved, 41.79 GB free of 42.28 GB (1% used)
+09:07:07 INFO    [4/6] Unlearning with ga (float32, answer)
+09:07:07 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+09:07:16 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 8.7s
+09:07:37 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:07:38 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=0.4062
+09:07:44 INFO      epoch 0 step 20  loss=-0.5259  forget_nll=0.5301
+09:07:48 INFO      epoch 0 step 40  loss=-0.3948  forget_nll=0.3977
+09:08:09 INFO      epoch 0: utility=0.8025 (floor 0.4025) forget_nll=0.4980  keep
+09:08:15 INFO      epoch 1 step 60  loss=-0.4588  forget_nll=0.4634
+09:08:20 INFO      epoch 1 step 80  loss=-0.4796  forget_nll=0.4841
+09:08:43 INFO      epoch 1: utility=0.7975 (floor 0.4025) forget_nll=0.6622  keep
+09:08:47 INFO      selected epoch 1 (utility 0.7975, forget_nll 0.6622)
+09:08:49 INFO    Unlearning finished: 100 steps in 71.2s, forget NLL 0.3913 -> 0.6622 (+0.2709 over the full forget set)
+09:09:26 INFO      [OK] ||v||=0.01935, forget NLL change=+0.2709, weights moved and forget-set NLL rose, as expected
+09:09:36 INFO      update vector: 147 tensors, ||v||=0.01935
+09:09:36 INFO    [5/6] Sweeping alpha over 2 settings
+09:10:36 INFO    ExtrapolationReport(a_par=0, a_perp=0, modified=147, skipped=0, ||v||=0.0193473, ||delta||=0)
+09:12:03 INFO    Captured hidden states for 20 examples across 16 layers
+09:12:03 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+09:12:12 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 8.4s
+09:12:17 INFO    Captured hidden states for 20 examples across 16 layers
+09:12:22 INFO      alpha=0.00  TOFU forget quality {'trained': '3.60e-09', 'heldout': '1.21e-10', 'all': '1.18e-17'}
+09:12:22 INFO      alpha=0.00  [trained] breadth=0.072 depth=0.052 sel=+0.045  [heldout] breadth=0.000 depth=0.046 sel=-0.027  R=0.797  general=0.874  (166s)
+09:13:15 INFO    ExtrapolationReport(a_par=1, a_perp=1, modified=147, skipped=0, ||v||=0.0193473, ||delta||=0.0193473)
+09:14:43 INFO    Captured hidden states for 20 examples across 16 layers
+09:14:48 INFO    Captured hidden states for 20 examples across 16 layers
+09:14:53 INFO      alpha=1.00  TOFU forget quality {'trained': '1.29e-08', 'heldout': '9.59e-10', 'all': '1.49e-16'}
+09:14:53 INFO      alpha=1.00  [trained] breadth=0.093 depth=0.107 sel=+0.003  [heldout] breadth=0.039 depth=0.111 sel=-0.051  R=0.780  general=0.855  (151s)
+09:14:55 INFO    Freed full -- cuda:0: 9.95 GB allocated, 10.24 GB reserved, 31.55 GB free of 42.28 GB (25% used)
+09:14:55 INFO    [6/6] Analysis
+09:14:55 WARNING Trajectory ga/1B-ga/tofu-forget10:trained has 2 usable points; need >= 3
+09:14:55 WARNING Trajectory ga/1B-ga/tofu-forget10:heldout has 2 usable points; need >= 3
+09:14:55 WARNING Trajectory ga/1B-ga/tofu-forget10:trained has 2 usable points; need >= 3
+09:14:55 WARNING Trajectory ga/1B-ga/tofu-forget10:trained has 2 usable points; need >= 3
+09:14:55 WARNING Trajectory ga/1B-ga/tofu-forget10:heldout has 2 usable points; need >= 3
+09:14:55 WARNING Trajectory ga/1B-ga/tofu-forget10:heldout has 2 usable points; need >= 3
+09:14:55 INFO    Wrote 4 plane points to results/studies/smoke_v2_ga_h100_lr2e-8/plane.json
+09:14:56 INFO    Wrote figure to results/studies/smoke_v2_ga_h100_lr2e-8/plane.png
+============================================================================
+DEPTH-BREADTH STUDY  |  method=ga  size=1B  protocol=v2
+run=smoke_v2_ga_h100_lr2e-8
+============================================================================
+
+[FITS] strategy=all_resident  peak weights=20.77 GB  headroom=8.61 GB
+  training dominates: 4.94 GB weights x 4 (weights + grads + 2 AdamW moments) + 1.0 GB activations = 20.77 GB, within 29.38 GB usable (42.0 GB free minus 30% safety margin).
+  WARNING: Planning at fp32 (4 bytes/param). Use bf16 or fp16 to halve weight memory.
+
+
+============================================================================
+RESULTS
+============================================================================
+trajectory               alpha  breadth   depth      R  select.  note
+----------------------------------------------------------------------------
+tofu-forget10:heldout     0.00    0.000   0.046  0.797   -0.027  
+tofu-forget10:heldout     1.00    0.039   0.111  0.780   -0.051  
+tofu-forget10:trained     0.00    0.072   0.052  0.797   +0.045  
+tofu-forget10:trained     1.00    0.093   0.107  0.780   +0.003  
+
+----------------------------------------------------------------------------
+TRADE-OFF  [tofu-forget10:trained]
+----------------------------------------------------------------------------
+  Spearman rho : None   p = None (NOT a significance test -- the points are one continuous path, not independent samples)
+  usable points: 2
+  utility stable across sweep: True
+
+  breadth span : 0.021 (2 of 400 items; one item = 0.0103)
+  depth span   : 0.055 (retain90 oracle = 1.000, so peak is 10.7% of full erasure)
+
+INCONCLUSIVE: an axis did not vary enough to correlate. Widen the alpha range or use more examples.
+
+----------------------------------------------------------------------------
+TRADE-OFF  [tofu-forget10:heldout]
+----------------------------------------------------------------------------
+  Spearman rho : None   p = None (NOT a significance test -- the points are one continuous path, not independent samples)
+  usable points: 2
+  utility stable across sweep: True
+
+  breadth span : 0.039 (4 of 400 items; one item = 0.0097)
+  depth span   : 0.066 (retain90 oracle = 1.000, so peak is 11.1% of full erasure)
+
+INCONCLUSIVE: an axis did not vary enough to correlate. Widen the alpha range or use more examples.
+
+  NOT SELECTIVE: at no point did the forget tiers fall further than the retain tier (selectivity <= 0). The breadth rise is matched by collateral loss and cannot be read as targeted forgetting.
+
+Saved to results/studies/smoke_v2_ga_h100_lr2e-8
+
+NOTE: one unlearning method, one model, one seed. A single trajectory is not a finding -- repeat across methods and seeds before drawing any conclusion.
+============================================================================
+09:14:59 WARNING TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=1 would force TF32 matmuls; overriding to 0 for this float32 run.
+09:15:00 INFO    PyTorch version 2.6.0+cu124 available.
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub
+09:15:02 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+09:15:02 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+09:15:02 INFO    ga scan: 200 trained rows, 400 R items, rates [1e-07, 5e-08, 2e-08, 1e-08, 5e-09], 20 epochs, floor 95%
+09:15:02 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+09:15:07 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.4s
+09:15:09 INFO    === ga lr=1e-07 ===
+09:15:29 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:15:30 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=0.4560
+09:15:35 INFO      epoch 0 step 20  loss=-0.7991  forget_nll=0.8244
+09:15:40 INFO      epoch 0 step 40  loss=-0.8827  forget_nll=0.9144
+09:16:01 INFO      epoch 0: utility=0.7625 (floor 0.0000) forget_nll=1.3442  keep
+09:16:07 INFO      epoch 1 step 60  loss=-1.6287  forget_nll=1.6816
+09:16:12 INFO      epoch 1 step 80  loss=-3.1507  forget_nll=3.2848
+09:16:35 INFO      epoch 1: utility=0.6025 (floor 0.0000) forget_nll=6.1140  keep
+09:16:38 INFO      epoch 2 step 100  loss=-6.5045  forget_nll=6.8304
+09:16:43 INFO      epoch 2 step 120  loss=-16.0366  forget_nll=16.6857
+09:16:48 INFO      epoch 2 step 140  loss=-26.7463  forget_nll=27.7817
+09:17:09 INFO      epoch 2: utility=0.3525 (floor 0.0000) forget_nll=33.3920  keep
+09:17:12 INFO      utility is below 50% of the start: no later epoch could be kept, so training stops here
+09:17:12 INFO      selected epoch 2 (utility 0.3525, forget_nll 33.3920)
+09:17:15 INFO    Unlearning finished: 150 steps in 105.0s, forget NLL 0.3913 -> 33.3920 (+33.0008 over the full forget set)
+09:17:15 INFO    lr=1e-07: kept epoch None of 20 (too fast), utility None, forget NLL None
+09:17:15 INFO    === ga lr=5e-08 ===
+09:17:35 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:17:35 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=0.4244
+09:17:40 INFO      epoch 0 step 20  loss=-0.6219  forget_nll=0.6346
+09:17:45 INFO      epoch 0 step 40  loss=-0.5383  forget_nll=0.5501
+09:18:06 INFO      epoch 0: utility=0.7875 (floor 0.0000) forget_nll=0.7470  keep
+09:18:12 INFO      epoch 1 step 60  loss=-0.8094  forget_nll=0.8233
+09:18:17 INFO      epoch 1 step 80  loss=-0.9204  forget_nll=0.9355
+09:18:40 INFO      epoch 1: utility=0.7575 (floor 0.0000) forget_nll=1.4992  keep
+09:18:43 INFO      epoch 2 step 100  loss=-1.7625  forget_nll=1.8039
+09:18:49 INFO      epoch 2 step 120  loss=-2.1185  forget_nll=2.1703
+09:18:53 INFO      epoch 2 step 140  loss=-2.3815  forget_nll=2.4370
+09:19:14 INFO      epoch 2: utility=0.7300 (floor 0.0000) forget_nll=3.2440  keep
+09:19:20 INFO      epoch 3 step 160  loss=-3.0608  forget_nll=3.1196
+09:19:25 INFO      epoch 3 step 180  loss=-6.7851  forget_nll=6.9768
+09:19:48 INFO      epoch 3: utility=0.5150 (floor 0.0000) forget_nll=9.0929  keep
+09:19:51 INFO      epoch 4 step 200  loss=-9.6345  forget_nll=9.9090
+09:19:57 INFO      epoch 4 step 220  loss=-16.6448  forget_nll=17.0230
+09:20:01 INFO      epoch 4 step 240  loss=-21.0421  forget_nll=21.5447
+09:20:22 INFO      epoch 4: utility=0.3875 (floor 0.0000) forget_nll=24.9042  keep
+09:20:25 INFO      utility is below 50% of the start: no later epoch could be kept, so training stops here
+09:20:26 INFO      selected epoch 4 (utility 0.3875, forget_nll 24.9042)
+09:20:28 INFO    Unlearning finished: 250 steps in 173.0s, forget NLL 0.3913 -> 24.9042 (+24.5130 over the full forget set)
+09:20:28 INFO    lr=5e-08: kept epoch 0 of 20 (too fast), utility 0.7875, forget NLL 0.747
+09:20:28 INFO    === ga lr=2e-08 ===
+09:20:48 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:20:49 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=0.4062
+09:20:54 INFO      epoch 0 step 20  loss=-0.5259  forget_nll=0.5301
+09:20:59 INFO      epoch 0 step 40  loss=-0.3948  forget_nll=0.3977
+09:21:20 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.4980  keep
+09:21:25 INFO      epoch 1 step 60  loss=-0.4588  forget_nll=0.4634
+09:21:30 INFO      epoch 1 step 80  loss=-0.4796  forget_nll=0.4841
+09:21:54 INFO      epoch 1: utility=0.7975 (floor 0.0000) forget_nll=0.6622  keep
+09:21:57 INFO      epoch 2 step 100  loss=-0.6572  forget_nll=0.6622
+09:22:02 INFO      epoch 2 step 120  loss=-0.9065  forget_nll=0.9115
+09:22:07 INFO      epoch 2 step 140  loss=-0.7188  forget_nll=0.7246
+09:22:28 INFO      epoch 2: utility=0.7875 (floor 0.0000) forget_nll=0.8744  keep
+09:22:33 INFO      epoch 3 step 160  loss=-0.8798  forget_nll=0.8861
+09:22:38 INFO      epoch 3 step 180  loss=-0.8801  forget_nll=0.8861
+09:23:02 INFO      epoch 3: utility=0.7725 (floor 0.0000) forget_nll=1.1824  keep
+09:23:05 INFO      epoch 4 step 200  loss=-1.3100  forget_nll=1.3254
+09:23:10 INFO      epoch 4 step 220  loss=-1.3661  forget_nll=1.3764
+09:23:15 INFO      epoch 4 step 240  loss=-1.3348  forget_nll=1.3476
+09:23:36 INFO      epoch 4: utility=0.7550 (floor 0.0000) forget_nll=1.6574  keep
+09:23:41 INFO      epoch 5 step 260  loss=-1.6153  forget_nll=1.6273
+09:23:46 INFO      epoch 5 step 280  loss=-1.9599  forget_nll=1.9794
+09:24:09 INFO      epoch 5: utility=0.7575 (floor 0.0000) forget_nll=2.2975  keep
+09:24:12 INFO      epoch 6 step 300  loss=-2.7464  forget_nll=2.7713
+09:24:17 INFO      epoch 6 step 320  loss=-3.1189  forget_nll=3.1533
+09:24:22 INFO      epoch 6 step 340  loss=-2.6995  forget_nll=2.7327
+09:24:43 INFO      epoch 6: utility=0.7200 (floor 0.0000) forget_nll=3.3064  keep
+09:24:48 INFO      epoch 7 step 360  loss=-2.8468  forget_nll=2.8683
+09:24:53 INFO      epoch 7 step 380  loss=-4.5779  forget_nll=4.6329
+09:25:17 INFO      epoch 7: utility=0.6550 (floor 0.0000) forget_nll=4.9903  keep
+09:25:19 INFO      epoch 8 step 400  loss=-5.7740  forget_nll=5.8263
+09:25:25 INFO      epoch 8 step 420  loss=-7.8239  forget_nll=7.9083
+09:25:29 INFO      epoch 8 step 440  loss=-7.2242  forget_nll=7.3162
+09:25:50 INFO      epoch 8: utility=0.5425 (floor 0.0000) forget_nll=7.9915  keep
+09:25:56 INFO      epoch 9 step 460  loss=-6.9345  forget_nll=7.0274
+09:26:01 INFO      epoch 9 step 480  loss=-13.1626  forget_nll=13.3045
+09:26:24 INFO      epoch 9: utility=0.4775 (floor 0.0000) forget_nll=12.9105  keep
+09:26:26 INFO      epoch 10 step 500  loss=-13.7994  forget_nll=13.9508
+09:26:32 INFO      epoch 10 step 520  loss=-18.0497  forget_nll=18.2211
+09:26:37 INFO      epoch 10 step 540  loss=-18.8889  forget_nll=19.0735
+09:26:57 INFO      epoch 10: utility=0.4025 (floor 0.0000) forget_nll=20.0289  keep
+09:27:03 INFO      epoch 11 step 560  loss=-20.9316  forget_nll=21.1583
+09:27:08 INFO      epoch 11 step 580  loss=-25.4330  forget_nll=25.5807
+09:27:31 INFO      epoch 11: utility=0.3750 (floor 0.0000) forget_nll=27.9334  keep
+09:27:33 INFO      utility is below 50% of the start: no later epoch could be kept, so training stops here
+09:27:34 INFO      selected epoch 11 (utility 0.3750, forget_nll 27.9334)
+09:27:36 INFO    Unlearning finished: 600 steps in 407.8s, forget NLL 0.3913 -> 27.9334 (+27.5421 over the full forget set)
+09:27:36 INFO    lr=2e-08: kept epoch 3 of 20 (usable), utility 0.7725, forget NLL 1.1824
+09:27:36 INFO    === ga lr=1e-08 ===
+09:27:56 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:27:57 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=0.4003
+09:28:02 INFO      epoch 0 step 20  loss=-0.5000  forget_nll=0.5020
+09:28:07 INFO      epoch 0 step 40  loss=-0.3637  forget_nll=0.3650
+09:28:28 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.4370  keep
+09:28:33 INFO      epoch 1 step 60  loss=-0.3780  forget_nll=0.3795
+09:28:38 INFO      epoch 1 step 80  loss=-0.3808  forget_nll=0.3822
+09:29:01 INFO      epoch 1: utility=0.8025 (floor 0.0000) forget_nll=0.4985  keep
+09:29:05 INFO      epoch 2 step 100  loss=-0.5078  forget_nll=0.5096
+09:29:10 INFO      epoch 2 step 120  loss=-0.6766  forget_nll=0.6793
+09:29:15 INFO      epoch 2 step 140  loss=-0.4703  forget_nll=0.4723
+09:29:35 INFO      epoch 2: utility=0.7975 (floor 0.0000) forget_nll=0.5763  keep
+09:29:41 INFO      epoch 3 step 160  loss=-0.5426  forget_nll=0.5453
+09:29:46 INFO      epoch 3 step 180  loss=-0.5241  forget_nll=0.5265
+09:30:09 INFO      epoch 3: utility=0.7950 (floor 0.0000) forget_nll=0.6677  keep
+09:30:12 INFO      epoch 4 step 200  loss=-0.6535  forget_nll=0.6561
+09:30:18 INFO      epoch 4 step 220  loss=-0.8810  forget_nll=0.8836
+09:30:22 INFO      epoch 4 step 240  loss=-0.6489  forget_nll=0.6516
+09:30:43 INFO      epoch 4: utility=0.7850 (floor 0.0000) forget_nll=0.7703  keep
+09:30:49 INFO      epoch 5 step 260  loss=-0.7505  forget_nll=0.7534
+09:30:54 INFO      epoch 5 step 280  loss=-0.7221  forget_nll=0.7248
+09:31:17 INFO      epoch 5: utility=0.7825 (floor 0.0000) forget_nll=0.8892  keep
+09:31:20 INFO      epoch 6 step 300  loss=-0.9125  forget_nll=0.9179
+09:31:25 INFO      epoch 6 step 320  loss=-1.0527  forget_nll=1.0555
+09:31:30 INFO      epoch 6 step 340  loss=-0.8742  forget_nll=0.8777
+09:31:51 INFO      epoch 6: utility=0.7700 (floor 0.0000) forget_nll=1.0361  keep
+09:31:56 INFO      epoch 7 step 360  loss=-1.0108  forget_nll=1.0148
+09:32:01 INFO      epoch 7 step 380  loss=-0.9591  forget_nll=0.9626
+09:32:24 INFO      epoch 7: utility=0.7700 (floor 0.0000) forget_nll=1.2226  keep
+09:32:27 INFO      epoch 8 step 400  loss=-1.3728  forget_nll=1.3815
+09:32:32 INFO      epoch 8 step 420  loss=-1.3280  forget_nll=1.3331
+09:32:37 INFO      epoch 8 step 440  loss=-1.2005  forget_nll=1.2060
+09:32:58 INFO      epoch 8: utility=0.7600 (floor 0.0000) forget_nll=1.4558  keep
+09:33:03 INFO      epoch 9 step 460  loss=-1.3958  forget_nll=1.4011
+09:33:08 INFO      epoch 9 step 480  loss=-1.4520  forget_nll=1.4598
+09:33:31 INFO      epoch 9: utility=0.7525 (floor 0.0000) forget_nll=1.7295  keep
+09:33:34 INFO      epoch 10 step 500  loss=-2.0789  forget_nll=2.0877
+09:33:39 INFO      epoch 10 step 520  loss=-1.9342  forget_nll=1.9451
+09:33:44 INFO      epoch 10 step 540  loss=-1.7450  forget_nll=1.7524
+09:34:05 INFO      epoch 10: utility=0.7650 (floor 0.0000) forget_nll=2.0450  keep
+09:34:10 INFO      epoch 11 step 560  loss=-1.9163  forget_nll=1.9236
+09:34:15 INFO      epoch 11 step 580  loss=-2.2909  forget_nll=2.3015
+09:34:38 INFO      epoch 11: utility=0.7575 (floor 0.0000) forget_nll=2.4159  keep
+09:34:41 INFO      epoch 12 step 600  loss=-2.9255  forget_nll=2.9397
+09:34:46 INFO      epoch 12 step 620  loss=-3.0984  forget_nll=3.1157
+09:34:51 INFO      epoch 12 step 640  loss=-2.4062  forget_nll=2.4201
+09:35:12 INFO      epoch 12: utility=0.7425 (floor 0.0000) forget_nll=2.9068  keep
+09:35:17 INFO      epoch 13 step 660  loss=-2.5184  forget_nll=2.5273
+09:35:22 INFO      epoch 13 step 680  loss=-3.4664  forget_nll=3.4834
+09:35:45 INFO      epoch 13: utility=0.7050 (floor 0.0000) forget_nll=3.5384  keep
+09:35:48 INFO      epoch 14 step 700  loss=-4.4397  forget_nll=4.4595
+09:35:53 INFO      epoch 14 step 720  loss=-4.8987  forget_nll=4.9244
+09:35:58 INFO      epoch 14 step 740  loss=-4.0072  forget_nll=4.0294
+09:36:19 INFO      epoch 14: utility=0.6700 (floor 0.0000) forget_nll=4.3589  keep
+09:36:24 INFO      epoch 15 step 760  loss=-3.5314  forget_nll=3.5484
+09:36:29 INFO      epoch 15 step 780  loss=-5.6273  forget_nll=5.6666
+09:36:52 INFO      epoch 15: utility=0.6325 (floor 0.0000) forget_nll=5.4412  keep
+09:36:54 INFO      epoch 16 step 800  loss=-6.2494  forget_nll=6.2803
+09:37:00 INFO      epoch 16 step 820  loss=-7.8386  forget_nll=7.8812
+09:37:05 INFO      epoch 16 step 840  loss=-6.5179  forget_nll=6.5614
+09:37:25 INFO      epoch 16: utility=0.6075 (floor 0.0000) forget_nll=6.9026  keep
+09:37:30 INFO      epoch 17 step 860  loss=-5.5195  forget_nll=5.5522
+09:37:35 INFO      epoch 17 step 880  loss=-9.7771  forget_nll=9.8359
+09:37:59 INFO      epoch 17: utility=0.5225 (floor 0.0000) forget_nll=8.8194  keep
+09:38:01 INFO      epoch 18 step 900  loss=-9.7850  forget_nll=9.8442
+09:38:06 INFO      epoch 18 step 920  loss=-12.1221  forget_nll=12.1782
+09:38:11 INFO      epoch 18 step 940  loss=-10.8882  forget_nll=10.9503
+09:38:32 INFO      epoch 18: utility=0.4775 (floor 0.0000) forget_nll=11.2734  keep
+09:38:37 INFO      epoch 19 step 960  loss=-10.0714  forget_nll=10.1466
+09:38:42 INFO      epoch 19 step 980  loss=-15.8332  forget_nll=15.9060
+09:39:05 INFO      epoch 19: utility=0.4600 (floor 0.0000) forget_nll=14.3317  keep
+09:39:08 INFO      selected epoch 19 (utility 0.4600, forget_nll 14.3317)
+09:39:10 INFO    Unlearning finished: 1000 steps in 673.7s, forget NLL 0.3913 -> 14.3317 (+13.9404 over the full forget set)
+09:39:10 INFO    lr=1e-08: kept epoch 10 of 20 (usable), utility 0.765, forget NLL 2.045
+09:39:10 INFO    === ga lr=5e-09 ===
+09:39:30 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:39:31 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=0.3975
+09:39:36 INFO      epoch 0 step 20  loss=-0.4884  forget_nll=0.4893
+09:39:41 INFO      epoch 0 step 40  loss=-0.3492  forget_nll=0.3498
+09:40:01 INFO      epoch 0: utility=0.8050 (floor 0.0000) forget_nll=0.4119  keep
+09:40:07 INFO      epoch 1 step 60  loss=-0.3469  forget_nll=0.3475
+09:40:12 INFO      epoch 1 step 80  loss=-0.3495  forget_nll=0.3501
+09:40:35 INFO      epoch 1: utility=0.8025 (floor 0.0000) forget_nll=0.4369  keep
+09:40:38 INFO      epoch 2 step 100  loss=-0.4470  forget_nll=0.4477
+09:40:43 INFO      epoch 2 step 120  loss=-0.5618  forget_nll=0.5629
+09:40:48 INFO      epoch 2 step 140  loss=-0.3927  forget_nll=0.3934
+09:41:09 INFO      epoch 2: utility=0.8025 (floor 0.0000) forget_nll=0.4659  keep
+09:41:14 INFO      epoch 3 step 160  loss=-0.4006  forget_nll=0.4014
+09:41:19 INFO      epoch 3 step 180  loss=-0.3926  forget_nll=0.3934
+09:41:42 INFO      epoch 3: utility=0.8025 (floor 0.0000) forget_nll=0.4990  keep
+09:41:45 INFO      epoch 4 step 200  loss=-0.5029  forget_nll=0.5038
+09:41:50 INFO      epoch 4 step 220  loss=-0.6582  forget_nll=0.6595
+09:41:55 INFO      epoch 4 step 240  loss=-0.4465  forget_nll=0.4474
+09:42:16 INFO      epoch 4: utility=0.8025 (floor 0.0000) forget_nll=0.5365  keep
+09:42:21 INFO      epoch 5 step 260  loss=-0.4803  forget_nll=0.4816
+09:42:26 INFO      epoch 5 step 280  loss=-0.4569  forget_nll=0.4580
+09:42:49 INFO      epoch 5: utility=0.7975 (floor 0.0000) forget_nll=0.5779  keep
+09:42:52 INFO      epoch 6 step 300  loss=-0.5703  forget_nll=0.5714
+09:42:57 INFO      epoch 6 step 320  loss=-0.7668  forget_nll=0.7682
+09:43:02 INFO      epoch 6 step 340  loss=-0.5217  forget_nll=0.5229
+09:43:23 INFO      epoch 6: utility=0.7975 (floor 0.0000) forget_nll=0.6226  keep
+09:43:28 INFO      epoch 7 step 360  loss=-0.5858  forget_nll=0.5871
+09:43:33 INFO      epoch 7 step 380  loss=-0.5475  forget_nll=0.5487
+09:43:56 INFO      epoch 7: utility=0.7900 (floor 0.0000) forget_nll=0.6703  keep
+09:43:59 INFO      epoch 8 step 400  loss=-0.6519  forget_nll=0.6532
+09:44:04 INFO      epoch 8 step 420  loss=-0.8671  forget_nll=0.8684
+09:44:09 INFO      epoch 8 step 440  loss=-0.6142  forget_nll=0.6155
+09:44:30 INFO      epoch 8: utility=0.7925 (floor 0.0000) forget_nll=0.7208  keep
+09:44:35 INFO      epoch 9 step 460  loss=-0.6880  forget_nll=0.6894
+09:44:40 INFO      epoch 9 step 480  loss=-0.6461  forget_nll=0.6474
+09:45:03 INFO      epoch 9: utility=0.7850 (floor 0.0000) forget_nll=0.7744  keep
+09:45:05 INFO      epoch 10 step 500  loss=-0.7553  forget_nll=0.7571
+09:45:11 INFO      epoch 10 step 520  loss=-0.9534  forget_nll=0.9547
+09:45:16 INFO      epoch 10 step 540  loss=-0.7162  forget_nll=0.7176
+09:45:36 INFO      epoch 10: utility=0.7850 (floor 0.0000) forget_nll=0.8323  keep
+09:45:41 INFO      epoch 11 step 560  loss=-0.8026  forget_nll=0.8042
+09:45:46 INFO      epoch 11 step 580  loss=-0.7501  forget_nll=0.7515
+09:46:09 INFO      epoch 11: utility=0.7825 (floor 0.0000) forget_nll=0.8961  keep
+09:46:12 INFO      epoch 12 step 600  loss=-0.9203  forget_nll=0.9230
+09:46:17 INFO      epoch 12 step 620  loss=-1.0388  forget_nll=1.0401
+09:46:22 INFO      epoch 12 step 640  loss=-0.8312  forget_nll=0.8329
+09:46:43 INFO      epoch 12: utility=0.7800 (floor 0.0000) forget_nll=0.9675  keep
+09:46:48 INFO      epoch 13 step 660  loss=-0.9309  forget_nll=0.9327
+09:46:53 INFO      epoch 13 step 680  loss=-0.8636  forget_nll=0.8652
+09:47:16 INFO      epoch 13: utility=0.7700 (floor 0.0000) forget_nll=1.0474  keep
+09:47:18 INFO      epoch 14 step 700  loss=-1.1195  forget_nll=1.1228
+09:47:24 INFO      epoch 14 step 720  loss=-1.1450  forget_nll=1.1468
+09:47:29 INFO      epoch 14 step 740  loss=-0.9675  forget_nll=0.9695
+09:47:49 INFO      epoch 14: utility=0.7700 (floor 0.0000) forget_nll=1.1379  keep
+09:47:54 INFO      epoch 15 step 760  loss=-1.0926  forget_nll=1.0949
+09:47:59 INFO      epoch 15 step 780  loss=-1.0060  forget_nll=1.0081
+09:48:22 INFO      epoch 15: utility=0.7675 (floor 0.0000) forget_nll=1.2403  keep
+09:48:25 INFO      epoch 16 step 800  loss=-1.4026  forget_nll=1.4071
+09:48:30 INFO      epoch 16 step 820  loss=-1.3048  forget_nll=1.3073
+09:48:35 INFO      epoch 16 step 840  loss=-1.1361  forget_nll=1.1386
+09:48:56 INFO      epoch 16: utility=0.7600 (floor 0.0000) forget_nll=1.3541  keep
+09:49:00 INFO      epoch 17 step 860  loss=-1.2864  forget_nll=1.2889
+09:49:05 INFO      epoch 17 step 880  loss=-1.2406  forget_nll=1.2440
+09:49:29 INFO      epoch 17: utility=0.7550 (floor 0.0000) forget_nll=1.4783  keep
+09:49:31 INFO      epoch 18 step 900  loss=-1.7700  forget_nll=1.7746
+09:49:36 INFO      epoch 18 step 920  loss=-1.5305  forget_nll=1.5339
+09:49:41 INFO      epoch 18 step 940  loss=-1.3679  forget_nll=1.3712
+09:50:02 INFO      epoch 18: utility=0.7575 (floor 0.0000) forget_nll=1.6119  keep
+09:50:07 INFO      epoch 19 step 960  loss=-1.5007  forget_nll=1.5035
+09:50:12 INFO      epoch 19 step 980  loss=-1.5568  forget_nll=1.5610
+09:50:35 INFO      epoch 19: utility=0.7550 (floor 0.0000) forget_nll=1.7567  keep
+09:50:38 INFO      selected epoch 19 (utility 0.7550, forget_nll 1.7567)
+09:50:40 INFO    Unlearning finished: 1000 steps in 669.5s, forget NLL 0.3913 -> 1.7567 (+1.3654 over the full forget set)
+09:50:40 INFO    lr=5e-09: kept epoch 15 of 20 (usable), utility 0.7675, forget NLL 1.2403
+
+============================================================================
+LEARNING-RATE SCAN  ga  (float32, answer loss, floor 95%, 20 epochs)
+============================================================================
+       lr  kept epoch   utility  forget NLL  epochs run  verdict
+    1e-07        None         -           -           3  too fast
+    5e-08           0    0.7875       0.747           5  too fast
+    2e-08           3    0.7725      1.1824          12  usable
+    1e-08          10     0.765       2.045          20  usable
+    5e-09          15    0.7675      1.2403          20  usable
+
+Recommended: 1e-08
+Saved to results/lr_scans/ga_1B_v2_s0.json
+09:50:43 WARNING TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=1 would force TF32 matmuls; overriding to 0 for this float32 run.
+09:50:44 INFO    PyTorch version 2.6.0+cu124 available.
+Generating train split:   0%|          | 0/3600 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 3600/3600 [00:00<00:00, 343014.41 examples/s]
+09:50:51 INFO      retain split retain90: 200 of 3600 examples (random)
+09:50:51 INFO    graddiff scan: 200 trained rows, 400 R items, rates [3e-07, 1e-07, 5e-08, 2e-08, 1e-08], 20 epochs, floor 95%
+09:50:51 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+09:50:57 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 5.2s
+09:51:00 INFO    === graddiff lr=3e-07 ===
+09:51:19 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+09:51:20 INFO      epoch 0 step 0  loss=-0.0394  forget_nll=0.5490
+09:51:28 INFO      epoch 0 step 20  loss=-0.2262  forget_nll=0.6335
+09:51:36 INFO      epoch 0 step 40  loss=0.0435  forget_nll=0.4296
+09:51:58 INFO      epoch 0: utility=0.7950 (floor 0.0000) forget_nll=0.6189  keep
+09:52:05 INFO      epoch 1 step 60  loss=-0.3132  forget_nll=0.7354
+09:52:13 INFO      epoch 1 step 80  loss=-0.3033  forget_nll=0.8448
+09:52:39 INFO      epoch 1: utility=0.7550 (floor 0.0000) forget_nll=1.3676  keep
+09:52:42 INFO      epoch 2 step 100  loss=-1.9014  forget_nll=2.3006
+09:52:50 INFO      epoch 2 step 120  loss=-2.0003  forget_nll=2.7328
+09:52:58 INFO      epoch 2 step 140  loss=-0.5767  forget_nll=2.3193
+09:53:20 INFO      epoch 2: utility=0.6900 (floor 0.0000) forget_nll=3.6024  keep
+09:53:27 INFO      epoch 3 step 160  loss=-2.7556  forget_nll=3.5084
+09:53:35 INFO      epoch 3 step 180  loss=-2.7631  forget_nll=4.4365
+09:54:01 INFO      epoch 3: utility=0.6475 (floor 0.0000) forget_nll=6.3987  keep
+09:54:04 INFO      epoch 4 step 200  loss=-8.0929  forget_nll=9.1552
+09:54:12 INFO      epoch 4 step 220  loss=-6.9198  forget_nll=8.1834
+09:54:20 INFO      epoch 4 step 240  loss=-2.5186  forget_nll=5.4936
+09:54:42 INFO      epoch 4: utility=0.6150 (floor 0.0000) forget_nll=9.6060  keep
+09:54:49 INFO      epoch 5 step 260  loss=-8.1428  forget_nll=8.9050
+09:54:57 INFO      epoch 5 step 280  loss=-8.1394  forget_nll=10.4166
+09:55:23 INFO      epoch 5: utility=0.5975 (floor 0.0000) forget_nll=19.1382  keep
+09:55:26 INFO      epoch 6 step 300  loss=-24.0043  forget_nll=26.1703
+09:55:34 INFO      epoch 6 step 320  loss=-26.5651  forget_nll=30.8998
+09:55:42 INFO      epoch 6 step 340  loss=-19.6013  forget_nll=31.2494
+09:56:04 INFO      epoch 6: utility=0.6000 (floor 0.0000) forget_nll=44.5723  keep
+09:56:11 INFO      epoch 7 step 360  loss=-45.4157  forget_nll=48.2305
+09:56:19 INFO      epoch 7 step 380  loss=-55.8017  forget_nll=57.9123
+09:56:45 INFO      epoch 7: utility=0.6475 (floor 0.0000) forget_nll=65.6654  keep
+09:56:48 INFO      epoch 8 step 400  loss=-69.3567  forget_nll=70.2144
+09:56:56 INFO      epoch 8 step 420  loss=-76.3093  forget_nll=77.2520
+09:57:04 INFO      epoch 8 step 440  loss=-76.1104  forget_nll=78.3368
+09:57:26 INFO      epoch 8: utility=0.6500 (floor 0.0000) forget_nll=84.5725  keep
+09:57:33 INFO      epoch 9 step 460  loss=-86.5130  forget_nll=87.9043
+09:57:41 INFO      epoch 9 step 480  loss=-87.8225  forget_nll=88.5361
+09:58:07 INFO      epoch 9: utility=0.6825 (floor 0.0000) forget_nll=93.8053  keep
+09:58:10 INFO      epoch 10 step 500  loss=-95.1429  forget_nll=95.5817
+09:58:18 INFO      epoch 10 step 520  loss=-95.8838  forget_nll=96.4579
+09:58:25 INFO      epoch 10 step 540  loss=-86.9071  forget_nll=94.9452
+09:58:47 INFO      epoch 10: utility=0.6250 (floor 0.0000) forget_nll=98.2164  keep
+09:58:54 INFO      epoch 11 step 560  loss=-100.3980  forget_nll=100.8148
+09:59:02 INFO      epoch 11 step 580  loss=-98.2708  forget_nll=98.6717
+09:59:28 INFO      epoch 11: utility=0.7225 (floor 0.0000) forget_nll=99.5285  keep
+09:59:31 INFO      epoch 12 step 600  loss=-100.6875  forget_nll=100.9209
+09:59:39 INFO      epoch 12 step 620  loss=-99.3549  forget_nll=99.5916
+09:59:47 INFO      epoch 12 step 640  loss=-74.0567  forget_nll=74.2874
+10:00:09 INFO      epoch 12: utility=0.7500 (floor 0.0000) forget_nll=99.7399  keep
+10:00:16 INFO      epoch 13 step 660  loss=-101.4053  forget_nll=102.7142
+10:00:23 INFO      epoch 13 step 680  loss=-99.8112  forget_nll=100.0800
+10:00:49 INFO      epoch 13: utility=0.7525 (floor 0.0000) forget_nll=100.6850  keep
+10:00:52 INFO      epoch 14 step 700  loss=-101.7344  forget_nll=101.9596
+10:01:00 INFO      epoch 14 step 720  loss=-100.4911  forget_nll=100.6590
+10:01:08 INFO      epoch 14 step 740  loss=-91.3426  forget_nll=93.6870
+10:01:30 INFO      epoch 14: utility=0.7300 (floor 0.0000) forget_nll=100.9554  keep
+10:01:37 INFO      epoch 15 step 760  loss=-103.2597  forget_nll=103.5797
+10:01:44 INFO      epoch 15 step 780  loss=-100.8476  forget_nll=101.0542
+10:02:10 INFO      epoch 15: utility=0.7450 (floor 0.0000) forget_nll=101.3639  keep
+10:02:13 INFO      epoch 16 step 800  loss=-102.7731  forget_nll=102.9102
+10:02:21 INFO      epoch 16 step 820  loss=-101.2585  forget_nll=101.4095
+10:02:29 INFO      epoch 16 step 840  loss=-100.0812  forget_nll=100.3009
+10:02:51 INFO      epoch 16: utility=0.7400 (floor 0.0000) forget_nll=101.7632  keep
+10:02:58 INFO      epoch 17 step 860  loss=-103.9988  forget_nll=104.1680
+10:03:05 INFO      epoch 17 step 880  loss=-101.2502  forget_nll=101.4386
+10:03:31 INFO      epoch 17: utility=0.7425 (floor 0.0000) forget_nll=101.8797  keep
+10:03:34 INFO      epoch 18 step 900  loss=-102.9783  forget_nll=103.2374
+10:03:42 INFO      epoch 18 step 920  loss=-101.8986  forget_nll=102.0309
+10:03:50 INFO      epoch 18 step 940  loss=-100.9632  forget_nll=101.1771
+10:04:12 INFO      epoch 18: utility=0.7425 (floor 0.0000) forget_nll=102.2680  keep
+10:04:18 INFO      epoch 19 step 960  loss=-104.7035  forget_nll=104.9157
+10:04:26 INFO      epoch 19 step 980  loss=-102.1619  forget_nll=102.2999
+10:04:52 INFO      epoch 19: utility=0.7425 (floor 0.0000) forget_nll=102.5739  keep
+10:04:55 INFO      selected epoch 19 (utility 0.7425, forget_nll 102.5739)
+10:04:57 INFO    Unlearning finished: 1000 steps in 818.1s, forget NLL 0.3913 -> 102.5739 (+102.1827 over the full forget set)
+10:04:57 INFO    lr=3e-07: kept epoch 0 of 20 (too fast), utility 0.795, forget NLL 0.6189
+10:04:57 INFO    === graddiff lr=1e-07 ===
+10:05:18 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+10:05:18 INFO      epoch 0 step 0  loss=-0.0394  forget_nll=0.4422
+10:05:26 INFO      epoch 0 step 20  loss=-0.1599  forget_nll=0.5037
+10:05:34 INFO      epoch 0 step 40  loss=0.0313  forget_nll=0.3782
+10:05:56 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.4617  keep
+10:06:03 INFO      epoch 1 step 60  loss=0.0179  forget_nll=0.4267
+10:06:10 INFO      epoch 1 step 80  loss=-0.0142  forget_nll=0.4143
+10:06:36 INFO      epoch 1: utility=0.7950 (floor 0.0000) forget_nll=0.5733  keep
+10:06:40 INFO      epoch 2 step 100  loss=-0.4834  forget_nll=0.7652
+10:06:48 INFO      epoch 2 step 120  loss=-0.4857  forget_nll=0.8438
+10:06:56 INFO      epoch 2 step 140  loss=-0.1809  forget_nll=0.6265
+10:07:18 INFO      epoch 2: utility=0.7875 (floor 0.0000) forget_nll=0.7441  keep
+10:07:24 INFO      epoch 3 step 160  loss=-0.3348  forget_nll=0.7526
+10:07:32 INFO      epoch 3 step 180  loss=-0.3270  forget_nll=0.7754
+10:07:58 INFO      epoch 3: utility=0.7775 (floor 0.0000) forget_nll=1.0528  keep
+10:08:01 INFO      epoch 4 step 200  loss=-1.1479  forget_nll=1.5044
+10:08:09 INFO      epoch 4 step 220  loss=-1.1600  forget_nll=1.6597
+10:08:17 INFO      epoch 4 step 240  loss=-0.6425  forget_nll=1.4746
+10:08:39 INFO      epoch 4: utility=0.7425 (floor 0.0000) forget_nll=1.6669  keep
+10:08:46 INFO      epoch 5 step 260  loss=-1.2123  forget_nll=1.7836
+10:08:53 INFO      epoch 5 step 280  loss=-0.9248  forget_nll=1.8636
+10:09:19 INFO      epoch 5: utility=0.7050 (floor 0.0000) forget_nll=2.5274  keep
+10:09:22 INFO      epoch 6 step 300  loss=-3.1944  forget_nll=3.7981
+10:09:30 INFO      epoch 6 step 320  loss=-3.1336  forget_nll=3.7707
+10:09:38 INFO      epoch 6 step 340  loss=-0.9202  forget_nll=2.4845
+10:10:00 INFO      epoch 6: utility=0.6850 (floor 0.0000) forget_nll=3.5123  keep
+10:10:07 INFO      epoch 7 step 360  loss=-2.6553  forget_nll=3.5150
+10:10:15 INFO      epoch 7 step 380  loss=-1.8890  forget_nll=3.1690
+10:10:41 INFO      epoch 7: utility=0.6750 (floor 0.0000) forget_nll=4.4981  keep
+10:10:43 INFO      epoch 8 step 400  loss=-5.6723  forget_nll=6.3967
+10:10:52 INFO      epoch 8 step 420  loss=-4.9922  forget_nll=5.9640
+10:10:59 INFO      epoch 8 step 440  loss=-1.6576  forget_nll=3.6117
+10:11:21 INFO      epoch 8: utility=0.6425 (floor 0.0000) forget_nll=5.5584  keep
+10:11:28 INFO      epoch 9 step 460  loss=-4.5337  forget_nll=5.3279
+10:11:36 INFO      epoch 9 step 480  loss=-4.1411  forget_nll=5.4710
+10:12:02 INFO      epoch 9: utility=0.6350 (floor 0.0000) forget_nll=6.6203  keep
+10:12:04 INFO      epoch 10 step 500  loss=-8.5629  forget_nll=9.3130
+10:12:12 INFO      epoch 10 step 520  loss=-6.7657  forget_nll=7.7762
+10:12:20 INFO      epoch 10 step 540  loss=-2.8074  forget_nll=4.9167
+10:12:42 INFO      epoch 10: utility=0.6450 (floor 0.0000) forget_nll=7.7436  keep
+10:12:49 INFO      epoch 11 step 560  loss=-6.6193  forget_nll=7.3218
+10:12:56 INFO      epoch 11 step 580  loss=-6.0671  forget_nll=7.2161
+10:13:22 INFO      epoch 11: utility=0.6375 (floor 0.0000) forget_nll=9.0432  keep
+10:13:25 INFO      epoch 12 step 600  loss=-11.8462  forget_nll=12.6811
+10:13:33 INFO      epoch 12 step 620  loss=-9.2963  forget_nll=10.1194
+10:13:41 INFO      epoch 12 step 640  loss=-4.5788  forget_nll=6.4732
+10:14:03 INFO      epoch 12: utility=0.6150 (floor 0.0000) forget_nll=10.8018  keep
+10:14:09 INFO      epoch 13 step 660  loss=-9.8427  forget_nll=10.6983
+10:14:17 INFO      epoch 13 step 680  loss=-8.5600  forget_nll=10.1523
+10:14:43 INFO      epoch 13: utility=0.6225 (floor 0.0000) forget_nll=16.0371  keep
+10:14:46 INFO      epoch 14 step 700  loss=-21.1763  forget_nll=22.5801
+10:14:54 INFO      epoch 14 step 720  loss=-18.3607  forget_nll=20.0083
+10:15:02 INFO      epoch 14 step 740  loss=-11.5455  forget_nll=15.6997
+10:15:24 INFO      epoch 14: utility=0.5700 (floor 0.0000) forget_nll=27.8634  keep
+10:15:30 INFO      epoch 15 step 760  loss=-28.0884  forget_nll=30.6678
+10:15:38 INFO      epoch 15 step 780  loss=-24.7020  forget_nll=28.1644
+10:16:04 INFO      epoch 15: utility=0.5775 (floor 0.0000) forget_nll=38.6807  keep
+10:16:07 INFO      epoch 16 step 800  loss=-45.1003  forget_nll=46.3745
+10:16:15 INFO      epoch 16 step 820  loss=-42.7329  forget_nll=44.9297
+10:16:23 INFO      epoch 16 step 840  loss=-33.7911  forget_nll=39.3018
+10:16:45 INFO      epoch 16: utility=0.5975 (floor 0.0000) forget_nll=47.9741  keep
+10:16:51 INFO      epoch 17 step 860  loss=-47.8174  forget_nll=49.3446
+10:16:59 INFO      epoch 17 step 880  loss=-46.9748  forget_nll=48.8452
+10:17:25 INFO      epoch 17: utility=0.6025 (floor 0.0000) forget_nll=57.3206  keep
+10:17:27 INFO      epoch 18 step 900  loss=-61.5756  forget_nll=62.3344
+10:17:35 INFO      epoch 18 step 920  loss=-61.6757  forget_nll=63.2313
+10:17:43 INFO      epoch 18 step 940  loss=-55.6397  forget_nll=58.0859
+10:18:05 INFO      epoch 18: utility=0.6300 (floor 0.0000) forget_nll=66.2129  keep
+10:18:11 INFO      epoch 19 step 960  loss=-69.5536  forget_nll=70.2656
+10:18:19 INFO      epoch 19 step 980  loss=-69.3155  forget_nll=70.2584
+10:18:45 INFO      epoch 19: utility=0.6225 (floor 0.0000) forget_nll=74.1792  keep
+10:18:48 INFO      selected epoch 19 (utility 0.6225, forget_nll 74.1792)
+10:18:50 INFO    Unlearning finished: 1000 steps in 812.8s, forget NLL 0.3913 -> 74.1792 (+73.7880 over the full forget set)
+10:18:50 INFO    lr=1e-07: kept epoch 3 of 20 (usable), utility 0.7775, forget NLL 1.0528
+10:18:50 INFO    === graddiff lr=5e-08 ===
+10:19:11 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+10:19:11 INFO      epoch 0 step 0  loss=-0.0394  forget_nll=0.4178
+10:19:19 INFO      epoch 0 step 20  loss=-0.1502  forget_nll=0.4868
+10:19:27 INFO      epoch 0 step 40  loss=0.0411  forget_nll=0.3555
+10:19:49 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.4212  keep
+10:19:56 INFO      epoch 1 step 60  loss=0.0938  forget_nll=0.3635
+10:20:03 INFO      epoch 1 step 80  loss=0.0424  forget_nll=0.3626
+10:20:29 INFO      epoch 1: utility=0.8025 (floor 0.0000) forget_nll=0.4689  keep
+10:20:33 INFO      epoch 2 step 100  loss=-0.2401  forget_nll=0.5480
+10:20:41 INFO      epoch 2 step 120  loss=-0.2921  forget_nll=0.6236
+10:20:49 INFO      epoch 2 step 140  loss=-0.0538  forget_nll=0.4525
+10:21:11 INFO      epoch 2: utility=0.7975 (floor 0.0000) forget_nll=0.5241  keep
+10:21:17 INFO      epoch 3 step 160  loss=-0.0448  forget_nll=0.4813
+10:21:25 INFO      epoch 3 step 180  loss=-0.0690  forget_nll=0.4604
+10:21:51 INFO      epoch 3: utility=0.7950 (floor 0.0000) forget_nll=0.5950  keep
+10:21:54 INFO      epoch 4 step 200  loss=-0.4231  forget_nll=0.7286
+10:22:02 INFO      epoch 4 step 220  loss=-0.4828  forget_nll=0.8386
+10:22:10 INFO      epoch 4 step 240  loss=-0.1787  forget_nll=0.6083
+10:22:32 INFO      epoch 4: utility=0.7900 (floor 0.0000) forget_nll=0.6851  keep
+10:22:39 INFO      epoch 5 step 260  loss=-0.2361  forget_nll=0.6624
+10:22:47 INFO      epoch 5 step 280  loss=-0.2196  forget_nll=0.6369
+10:23:13 INFO      epoch 5: utility=0.7800 (floor 0.0000) forget_nll=0.8029  keep
+10:23:16 INFO      epoch 6 step 300  loss=-0.7004  forget_nll=1.0321
+10:23:24 INFO      epoch 6 step 320  loss=-0.7436  forget_nll=1.1618
+10:23:32 INFO      epoch 6 step 340  loss=-0.3601  forget_nll=0.8864
+10:23:54 INFO      epoch 6: utility=0.7750 (floor 0.0000) forget_nll=0.9803  keep
+10:24:00 INFO      epoch 7 step 360  loss=-0.4932  forget_nll=0.9497
+10:24:08 INFO      epoch 7 step 380  loss=-0.4891  forget_nll=1.0329
+10:24:34 INFO      epoch 7: utility=0.7550 (floor 0.0000) forget_nll=1.2520  keep
+10:24:37 INFO      epoch 8 step 400  loss=-1.3348  forget_nll=1.7642
+10:24:45 INFO      epoch 8 step 420  loss=-1.3009  forget_nll=1.8084
+10:24:53 INFO      epoch 8 step 440  loss=-0.6442  forget_nll=1.4764
+10:25:15 INFO      epoch 8: utility=0.7425 (floor 0.0000) forget_nll=1.6269  keep
+10:25:21 INFO      epoch 9 step 460  loss=-1.0854  forget_nll=1.6580
+10:25:29 INFO      epoch 9 step 480  loss=-0.7976  forget_nll=1.6252
+10:25:55 INFO      epoch 9: utility=0.7275 (floor 0.0000) forget_nll=2.0449  keep
+10:25:58 INFO      epoch 10 step 500  loss=-2.5301  forget_nll=3.0824
+10:26:06 INFO      epoch 10 step 520  loss=-2.3156  forget_nll=2.8714
+10:26:14 INFO      epoch 10 step 540  loss=-0.8388  forget_nll=2.0473
+10:26:36 INFO      epoch 10: utility=0.7000 (floor 0.0000) forget_nll=2.5155  keep
+10:26:42 INFO      epoch 11 step 560  loss=-1.7985  forget_nll=2.5392
+10:26:50 INFO      epoch 11 step 580  loss=-1.1208  forget_nll=2.2169
+10:27:16 INFO      epoch 11: utility=0.6925 (floor 0.0000) forget_nll=2.9899  keep
+10:27:19 INFO      epoch 12 step 600  loss=-3.7771  forget_nll=4.4287
+10:27:27 INFO      epoch 12 step 620  loss=-3.4063  forget_nll=4.1435
+10:27:35 INFO      epoch 12 step 640  loss=-0.9652  forget_nll=2.5455
+10:27:57 INFO      epoch 12: utility=0.6875 (floor 0.0000) forget_nll=3.4836  keep
+10:28:03 INFO      epoch 13 step 660  loss=-2.6372  forget_nll=3.4754
+10:28:11 INFO      epoch 13 step 680  loss=-1.6865  forget_nll=3.0243
+10:28:37 INFO      epoch 13: utility=0.6900 (floor 0.0000) forget_nll=4.0036  keep
+10:28:40 INFO      epoch 14 step 700  loss=-5.1573  forget_nll=5.8470
+10:28:48 INFO      epoch 14 step 720  loss=-4.2642  forget_nll=5.2399
+10:28:56 INFO      epoch 14 step 740  loss=-1.1861  forget_nll=3.0550
+10:29:18 INFO      epoch 14: utility=0.6750 (floor 0.0000) forget_nll=4.5322  keep
+10:29:24 INFO      epoch 15 step 760  loss=-3.5546  forget_nll=4.3977
+10:29:32 INFO      epoch 15 step 780  loss=-2.8624  forget_nll=4.3288
+10:29:58 INFO      epoch 15: utility=0.6600 (floor 0.0000) forget_nll=5.0676  keep
+10:30:00 INFO      epoch 16 step 800  loss=-6.6087  forget_nll=7.3174
+10:30:09 INFO      epoch 16 step 820  loss=-5.1734  forget_nll=6.1850
+10:30:16 INFO      epoch 16 step 840  loss=-1.5604  forget_nll=3.6207
+10:30:38 INFO      epoch 16: utility=0.6450 (floor 0.0000) forget_nll=5.6061  keep
+10:30:45 INFO      epoch 17 step 860  loss=-4.5326  forget_nll=5.3280
+10:30:53 INFO      epoch 17 step 880  loss=-3.9384  forget_nll=5.3043
+10:31:19 INFO      epoch 17: utility=0.6325 (floor 0.0000) forget_nll=6.1472  keep
+10:31:21 INFO      epoch 18 step 900  loss=-8.0791  forget_nll=8.7993
+10:31:29 INFO      epoch 18 step 920  loss=-6.1415  forget_nll=7.1567
+10:31:37 INFO      epoch 18 step 940  loss=-2.2014  forget_nll=4.3603
+10:31:59 INFO      epoch 18: utility=0.6275 (floor 0.0000) forget_nll=6.7046  keep
+10:32:05 INFO      epoch 19 step 960  loss=-5.6311  forget_nll=6.3420
+10:32:13 INFO      epoch 19 step 980  loss=-4.8901  forget_nll=6.1836
+10:32:39 INFO      epoch 19: utility=0.6325 (floor 0.0000) forget_nll=7.2869  keep
+10:32:42 INFO      selected epoch 19 (utility 0.6325, forget_nll 7.2869)
+10:32:44 INFO    Unlearning finished: 1000 steps in 813.7s, forget NLL 0.3913 -> 7.2869 (+6.8956 over the full forget set)
+10:32:44 INFO    lr=5e-08: kept epoch 6 of 20 (usable), utility 0.775, forget NLL 0.9803
+10:32:44 INFO    === graddiff lr=2e-08 ===
+10:33:04 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+10:33:05 INFO      epoch 0 step 0  loss=-0.0394  forget_nll=0.4037
+10:33:13 INFO      epoch 0 step 20  loss=-0.1468  forget_nll=0.4805
+10:33:21 INFO      epoch 0 step 40  loss=0.0480  forget_nll=0.3428
+10:33:43 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.4022  keep
+10:33:50 INFO      epoch 1 step 60  loss=0.1334  forget_nll=0.3371
+10:33:57 INFO      epoch 1 step 80  loss=0.0729  forget_nll=0.3379
+10:34:23 INFO      epoch 1: utility=0.8025 (floor 0.0000) forget_nll=0.4157  keep
+10:34:27 INFO      epoch 2 step 100  loss=-0.1134  forget_nll=0.4457
+10:34:35 INFO      epoch 2 step 120  loss=-0.1943  forget_nll=0.5200
+10:34:43 INFO      epoch 2 step 140  loss=0.0040  forget_nll=0.3826
+10:35:05 INFO      epoch 2: utility=0.8000 (floor 0.0000) forget_nll=0.4334  keep
+10:35:11 INFO      epoch 3 step 160  loss=0.0858  forget_nll=0.3718
+10:35:19 INFO      epoch 3 step 180  loss=0.0341  forget_nll=0.3656
+10:35:45 INFO      epoch 3: utility=0.8025 (floor 0.0000) forget_nll=0.4539  keep
+10:35:48 INFO      epoch 4 step 200  loss=-0.1665  forget_nll=0.4914
+10:35:56 INFO      epoch 4 step 220  loss=-0.2549  forget_nll=0.5818
+10:36:04 INFO      epoch 4 step 240  loss=-0.0350  forget_nll=0.4230
+10:36:26 INFO      epoch 4: utility=0.8000 (floor 0.0000) forget_nll=0.4749  keep
+10:36:33 INFO      epoch 5 step 260  loss=0.0318  forget_nll=0.4175
+10:36:40 INFO      epoch 5 step 280  loss=-0.0081  forget_nll=0.4010
+10:37:06 INFO      epoch 5: utility=0.7975 (floor 0.0000) forget_nll=0.4971  keep
+10:37:09 INFO      epoch 6 step 300  loss=-0.2268  forget_nll=0.5470
+10:37:18 INFO      epoch 6 step 320  loss=-0.3221  forget_nll=0.6534
+10:37:25 INFO      epoch 6 step 340  loss=-0.0734  forget_nll=0.4666
+10:37:47 INFO      epoch 6: utility=0.7975 (floor 0.0000) forget_nll=0.5215  keep
+10:37:54 INFO      epoch 7 step 360  loss=-0.0255  forget_nll=0.4663
+10:38:02 INFO      epoch 7 step 380  loss=-0.0545  forget_nll=0.4443
+10:38:28 INFO      epoch 7: utility=0.7950 (floor 0.0000) forget_nll=0.5487  keep
+10:38:31 INFO      epoch 8 step 400  loss=-0.2977  forget_nll=0.6167
+10:38:39 INFO      epoch 8 step 420  loss=-0.3979  forget_nll=0.7385
+10:38:46 INFO      epoch 8 step 440  loss=-0.1195  forget_nll=0.5234
+10:39:08 INFO      epoch 8: utility=0.7950 (floor 0.0000) forget_nll=0.5793  keep
+10:39:15 INFO      epoch 9 step 460  loss=-0.0944  forget_nll=0.5295
+10:39:23 INFO      epoch 9 step 480  loss=-0.1063  forget_nll=0.4993
+10:39:49 INFO      epoch 9: utility=0.7925 (floor 0.0000) forget_nll=0.6135  keep
+10:39:51 INFO      epoch 10 step 500  loss=-0.3850  forget_nll=0.7077
+10:40:00 INFO      epoch 10 step 520  loss=-0.4838  forget_nll=0.8397
+10:40:07 INFO      epoch 10 step 540  loss=-0.1783  forget_nll=0.5993
+10:40:29 INFO      epoch 10: utility=0.7900 (floor 0.0000) forget_nll=0.6510  keep
+10:40:36 INFO      epoch 11 step 560  loss=-0.1750  forget_nll=0.6077
+10:40:44 INFO      epoch 11 step 580  loss=-0.1657  forget_nll=0.5706
+10:41:10 INFO      epoch 11: utility=0.7850 (floor 0.0000) forget_nll=0.6925  keep
+10:41:12 INFO      epoch 12 step 600  loss=-0.4895  forget_nll=0.8219
+10:41:20 INFO      epoch 12 step 620  loss=-0.5788  forget_nll=0.9564
+10:41:28 INFO      epoch 12 step 640  loss=-0.2456  forget_nll=0.6923
+10:41:50 INFO      epoch 12: utility=0.7850 (floor 0.0000) forget_nll=0.7398  keep
+10:41:56 INFO      epoch 13 step 660  loss=-0.2607  forget_nll=0.6935
+10:42:04 INFO      epoch 13 step 680  loss=-0.2418  forget_nll=0.6701
+10:42:30 INFO      epoch 13: utility=0.7800 (floor 0.0000) forget_nll=0.7954  keep
+10:42:33 INFO      epoch 14 step 700  loss=-0.6111  forget_nll=0.9621
+10:42:41 INFO      epoch 14 step 720  loss=-0.6904  forget_nll=1.0993
+10:42:49 INFO      epoch 14 step 740  loss=-0.3179  forget_nll=0.8068
+10:43:11 INFO      epoch 14: utility=0.7725 (floor 0.0000) forget_nll=0.8609  keep
+10:43:17 INFO      epoch 15 step 760  loss=-0.3583  forget_nll=0.8033
+10:43:25 INFO      epoch 15 step 780  loss=-0.3383  forget_nll=0.8113
+10:43:51 INFO      epoch 15: utility=0.7775 (floor 0.0000) forget_nll=0.9394  keep
+10:43:53 INFO      epoch 16 step 800  loss=-0.7770  forget_nll=1.1576
+10:44:01 INFO      epoch 16 step 820  loss=-0.8419  forget_nll=1.2894
+10:44:09 INFO      epoch 16 step 840  loss=-0.3989  forget_nll=0.9674
+10:44:31 INFO      epoch 16: utility=0.7675 (floor 0.0000) forget_nll=1.0351  keep
+10:44:38 INFO      epoch 17 step 860  loss=-0.4945  forget_nll=0.9750
+10:44:45 INFO      epoch 17 step 880  loss=-0.4624  forget_nll=1.0125
+10:45:11 INFO      epoch 17: utility=0.7625 (floor 0.0000) forget_nll=1.1514  keep
+10:45:14 INFO      epoch 18 step 900  loss=-1.0883  forget_nll=1.5154
+10:45:22 INFO      epoch 18 step 920  loss=-1.0730  forget_nll=1.5560
+10:45:30 INFO      epoch 18 step 940  loss=-0.5113  forget_nll=1.2024
+10:45:52 INFO      epoch 18: utility=0.7475 (floor 0.0000) forget_nll=1.2875  keep
+10:45:58 INFO      epoch 19 step 960  loss=-0.7259  forget_nll=1.2569
+10:46:06 INFO      epoch 19 step 980  loss=-0.5859  forget_nll=1.2539
+10:46:32 INFO      epoch 19: utility=0.7425 (floor 0.0000) forget_nll=1.4384  keep
+10:46:35 INFO      selected epoch 19 (utility 0.7425, forget_nll 1.4384)
+10:46:37 INFO    Unlearning finished: 1000 steps in 812.4s, forget NLL 0.3913 -> 1.4384 (+1.0471 over the full forget set)
+10:46:37 INFO    lr=2e-08: kept epoch 16 of 20 (usable), utility 0.7675, forget NLL 1.0351
+10:46:37 INFO    === graddiff lr=1e-08 ===
+10:46:57 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+10:46:58 INFO      epoch 0 step 0  loss=-0.0394  forget_nll=0.3991
+10:47:06 INFO      epoch 0 step 20  loss=-0.1460  forget_nll=0.4790
+10:47:14 INFO      epoch 0 step 40  loss=0.0502  forget_nll=0.3389
+10:47:35 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.3966  keep
+10:47:42 INFO      epoch 1 step 60  loss=0.1456  forget_nll=0.3302
+10:47:50 INFO      epoch 1 step 80  loss=0.0827  forget_nll=0.3314
+10:48:16 INFO      epoch 1: utility=0.8025 (floor 0.0000) forget_nll=0.4021  keep
+10:48:19 INFO      epoch 2 step 100  loss=-0.0753  forget_nll=0.4183
+10:48:27 INFO      epoch 2 step 120  loss=-0.1678  forget_nll=0.4956
+10:48:35 INFO      epoch 2 step 140  loss=0.0278  forget_nll=0.3579
+10:48:57 INFO      epoch 2: utility=0.8025 (floor 0.0000) forget_nll=0.4088  keep
+10:49:04 INFO      epoch 3 step 160  loss=0.1243  forget_nll=0.3427
+10:49:11 INFO      epoch 3 step 180  loss=0.0640  forget_nll=0.3424
+10:49:37 INFO      epoch 3: utility=0.8025 (floor 0.0000) forget_nll=0.4166  keep
+10:49:41 INFO      epoch 4 step 200  loss=-0.0983  forget_nll=0.4357
+10:49:49 INFO      epoch 4 step 220  loss=-0.1931  forget_nll=0.5183
+10:49:56 INFO      epoch 4 step 240  loss=0.0056  forget_nll=0.3787
+10:50:18 INFO      epoch 4: utility=0.8000 (floor 0.0000) forget_nll=0.4255  keep
+10:50:25 INFO      epoch 5 step 260  loss=0.1005  forget_nll=0.3606
+10:50:33 INFO      epoch 5 step 280  loss=0.0448  forget_nll=0.3563
+10:50:59 INFO      epoch 5: utility=0.8000 (floor 0.0000) forget_nll=0.4353  keep
+10:51:02 INFO      epoch 6 step 300  loss=-0.1241  forget_nll=0.4572
+10:51:10 INFO      epoch 6 step 320  loss=-0.2223  forget_nll=0.5474
+10:51:18 INFO      epoch 6 step 340  loss=-0.0153  forget_nll=0.3998
+10:51:40 INFO      epoch 6: utility=0.8000 (floor 0.0000) forget_nll=0.4455  keep
+10:51:46 INFO      epoch 7 step 360  loss=0.0739  forget_nll=0.3828
+10:51:54 INFO      epoch 7 step 380  loss=0.0245  forget_nll=0.3725
+10:52:20 INFO      epoch 7: utility=0.8025 (floor 0.0000) forget_nll=0.4559  keep
+10:52:23 INFO      epoch 8 step 400  loss=-0.1517  forget_nll=0.4815
+10:52:31 INFO      epoch 8 step 420  loss=-0.2536  forget_nll=0.5798
+10:52:39 INFO      epoch 8 step 440  loss=-0.0345  forget_nll=0.4200
+10:53:01 INFO      epoch 8: utility=0.8000 (floor 0.0000) forget_nll=0.4664  keep
+10:53:07 INFO      epoch 9 step 460  loss=0.0469  forget_nll=0.4055
+10:53:15 INFO      epoch 9 step 480  loss=0.0035  forget_nll=0.3901
+10:53:41 INFO      epoch 9: utility=0.8000 (floor 0.0000) forget_nll=0.4771  keep
+10:53:44 INFO      epoch 10 step 500  loss=-0.1808  forget_nll=0.5078
+10:53:52 INFO      epoch 10 step 520  loss=-0.2863  forget_nll=0.6142
+10:54:00 INFO      epoch 10 step 540  loss=-0.0534  forget_nll=0.4408
+10:54:22 INFO      epoch 10: utility=0.7975 (floor 0.0000) forget_nll=0.4883  keep
+10:54:28 INFO      epoch 11 step 560  loss=0.0195  forget_nll=0.4284
+10:54:36 INFO      epoch 11 step 580  loss=-0.0185  forget_nll=0.4096
+10:55:02 INFO      epoch 11: utility=0.7950 (floor 0.0000) forget_nll=0.4999  keep
+10:55:05 INFO      epoch 12 step 600  loss=-0.2120  forget_nll=0.5370
+10:55:13 INFO      epoch 12 step 620  loss=-0.3209  forget_nll=0.6516
+10:55:21 INFO      epoch 12 step 640  loss=-0.0732  forget_nll=0.4636
+10:55:43 INFO      epoch 12: utility=0.7975 (floor 0.0000) forget_nll=0.5121  keep
+10:55:49 INFO      epoch 13 step 660  loss=-0.0091  forget_nll=0.4528
+10:55:57 INFO      epoch 13 step 680  loss=-0.0416  forget_nll=0.4313
+10:56:23 INFO      epoch 13: utility=0.7950 (floor 0.0000) forget_nll=0.5250  keep
+10:56:26 INFO      epoch 14 step 700  loss=-0.2458  forget_nll=0.5700
+10:56:34 INFO      epoch 14 step 720  loss=-0.3578  forget_nll=0.6926
+10:56:42 INFO      epoch 14 step 740  loss=-0.0948  forget_nll=0.4897
+10:57:03 INFO      epoch 14: utility=0.7950 (floor 0.0000) forget_nll=0.5387  keep
+10:57:10 INFO      epoch 15 step 760  loss=-0.0403  forget_nll=0.4804
+10:57:18 INFO      epoch 15 step 780  loss=-0.0661  forget_nll=0.4556
+10:57:44 INFO      epoch 15: utility=0.7950 (floor 0.0000) forget_nll=0.5532  keep
+10:57:46 INFO      epoch 16 step 800  loss=-0.2832  forget_nll=0.6076
+10:57:54 INFO      epoch 16 step 820  loss=-0.3973  forget_nll=0.7376
+10:58:02 INFO      epoch 16 step 840  loss=-0.1192  forget_nll=0.5202
+10:58:24 INFO      epoch 16: utility=0.7950 (floor 0.0000) forget_nll=0.5686  keep
+10:58:30 INFO      epoch 17 step 860  loss=-0.0751  forget_nll=0.5126
+10:58:38 INFO      epoch 17 step 880  loss=-0.0919  forget_nll=0.4832
+10:59:04 INFO      epoch 17: utility=0.7950 (floor 0.0000) forget_nll=0.5850  keep
+10:59:07 INFO      epoch 18 step 900  loss=-0.3250  forget_nll=0.6510
+10:59:15 INFO      epoch 18 step 920  loss=-0.4394  forget_nll=0.7868
+10:59:23 INFO      epoch 18 step 940  loss=-0.1469  forget_nll=0.5556
+10:59:45 INFO      epoch 18: utility=0.7925 (floor 0.0000) forget_nll=0.6023  keep
+10:59:51 INFO      epoch 19 step 960  loss=-0.1135  forget_nll=0.5495
+10:59:59 INFO      epoch 19 step 980  loss=-0.1192  forget_nll=0.5144
+11:00:25 INFO      epoch 19: utility=0.7925 (floor 0.0000) forget_nll=0.6204  keep
+11:00:28 INFO      selected epoch 19 (utility 0.7925, forget_nll 0.6204)
+11:00:30 INFO    Unlearning finished: 1000 steps in 812.9s, forget NLL 0.3913 -> 0.6204 (+0.2291 over the full forget set)
+11:00:30 INFO    lr=1e-08: kept epoch 19 of 20 (too slow), utility 0.7925, forget NLL 0.6204
+
+============================================================================
+LEARNING-RATE SCAN  graddiff  (float32, answer loss, floor 95%, 20 epochs)
+============================================================================
+       lr  kept epoch   utility  forget NLL  epochs run  verdict
+    3e-07           0     0.795      0.6189          20  too fast
+    1e-07           3    0.7775      1.0528          20  usable
+    5e-08           6     0.775      0.9803          20  usable
+    2e-08          16    0.7675      1.0351          20  usable
+    1e-08          19    0.7925      0.6204          20  too slow
+
+Recommended: 5e-08
+Saved to results/lr_scans/graddiff_1B_v2_s0.json
+11:00:33 WARNING TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=1 would force TF32 matmuls; overriding to 0 for this float32 run.
+11:00:34 INFO    PyTorch version 2.6.0+cu124 available.
+11:00:39 INFO    npo scan: 200 trained rows, 400 R items, rates [1e-06, 3e-07, 1e-07, 3e-08, 1e-08], 20 epochs, floor 95%
+11:00:39 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+11:00:44 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.9s
+11:00:47 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+11:00:51 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.3s
+11:00:51 INFO    === npo lr=1e-06 ===
+11:01:11 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+11:01:12 INFO      epoch 0 step 0  loss=13.8629  forget_nll=1.0357
+11:01:18 INFO      epoch 0 step 20  loss=0.0000  forget_nll=8.2684
+11:01:24 INFO      epoch 0 step 40  loss=0.0000  forget_nll=10.8740
+11:01:45 INFO      epoch 0: utility=0.4850 (floor 0.0000) forget_nll=10.7292  keep
+11:01:51 INFO      epoch 1 step 60  loss=0.0000  forget_nll=9.2081
+11:01:57 INFO      epoch 1 step 80  loss=0.0000  forget_nll=13.2361
+11:02:21 INFO      epoch 1: utility=0.4700 (floor 0.0000) forget_nll=11.0056  keep
+11:02:24 INFO      epoch 2 step 100  loss=0.0000  forget_nll=11.0746
+11:02:31 INFO      epoch 2 step 120  loss=0.0000  forget_nll=12.3453
+11:02:36 INFO      epoch 2 step 140  loss=0.0000  forget_nll=11.4432
+11:02:58 INFO      epoch 2: utility=0.4700 (floor 0.0000) forget_nll=11.0229  keep
+11:03:04 INFO      epoch 3 step 160  loss=0.0000  forget_nll=9.3383
+11:03:10 INFO      epoch 3 step 180  loss=0.0000  forget_nll=13.2950
+11:03:34 INFO      epoch 3: utility=0.4700 (floor 0.0000) forget_nll=11.0425  keep
+11:03:37 INFO      epoch 4 step 200  loss=0.0000  forget_nll=11.1055
+11:03:43 INFO      epoch 4 step 220  loss=0.0000  forget_nll=12.3888
+11:03:49 INFO      epoch 4 step 240  loss=0.0000  forget_nll=11.4797
+11:04:10 INFO      epoch 4: utility=0.4725 (floor 0.0000) forget_nll=11.0645  keep
+11:04:16 INFO      epoch 5 step 260  loss=0.0000  forget_nll=9.3790
+11:04:22 INFO      epoch 5 step 280  loss=0.0000  forget_nll=13.3512
+11:04:46 INFO      epoch 5: utility=0.4725 (floor 0.0000) forget_nll=11.0879  keep
+11:04:49 INFO      epoch 6 step 300  loss=0.0000  forget_nll=11.1432
+11:04:55 INFO      epoch 6 step 320  loss=0.0000  forget_nll=12.4436
+11:05:01 INFO      epoch 6 step 340  loss=0.0000  forget_nll=11.5222
+11:05:22 INFO      epoch 6: utility=0.4725 (floor 0.0000) forget_nll=11.1122  keep
+11:05:28 INFO      epoch 7 step 360  loss=0.0000  forget_nll=9.4257
+11:05:33 INFO      epoch 7 step 380  loss=0.0000  forget_nll=13.4134
+11:05:58 INFO      epoch 7: utility=0.4725 (floor 0.0000) forget_nll=11.1368  keep
+11:06:00 INFO      epoch 8 step 400  loss=0.0000  forget_nll=11.1835
+11:06:07 INFO      epoch 8 step 420  loss=0.0000  forget_nll=12.5029
+11:06:12 INFO      epoch 8 step 440  loss=0.0000  forget_nll=11.5662
+11:06:33 INFO      epoch 8: utility=0.4725 (floor 0.0000) forget_nll=11.1614  keep
+11:06:39 INFO      epoch 9 step 460  loss=0.0000  forget_nll=9.4741
+11:06:45 INFO      epoch 9 step 480  loss=0.0000  forget_nll=13.4767
+11:07:09 INFO      epoch 9: utility=0.4725 (floor 0.0000) forget_nll=11.1858  keep
+11:07:12 INFO      epoch 10 step 500  loss=0.0000  forget_nll=11.2234
+11:07:18 INFO      epoch 10 step 520  loss=0.0000  forget_nll=12.5627
+11:07:24 INFO      epoch 10 step 540  loss=0.0000  forget_nll=11.6097
+11:07:45 INFO      epoch 10: utility=0.4700 (floor 0.0000) forget_nll=11.2097  keep
+11:07:51 INFO      epoch 11 step 560  loss=0.0000  forget_nll=9.5218
+11:07:57 INFO      epoch 11 step 580  loss=0.0000  forget_nll=13.5387
+11:08:21 INFO      epoch 11: utility=0.4675 (floor 0.0000) forget_nll=11.2331  keep
+11:08:24 INFO      epoch 12 step 600  loss=0.0000  forget_nll=11.2617
+11:08:30 INFO      epoch 12 step 620  loss=0.0000  forget_nll=12.6211
+11:08:36 INFO      epoch 12 step 640  loss=0.0000  forget_nll=11.6517
+11:08:57 INFO      epoch 12: utility=0.4650 (floor 0.0000) forget_nll=11.2560  keep
+11:09:03 INFO      epoch 13 step 660  loss=0.0000  forget_nll=9.5678
+11:09:08 INFO      epoch 13 step 680  loss=0.0000  forget_nll=13.5983
+11:09:32 INFO      epoch 13: utility=0.4650 (floor 0.0000) forget_nll=11.2782  keep
+11:09:35 INFO      epoch 14 step 700  loss=0.0000  forget_nll=11.2979
+11:09:41 INFO      epoch 14 step 720  loss=0.0000  forget_nll=12.6772
+11:09:47 INFO      epoch 14 step 740  loss=0.0000  forget_nll=11.6916
+11:10:08 INFO      epoch 14: utility=0.4650 (floor 0.0000) forget_nll=11.2998  keep
+11:10:14 INFO      epoch 15 step 760  loss=0.0000  forget_nll=9.6117
+11:10:20 INFO      epoch 15 step 780  loss=0.0000  forget_nll=13.6551
+11:10:44 INFO      epoch 15: utility=0.4650 (floor 0.0000) forget_nll=11.3209  keep
+11:10:46 INFO      epoch 16 step 800  loss=0.0000  forget_nll=11.3321
+11:10:53 INFO      epoch 16 step 820  loss=0.0000  forget_nll=12.7308
+11:10:58 INFO      epoch 16 step 840  loss=0.0000  forget_nll=11.7295
+11:11:19 INFO      epoch 16: utility=0.4650 (floor 0.0000) forget_nll=11.3413  keep
+11:11:25 INFO      epoch 17 step 860  loss=0.0000  forget_nll=9.6533
+11:11:31 INFO      epoch 17 step 880  loss=0.0000  forget_nll=13.7091
+11:11:55 INFO      epoch 17: utility=0.4650 (floor 0.0000) forget_nll=11.3611  keep
+11:11:58 INFO      epoch 18 step 900  loss=0.0000  forget_nll=11.3643
+11:12:04 INFO      epoch 18 step 920  loss=0.0000  forget_nll=12.7819
+11:12:10 INFO      epoch 18 step 940  loss=0.0000  forget_nll=11.7654
+11:12:31 INFO      epoch 18: utility=0.4650 (floor 0.0000) forget_nll=11.3804  keep
+11:12:36 INFO      epoch 19 step 960  loss=0.0000  forget_nll=9.6930
+11:12:42 INFO      epoch 19 step 980  loss=0.0000  forget_nll=13.7604
+11:13:06 INFO      epoch 19: utility=0.4650 (floor 0.0000) forget_nll=11.3992  keep
+11:13:09 INFO      selected epoch 19 (utility 0.4650, forget_nll 11.3992)
+11:13:11 INFO    Unlearning finished: 1000 steps in 720.2s, forget NLL 0.3913 -> 11.3992 (+11.0079 over the full forget set)
+11:13:11 INFO    lr=1e-06: kept epoch None of 20 (too fast), utility None, forget NLL None
+11:13:11 INFO    === npo lr=3e-07 ===
+11:13:32 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+11:13:32 INFO      epoch 0 step 0  loss=13.8629  forget_nll=0.5718
+11:13:38 INFO      epoch 0 step 20  loss=2.2627  forget_nll=1.5559
+11:13:44 INFO      epoch 0 step 40  loss=0.0114  forget_nll=4.3388
+11:14:05 INFO      epoch 0: utility=0.6225 (floor 0.0000) forget_nll=6.2567  keep
+11:14:11 INFO      epoch 1 step 60  loss=0.0000  forget_nll=6.2690
+11:14:17 INFO      epoch 1 step 80  loss=0.0000  forget_nll=10.2220
+11:14:41 INFO      epoch 1: utility=0.5650 (floor 0.0000) forget_nll=8.7478  keep
+11:14:44 INFO      epoch 2 step 100  loss=0.0000  forget_nll=10.0398
+11:14:51 INFO      epoch 2 step 120  loss=0.0000  forget_nll=10.5280
+11:14:56 INFO      epoch 2 step 140  loss=0.0000  forget_nll=9.7964
+11:15:17 INFO      epoch 2: utility=0.5625 (floor 0.0000) forget_nll=8.8267  keep
+11:15:24 INFO      epoch 3 step 160  loss=0.0000  forget_nll=7.4435
+11:15:29 INFO      epoch 3 step 180  loss=0.0000  forget_nll=10.6796
+11:15:53 INFO      epoch 3: utility=0.5625 (floor 0.0000) forget_nll=8.8678  keep
+11:15:56 INFO      epoch 4 step 200  loss=0.0000  forget_nll=10.1839
+11:16:03 INFO      epoch 4 step 220  loss=0.0000  forget_nll=10.6470
+11:16:08 INFO      epoch 4 step 240  loss=0.0000  forget_nll=9.8858
+11:16:30 INFO      epoch 4: utility=0.5650 (floor 0.0000) forget_nll=8.9101  keep
+11:16:36 INFO      epoch 5 step 260  loss=0.0000  forget_nll=7.5189
+11:16:41 INFO      epoch 5 step 280  loss=0.0000  forget_nll=10.7916
+11:17:05 INFO      epoch 5: utility=0.5625 (floor 0.0000) forget_nll=8.9522  keep
+11:17:08 INFO      epoch 6 step 300  loss=0.0000  forget_nll=10.2760
+11:17:15 INFO      epoch 6 step 320  loss=0.0000  forget_nll=10.7662
+11:17:20 INFO      epoch 6 step 340  loss=0.0000  forget_nll=9.9749
+11:17:41 INFO      epoch 6: utility=0.5625 (floor 0.0000) forget_nll=8.9930  keep
+11:17:47 INFO      epoch 7 step 360  loss=0.0000  forget_nll=7.5954
+11:17:53 INFO      epoch 7 step 380  loss=0.0000  forget_nll=10.9004
+11:18:17 INFO      epoch 7: utility=0.5625 (floor 0.0000) forget_nll=9.0322  keep
+11:18:20 INFO      epoch 8 step 400  loss=0.0000  forget_nll=10.3612
+11:18:26 INFO      epoch 8 step 420  loss=0.0000  forget_nll=10.8783
+11:18:32 INFO      epoch 8 step 440  loss=0.0000  forget_nll=10.0572
+11:18:53 INFO      epoch 8: utility=0.5600 (floor 0.0000) forget_nll=9.0697  keep
+11:18:59 INFO      epoch 9 step 460  loss=0.0000  forget_nll=7.6674
+11:19:05 INFO      epoch 9 step 480  loss=0.0000  forget_nll=11.0011
+11:19:29 INFO      epoch 9: utility=0.5600 (floor 0.0000) forget_nll=9.1054  keep
+11:19:32 INFO      epoch 10 step 500  loss=0.0000  forget_nll=10.4374
+11:19:38 INFO      epoch 10 step 520  loss=0.0000  forget_nll=10.9800
+11:19:44 INFO      epoch 10 step 540  loss=0.0000  forget_nll=10.1317
+11:20:05 INFO      epoch 10: utility=0.5600 (floor 0.0000) forget_nll=9.1394  keep
+11:20:11 INFO      epoch 11 step 560  loss=0.0000  forget_nll=7.7335
+11:20:16 INFO      epoch 11 step 580  loss=0.0000  forget_nll=11.0932
+11:20:40 INFO      epoch 11: utility=0.5550 (floor 0.0000) forget_nll=9.1717  keep
+11:20:43 INFO      epoch 12 step 600  loss=0.0000  forget_nll=10.5050
+11:20:49 INFO      epoch 12 step 620  loss=0.0000  forget_nll=11.0719
+11:20:55 INFO      epoch 12 step 640  loss=0.0000  forget_nll=10.1991
+11:21:16 INFO      epoch 12: utility=0.5550 (floor 0.0000) forget_nll=9.2025  keep
+11:21:22 INFO      epoch 13 step 660  loss=0.0000  forget_nll=7.7942
+11:21:28 INFO      epoch 13 step 680  loss=0.0000  forget_nll=11.1774
+11:21:52 INFO      epoch 13: utility=0.5575 (floor 0.0000) forget_nll=9.2319  keep
+11:21:54 INFO      epoch 14 step 700  loss=0.0000  forget_nll=10.5654
+11:22:01 INFO      epoch 14 step 720  loss=0.0000  forget_nll=11.1549
+11:22:06 INFO      epoch 14 step 740  loss=0.0000  forget_nll=10.2603
+11:22:28 INFO      epoch 14: utility=0.5600 (floor 0.0000) forget_nll=9.2600  keep
+11:22:33 INFO      epoch 15 step 760  loss=0.0000  forget_nll=7.8498
+11:22:39 INFO      epoch 15 step 780  loss=0.0000  forget_nll=11.2547
+11:23:03 INFO      epoch 15: utility=0.5600 (floor 0.0000) forget_nll=9.2869  keep
+11:23:06 INFO      epoch 16 step 800  loss=0.0000  forget_nll=10.6197
+11:23:12 INFO      epoch 16 step 820  loss=0.0000  forget_nll=11.2303
+11:23:18 INFO      epoch 16 step 840  loss=0.0000  forget_nll=10.3163
+11:23:39 INFO      epoch 16: utility=0.5600 (floor 0.0000) forget_nll=9.3127  keep
+11:23:44 INFO      epoch 17 step 860  loss=0.0000  forget_nll=7.9011
+11:23:50 INFO      epoch 17 step 880  loss=0.0000  forget_nll=11.3261
+11:24:14 INFO      epoch 17: utility=0.5600 (floor 0.0000) forget_nll=9.3374  keep
+11:24:17 INFO      epoch 18 step 900  loss=0.0000  forget_nll=10.6689
+11:24:23 INFO      epoch 18 step 920  loss=0.0000  forget_nll=11.2992
+11:24:29 INFO      epoch 18 step 940  loss=0.0000  forget_nll=10.3679
+11:24:50 INFO      epoch 18: utility=0.5600 (floor 0.0000) forget_nll=9.3612  keep
+11:24:56 INFO      epoch 19 step 960  loss=0.0000  forget_nll=7.9486
+11:25:01 INFO      epoch 19 step 980  loss=0.0000  forget_nll=11.3924
+11:25:25 INFO      epoch 19: utility=0.5600 (floor 0.0000) forget_nll=9.3841  keep
+11:25:28 INFO      selected epoch 19 (utility 0.5600, forget_nll 9.3841)
+11:25:31 INFO    Unlearning finished: 1000 steps in 718.9s, forget NLL 0.3913 -> 9.3841 (+8.9928 over the full forget set)
+11:25:31 INFO    lr=3e-07: kept epoch None of 20 (too fast), utility None, forget NLL None
+11:25:31 INFO    === npo lr=1e-07 ===
+11:25:51 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+11:25:51 INFO      epoch 0 step 0  loss=13.8629  forget_nll=0.4499
+11:25:58 INFO      epoch 0 step 20  loss=8.2147  forget_nll=0.8031
+11:26:03 INFO      epoch 0 step 40  loss=5.6300  forget_nll=0.8769
+11:26:24 INFO      epoch 0: utility=0.7675 (floor 0.0000) forget_nll=1.3116  keep
+11:26:30 INFO      epoch 1 step 60  loss=0.2751  forget_nll=1.6037
+11:26:36 INFO      epoch 1 step 80  loss=0.2064  forget_nll=2.7517
+11:27:00 INFO      epoch 1: utility=0.6975 (floor 0.0000) forget_nll=3.9540  keep
+11:27:04 INFO      epoch 2 step 100  loss=0.0006  forget_nll=4.7274
+11:27:10 INFO      epoch 2 step 120  loss=0.0000  forget_nll=7.1516
+11:27:16 INFO      epoch 2 step 140  loss=0.0000  forget_nll=6.5551
+11:27:37 INFO      epoch 2: utility=0.6100 (floor 0.0000) forget_nll=6.6086  keep
+11:27:43 INFO      epoch 3 step 160  loss=0.0000  forget_nll=5.1880
+11:27:49 INFO      epoch 3 step 180  loss=0.0000  forget_nll=8.7326
+11:28:13 INFO      epoch 3: utility=0.5950 (floor 0.0000) forget_nll=7.1475  keep
+11:28:16 INFO      epoch 4 step 200  loss=0.0000  forget_nll=8.1949
+11:28:22 INFO      epoch 4 step 220  loss=0.0000  forget_nll=9.0218
+11:28:28 INFO      epoch 4 step 240  loss=0.0000  forget_nll=7.3964
+11:28:49 INFO      epoch 4: utility=0.5975 (floor 0.0000) forget_nll=7.2680  keep
+11:28:55 INFO      epoch 5 step 260  loss=0.0000  forget_nll=5.6666
+11:29:01 INFO      epoch 5 step 280  loss=0.0000  forget_nll=9.1397
+11:29:25 INFO      epoch 5: utility=0.5900 (floor 0.0000) forget_nll=7.3621  keep
+11:29:28 INFO      epoch 6 step 300  loss=0.0000  forget_nll=8.4173
+11:29:34 INFO      epoch 6 step 320  loss=0.0000  forget_nll=9.2646
+11:29:40 INFO      epoch 6 step 340  loss=0.0000  forget_nll=7.5943
+11:30:01 INFO      epoch 6: utility=0.5875 (floor 0.0000) forget_nll=7.4450  keep
+11:30:07 INFO      epoch 7 step 360  loss=0.0000  forget_nll=5.7934
+11:30:13 INFO      epoch 7 step 380  loss=0.0000  forget_nll=9.3544
+11:30:37 INFO      epoch 7: utility=0.5925 (floor 0.0000) forget_nll=7.5189  keep
+11:30:40 INFO      epoch 8 step 400  loss=0.0000  forget_nll=8.5776
+11:30:46 INFO      epoch 8 step 420  loss=0.0000  forget_nll=9.4545
+11:30:52 INFO      epoch 8 step 440  loss=0.0000  forget_nll=7.7538
+11:31:13 INFO      epoch 8: utility=0.5925 (floor 0.0000) forget_nll=7.5855  keep
+11:31:19 INFO      epoch 9 step 460  loss=0.0000  forget_nll=5.8970
+11:31:25 INFO      epoch 9 step 480  loss=0.0000  forget_nll=9.5288
+11:31:49 INFO      epoch 9: utility=0.5925 (floor 0.0000) forget_nll=7.6458  keep
+11:31:52 INFO      epoch 10 step 500  loss=0.0000  forget_nll=8.7048
+11:31:58 INFO      epoch 10 step 520  loss=0.0000  forget_nll=9.6092
+11:32:03 INFO      epoch 10 step 540  loss=0.0000  forget_nll=7.8865
+11:32:25 INFO      epoch 10: utility=0.5925 (floor 0.0000) forget_nll=7.7010  keep
+11:32:30 INFO      epoch 11 step 560  loss=0.0000  forget_nll=5.9837
+11:32:36 INFO      epoch 11 step 580  loss=0.0000  forget_nll=9.6744
+11:33:00 INFO      epoch 11: utility=0.5925 (floor 0.0000) forget_nll=7.7518  keep
+11:33:03 INFO      epoch 12 step 600  loss=0.0000  forget_nll=8.8096
+11:33:09 INFO      epoch 12 step 620  loss=0.0000  forget_nll=9.7391
+11:33:15 INFO      epoch 12 step 640  loss=0.0000  forget_nll=7.9997
+11:33:36 INFO      epoch 12: utility=0.5950 (floor 0.0000) forget_nll=7.7988  keep
+11:33:42 INFO      epoch 13 step 660  loss=0.0000  forget_nll=6.0580
+11:33:48 INFO      epoch 13 step 680  loss=0.0000  forget_nll=9.7990
+11:34:12 INFO      epoch 13: utility=0.5925 (floor 0.0000) forget_nll=7.8426  keep
+11:34:14 INFO      epoch 14 step 700  loss=0.0000  forget_nll=8.8986
+11:34:21 INFO      epoch 14 step 720  loss=0.0000  forget_nll=9.8508
+11:34:26 INFO      epoch 14 step 740  loss=0.0000  forget_nll=8.0986
+11:34:48 INFO      epoch 14: utility=0.5925 (floor 0.0000) forget_nll=7.8836  keep
+11:34:53 INFO      epoch 15 step 760  loss=0.0000  forget_nll=6.1230
+11:34:59 INFO      epoch 15 step 780  loss=0.0000  forget_nll=9.9081
+11:35:23 INFO      epoch 15: utility=0.5925 (floor 0.0000) forget_nll=7.9220  keep
+11:35:26 INFO      epoch 16 step 800  loss=0.0000  forget_nll=8.9759
+11:35:32 INFO      epoch 16 step 820  loss=0.0000  forget_nll=9.9488
+11:35:38 INFO      epoch 16 step 840  loss=0.0000  forget_nll=8.1864
+11:35:59 INFO      epoch 16: utility=0.5900 (floor 0.0000) forget_nll=7.9584  keep
+11:36:05 INFO      epoch 17 step 860  loss=0.0000  forget_nll=6.1809
+11:36:10 INFO      epoch 17 step 880  loss=0.0000  forget_nll=10.0052
+11:36:34 INFO      epoch 17: utility=0.5875 (floor 0.0000) forget_nll=7.9928  keep
+11:36:37 INFO      epoch 18 step 900  loss=0.0000  forget_nll=9.0445
+11:36:43 INFO      epoch 18 step 920  loss=0.0000  forget_nll=10.0363
+11:36:49 INFO      epoch 18 step 940  loss=0.0000  forget_nll=8.2657
+11:37:10 INFO      epoch 18: utility=0.5875 (floor 0.0000) forget_nll=8.0255  keep
+11:37:16 INFO      epoch 19 step 960  loss=0.0000  forget_nll=6.2331
+11:37:21 INFO      epoch 19 step 980  loss=0.0000  forget_nll=10.0930
+11:37:46 INFO      epoch 19: utility=0.5825 (floor 0.0000) forget_nll=8.0566  keep
+11:37:48 INFO      selected epoch 19 (utility 0.5825, forget_nll 8.0566)
+11:37:51 INFO    Unlearning finished: 1000 steps in 719.8s, forget NLL 0.3913 -> 8.0566 (+7.6654 over the full forget set)
+11:37:51 INFO    lr=1e-07: kept epoch 0 of 20 (too fast), utility 0.7675, forget NLL 1.3116
+11:37:51 INFO    === npo lr=3e-08 ===
+11:38:11 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+11:38:11 INFO      epoch 0 step 0  loss=13.8629  forget_nll=0.4106
+11:38:18 INFO      epoch 0 step 20  loss=12.2474  forget_nll=0.5562
+11:38:23 INFO      epoch 0 step 40  loss=11.8704  forget_nll=0.4313
+11:38:44 INFO      epoch 0: utility=0.8000 (floor 0.0000) forget_nll=0.5676  keep
+11:38:51 INFO      epoch 1 step 60  loss=7.5090  forget_nll=0.5774
+11:38:56 INFO      epoch 1 step 80  loss=9.0959  forget_nll=0.6159
+11:39:20 INFO      epoch 1: utility=0.7825 (floor 0.0000) forget_nll=0.8597  keep
+11:39:24 INFO      epoch 2 step 100  loss=5.3677  forget_nll=0.8767
+11:39:30 INFO      epoch 2 step 120  loss=4.4191  forget_nll=1.0888
+11:39:36 INFO      epoch 2 step 140  loss=4.2525  forget_nll=1.0296
+11:39:57 INFO      epoch 2: utility=0.7650 (floor 0.0000) forget_nll=1.3243  keep
+11:40:03 INFO      epoch 3 step 160  loss=0.6153  forget_nll=1.3622
+11:40:09 INFO      epoch 3 step 180  loss=1.5275  forget_nll=1.5925
+11:40:33 INFO      epoch 3: utility=0.7675 (floor 0.0000) forget_nll=1.9962  keep
+11:40:36 INFO      epoch 4 step 200  loss=0.1167  forget_nll=2.3544
+11:40:42 INFO      epoch 4 step 220  loss=0.3023  forget_nll=2.6240
+11:40:48 INFO      epoch 4 step 240  loss=0.3643  forget_nll=2.4036
+11:41:09 INFO      epoch 4: utility=0.7425 (floor 0.0000) forget_nll=2.8750  keep
+11:41:15 INFO      epoch 5 step 260  loss=0.0396  forget_nll=2.5997
+11:41:21 INFO      epoch 5 step 280  loss=0.0118  forget_nll=4.1610
+11:41:45 INFO      epoch 5: utility=0.6975 (floor 0.0000) forget_nll=4.2109  keep
+11:41:48 INFO      epoch 6 step 300  loss=0.0002  forget_nll=5.1138
+11:41:54 INFO      epoch 6 step 320  loss=0.0001  forget_nll=6.0704
+11:42:00 INFO      epoch 6 step 340  loss=0.0027  forget_nll=5.0848
+11:42:21 INFO      epoch 6: utility=0.6475 (floor 0.0000) forget_nll=5.3203  keep
+11:42:27 INFO      epoch 7 step 360  loss=0.0006  forget_nll=4.2116
+11:42:33 INFO      epoch 7 step 380  loss=0.0000  forget_nll=7.2215
+11:42:57 INFO      epoch 7: utility=0.6275 (floor 0.0000) forget_nll=5.8668  keep
+11:43:00 INFO      epoch 8 step 400  loss=0.0000  forget_nll=6.7082
+11:43:06 INFO      epoch 8 step 420  loss=0.0000  forget_nll=7.7581
+11:43:11 INFO      epoch 8 step 440  loss=0.0000  forget_nll=6.2818
+11:43:33 INFO      epoch 8: utility=0.6125 (floor 0.0000) forget_nll=6.2175  keep
+11:43:38 INFO      epoch 9 step 460  loss=0.0000  forget_nll=4.8879
+11:43:44 INFO      epoch 9 step 480  loss=0.0000  forget_nll=8.1416
+11:44:08 INFO      epoch 9: utility=0.6075 (floor 0.0000) forget_nll=6.4118  keep
+11:44:11 INFO      epoch 10 step 500  loss=0.0000  forget_nll=7.2526
+11:44:17 INFO      epoch 10 step 520  loss=0.0000  forget_nll=8.3235
+11:44:23 INFO      epoch 10 step 540  loss=0.0000  forget_nll=6.6791
+11:44:44 INFO      epoch 10: utility=0.6100 (floor 0.0000) forget_nll=6.5407  keep
+11:44:50 INFO      epoch 11 step 560  loss=0.0000  forget_nll=5.1231
+11:44:56 INFO      epoch 11 step 580  loss=0.0000  forget_nll=8.4743
+11:45:20 INFO      epoch 11: utility=0.6050 (floor 0.0000) forget_nll=6.6389  keep
+11:45:23 INFO      epoch 12 step 600  loss=0.0000  forget_nll=7.4883
+11:45:29 INFO      epoch 12 step 620  loss=0.0000  forget_nll=8.5805
+11:45:35 INFO      epoch 12 step 640  loss=0.0000  forget_nll=6.8988
+11:45:56 INFO      epoch 12: utility=0.6050 (floor 0.0000) forget_nll=6.7187  keep
+11:46:01 INFO      epoch 13 step 660  loss=0.0000  forget_nll=5.2580
+11:46:07 INFO      epoch 13 step 680  loss=0.0000  forget_nll=8.6834
+11:46:31 INFO      epoch 13: utility=0.6050 (floor 0.0000) forget_nll=6.7864  keep
+11:46:34 INFO      epoch 14 step 700  loss=0.0000  forget_nll=7.6413
+11:46:40 INFO      epoch 14 step 720  loss=0.0000  forget_nll=8.7525
+11:46:46 INFO      epoch 14 step 740  loss=0.0000  forget_nll=7.0537
+11:47:07 INFO      epoch 14: utility=0.6050 (floor 0.0000) forget_nll=6.8453  keep
+11:47:13 INFO      epoch 15 step 760  loss=0.0000  forget_nll=5.3549
+11:47:19 INFO      epoch 15 step 780  loss=0.0000  forget_nll=8.8385
+11:47:43 INFO      epoch 15: utility=0.6050 (floor 0.0000) forget_nll=6.8978  keep
+11:47:45 INFO      epoch 16 step 800  loss=0.0000  forget_nll=7.7563
+11:47:51 INFO      epoch 16 step 820  loss=0.0000  forget_nll=8.8838
+11:47:57 INFO      epoch 16 step 840  loss=0.0000  forget_nll=7.1747
+11:48:18 INFO      epoch 16: utility=0.6000 (floor 0.0000) forget_nll=6.9451  keep
+11:48:24 INFO      epoch 17 step 860  loss=0.0000  forget_nll=5.4316
+11:48:30 INFO      epoch 17 step 880  loss=0.0000  forget_nll=8.9632
+11:48:54 INFO      epoch 17: utility=0.6000 (floor 0.0000) forget_nll=6.9884  keep
+11:48:56 INFO      epoch 18 step 900  loss=0.0000  forget_nll=7.8496
+11:49:03 INFO      epoch 18 step 920  loss=0.0000  forget_nll=8.9913
+11:49:08 INFO      epoch 18 step 940  loss=0.0000  forget_nll=7.2753
+11:49:30 INFO      epoch 18: utility=0.6000 (floor 0.0000) forget_nll=7.0283  keep
+11:49:35 INFO      epoch 19 step 960  loss=0.0000  forget_nll=5.4958
+11:49:41 INFO      epoch 19 step 980  loss=0.0000  forget_nll=9.0685
+11:50:05 INFO      epoch 19: utility=0.6000 (floor 0.0000) forget_nll=7.0655  keep
+11:50:08 INFO      selected epoch 19 (utility 0.6000, forget_nll 7.0655)
+11:50:10 INFO    Unlearning finished: 1000 steps in 719.2s, forget NLL 0.3913 -> 7.0655 (+6.6742 over the full forget set)
+11:50:10 INFO    lr=3e-08: kept epoch 3 of 20 (usable), utility 0.7675, forget NLL 1.9962
+11:50:10 INFO    === npo lr=1e-08 ===
+11:50:30 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+11:50:31 INFO      epoch 0 step 0  loss=13.8629  forget_nll=0.3998
+11:50:37 INFO      epoch 0 step 20  loss=13.3696  forget_nll=0.5004
+11:50:43 INFO      epoch 0 step 40  loss=13.2717  forget_nll=0.3632
+11:51:04 INFO      epoch 0: utility=0.8025 (floor 0.0000) forget_nll=0.4358  keep
+11:51:10 INFO      epoch 1 step 60  loss=12.0914  forget_nll=0.3779
+11:51:16 INFO      epoch 1 step 80  loss=12.8814  forget_nll=0.3803
+11:51:40 INFO      epoch 1: utility=0.8025 (floor 0.0000) forget_nll=0.4962  keep
+11:51:43 INFO      epoch 2 step 100  loss=11.3061  forget_nll=0.5063
+11:51:49 INFO      epoch 2 step 120  loss=9.9558  forget_nll=0.6725
+11:51:55 INFO      epoch 2 step 140  loss=11.0974  forget_nll=0.4666
+11:52:16 INFO      epoch 2: utility=0.7975 (floor 0.0000) forget_nll=0.5730  keep
+11:52:22 INFO      epoch 3 step 160  loss=8.1576  forget_nll=0.5381
+11:52:28 INFO      epoch 3 step 180  loss=10.5238  forget_nll=0.5179
+11:52:52 INFO      epoch 3: utility=0.7900 (floor 0.0000) forget_nll=0.6644  keep
+11:52:55 INFO      epoch 4 step 200  loss=8.6017  forget_nll=0.6487
+11:53:02 INFO      epoch 4 step 220  loss=7.0016  forget_nll=0.8698
+11:53:07 INFO      epoch 4 step 240  loss=8.1589  forget_nll=0.6362
+11:53:28 INFO      epoch 4: utility=0.7850 (floor 0.0000) forget_nll=0.7678  keep
+11:53:35 INFO      epoch 5 step 260  loss=4.3985  forget_nll=0.7543
+11:53:40 INFO      epoch 5 step 280  loss=7.6655  forget_nll=0.7160
+11:54:04 INFO      epoch 5: utility=0.7825 (floor 0.0000) forget_nll=0.8869  keep
+11:54:07 INFO      epoch 6 step 300  loss=5.2300  forget_nll=0.8880
+11:54:14 INFO      epoch 6 step 320  loss=4.9491  forget_nll=1.0320
+11:54:19 INFO      epoch 6 step 340  loss=5.5369  forget_nll=0.8527
+11:54:40 INFO      epoch 6: utility=0.7750 (floor 0.0000) forget_nll=1.0307  keep
+11:54:46 INFO      epoch 7 step 360  loss=1.7290  forget_nll=1.0136
+11:54:52 INFO      epoch 7 step 380  loss=5.1160  forget_nll=0.9480
+11:55:16 INFO      epoch 7: utility=0.7700 (floor 0.0000) forget_nll=1.2056  keep
+11:55:19 INFO      epoch 8 step 400  loss=1.9579  forget_nll=1.3279
+11:55:25 INFO      epoch 8 step 420  loss=2.7357  forget_nll=1.3039
+11:55:31 INFO      epoch 8 step 440  loss=3.3028  forget_nll=1.1668
+11:55:52 INFO      epoch 8: utility=0.7650 (floor 0.0000) forget_nll=1.4095  keep
+11:55:58 INFO      epoch 9 step 460  loss=0.6231  forget_nll=1.3526
+11:56:04 INFO      epoch 9 step 480  loss=2.2266  forget_nll=1.3874
+11:56:28 INFO      epoch 9: utility=0.7550 (floor 0.0000) forget_nll=1.6321  keep
+11:56:31 INFO      epoch 10 step 500  loss=0.3870  forget_nll=1.9338
+11:56:37 INFO      epoch 10 step 520  loss=1.1032  forget_nll=1.7795
+11:56:43 INFO      epoch 10 step 540  loss=1.4806  forget_nll=1.6495
+11:57:04 INFO      epoch 10: utility=0.7625 (floor 0.0000) forget_nll=1.8716  keep
+11:57:10 INFO      epoch 11 step 560  loss=0.1936  forget_nll=1.7465
+11:57:15 INFO      epoch 11 step 580  loss=0.6294  forget_nll=2.0549
+11:57:40 INFO      epoch 11: utility=0.7625 (floor 0.0000) forget_nll=2.1238  keep
+11:57:42 INFO      epoch 12 step 600  loss=0.0740  forget_nll=2.5088
+11:57:48 INFO      epoch 12 step 620  loss=0.3209  forget_nll=2.5376
+11:57:54 INFO      epoch 12 step 640  loss=0.6933  forget_nll=2.0950
+11:58:15 INFO      epoch 12: utility=0.7550 (floor 0.0000) forget_nll=2.4016  keep
+11:58:21 INFO      epoch 13 step 660  loss=0.0887  forget_nll=2.1762
+11:58:27 INFO      epoch 13 step 680  loss=0.1541  forget_nll=2.8296
+11:58:51 INFO      epoch 13: utility=0.7525 (floor 0.0000) forget_nll=2.7309  keep
+11:58:54 INFO      epoch 14 step 700  loss=0.0096  forget_nll=3.3925
+11:59:00 INFO      epoch 14 step 720  loss=0.0403  forget_nll=3.5358
+11:59:06 INFO      epoch 14 step 740  loss=0.1935  forget_nll=2.7112
+11:59:27 INFO      epoch 14: utility=0.7375 (floor 0.0000) forget_nll=3.1204  keep
+11:59:32 INFO      epoch 15 step 760  loss=0.0406  forget_nll=2.6384
+11:59:38 INFO      epoch 15 step 780  loss=0.0243  forget_nll=3.8188
+12:00:02 INFO      epoch 15: utility=0.7075 (floor 0.0000) forget_nll=3.5686  keep
+12:00:05 INFO      epoch 16 step 800  loss=0.0008  forget_nll=4.5131
+12:00:11 INFO      epoch 16 step 820  loss=0.0014  forget_nll=4.8033
+12:00:17 INFO      epoch 16 step 840  loss=0.0408  forget_nll=3.7201
+12:00:38 INFO      epoch 16: utility=0.6975 (floor 0.0000) forget_nll=4.0508  keep
+12:00:44 INFO      epoch 17 step 860  loss=0.0129  forget_nll=3.2045
+12:00:49 INFO      epoch 17 step 880  loss=0.0015  forget_nll=5.1203
+12:01:14 INFO      epoch 17: utility=0.6825 (floor 0.0000) forget_nll=4.4811  keep
+12:01:16 INFO      epoch 18 step 900  loss=0.0001  forget_nll=5.4319
+12:01:22 INFO      epoch 18 step 920  loss=0.0001  forget_nll=6.0254
+12:01:28 INFO      epoch 18 step 940  loss=0.0095  forget_nll=4.6531
+12:01:49 INFO      epoch 18: utility=0.6675 (floor 0.0000) forget_nll=4.8247  keep
+12:01:55 INFO      epoch 19 step 960  loss=0.0027  forget_nll=3.7823
+12:02:01 INFO      epoch 19 step 980  loss=0.0001  forget_nll=6.2500
+12:02:25 INFO      epoch 19: utility=0.6575 (floor 0.0000) forget_nll=5.1029  keep
+12:02:27 INFO      selected epoch 19 (utility 0.6575, forget_nll 5.1029)
+12:02:30 INFO    Unlearning finished: 1000 steps in 719.3s, forget NLL 0.3913 -> 5.1029 (+4.7117 over the full forget set)
+12:02:30 INFO    lr=1e-08: kept epoch 8 of 20 (usable), utility 0.765, forget NLL 1.4095
+
+============================================================================
+LEARNING-RATE SCAN  npo  (float32, answer loss, floor 95%, 20 epochs)
+============================================================================
+       lr  kept epoch   utility  forget NLL  epochs run  verdict
+    1e-06        None         -           -          20  too fast
+    3e-07        None         -           -          20  too fast
+    1e-07           0    0.7675      1.3116          20  too fast
+    3e-08           3    0.7675      1.9962          20  usable
+    1e-08           8     0.765      1.4095          20  usable
+
+Recommended: 1e-08
+Saved to results/lr_scans/npo_1B_v2_s0.json

@@ -1,0 +1,48 @@
+{
+  "config": {
+    "method": "ga",
+    "learning_rate": 2e-08,
+    "epochs": 2,
+    "batch_size": 4,
+    "max_grad_norm": 1.0,
+    "beta": 0.1,
+    "retain_weight": 1.0,
+    "seed": 0,
+    "log_every": 20,
+    "min_utility_ratio": 0.5,
+    "stop_below_utility_ratio": null
+  },
+  "history": {
+    "n_steps": 100,
+    "seconds": 71.2,
+    "first_loss": -0.39455899596214294,
+    "last_loss": -0.5703423023223877,
+    "baseline_forget_nll": 0.39127609610557557,
+    "final_forget_nll": 0.6622116881608963,
+    "forget_nll_change": 0.2709355920553207,
+    "baseline_utility": 0.805,
+    "selected_epoch": 1,
+    "stopped_early": false,
+    "epoch_evals": [
+      {
+        "epoch": 0,
+        "utility": 0.8025,
+        "forget_nll": 0.498,
+        "acceptable": true,
+        "selected": false
+      },
+      {
+        "epoch": 1,
+        "utility": 0.7975,
+        "forget_nll": 0.6622,
+        "acceptable": true,
+        "selected": true
+      }
+    ]
+  },
+  "verdict": {
+    "passed": true,
+    "reason": "weights moved and forget-set NLL rose, as expected",
+    "update_norm": 0.019347275571161778
+  }
+}

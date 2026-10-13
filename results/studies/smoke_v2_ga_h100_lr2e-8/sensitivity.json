@@ -1,0 +1,28 @@
+[
+  {
+    "method": "ga",
+    "model": "1B-ga",
+    "benchmark": "tofu-forget10:trained",
+    "n_points": 2,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": null,
+    "p_excluding": null,
+    "rho_including": null,
+    "p_including": null,
+    "conclusion_is_robust": null
+  },
+  {
+    "method": "ga",
+    "model": "1B-ga",
+    "benchmark": "tofu-forget10:heldout",
+    "n_points": 2,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": null,
+    "p_excluding": null,
+    "rho_including": null,
+    "p_including": null,
+    "conclusion_is_robust": null
+  }
+]

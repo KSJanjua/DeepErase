@@ -1,0 +1,64 @@
+{
+  "run_id": "smoke_v2_ga_h100_lr2e-8",
+  "method": "ga",
+  "size": "1B",
+  "protocol": "v2",
+  "alphas": [
+    0.0,
+    1.0
+  ],
+  "adaptation": "full_parameter",
+  "unlearn": {
+    "epochs": 2,
+    "learning_rate": 2e-08,
+    "batch_size": 4,
+    "beta": 0.1,
+    "min_utility_ratio": 0.5,
+    "loss_scope": "answer"
+  },
+  "n_depth_examples": 20,
+  "n_heldout_examples": 20,
+  "n_breadth_per_tier": 400,
+  "prompt_format": "plain_qa",
+  "seed": 0,
+  "sampling": "random",
+  "forget_split": "half",
+  "train_fraction": 0.5,
+  "dtype": "float32",
+  "precision": {
+    "dtype": "float32",
+    "TORCH_ALLOW_TF32_CUBLAS_OVERRIDE_was": "1",
+    "NVIDIA_TF32_OVERRIDE_was": null,
+    "tf32": false
+  },
+  "device": "cuda:0",
+  "control": "none",
+  "control_scale": null,
+  "forget_config": "forget10",
+  "retain_config": null,
+  "inputs": {
+    "breadth_items": "data/breadth_items_v2.json",
+    "breadth_items_sha256": "e61d769e490ae2840aff4c3a9e46b37153c60bb34908fb00593e6008e2fd4e52",
+    "reference_spans": "reference_uds/tofu_data/forget10_filtered.json",
+    "reference_spans_sha256": "c3d88b76702fed46e920a52ba8183b0142ab46894c0b4c536683759bfcf13ad9",
+    "model_sources": null,
+    "tofu_dir": null
+  },
+  "git": {
+    "commit": "fc6391af6dbd35312082a30a6b98fbbb9d2049fd",
+    "branch": "rishabh-development",
+    "dirty": false
+  },
+  "environment": {
+    "python": "3.11.17",
+    "platform": "Linux-5.15.0-1053-nvidia-x86_64-with-glibc2.35",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.46.3",
+    "tokenizers": "0.20.3",
+    "datasets": "3.1.0",
+    "numpy": "1.26.4",
+    "cuda": "12.4",
+    "device": "NVIDIA H100 80GB HBM3 MIG 3g.40gb",
+    "tf32_matmul": false
+  }
+}
