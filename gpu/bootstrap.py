@@ -235,7 +235,8 @@ def check_hf_cache(size: str = "1B") -> None:
         line(OK if have else WARN,
              f"  {split}: {'downloaded' if have else 'not downloaded yet (the first run will fetch it)'}")
     if os.environ.get("HF_HUB_OFFLINE") == "1":
-        line(WARN, "HF_HUB_OFFLINE=1 -- downloads are disabled this session")
+        line(OK, "HF_HUB_OFFLINE=1 (set by gpu/env.sh): runs read only the local cache. "
+                 "To download something new: export HF_HUB_OFFLINE=0 HF_DATASETS_OFFLINE=0")
 
 
 def main() -> int:

@@ -187,6 +187,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "seed": args.seed, "batch_size": args.batch_size, "beta": args.beta,
         "loss_scope": loss_scope.value, "dtype": dtype_name, "precision": precision,
         "floor": floor, "stop_ratio": args.stop_ratio,
+        "retain_excludes_r_tier_authors": method.needs_retain,
         "git": git_info(), "environment": environment_info()})
     rates: Dict[str, dict] = record.setdefault("rates", {})
 
@@ -207,7 +208,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         retain_batches = build_retain_batches(
             tokenizer, fmt, args.max_length, args.n_retain or len(forget_batches),
             args.cache_dir, SamplingStrategy(str(proto["sampling"])), args.seed,
-            loss_scope=loss_scope, data_dir=args.tofu_dir)
+            loss_scope=loss_scope, data_dir=args.tofu_dir,
+            exclude_questions={i.question for i in load_breadth_items_file(items_path)
+                               if i.tier == "R"})
     log.info("%s scan: %d trained rows, %d R items, rates %s, %d epochs, floor %.0f%%",
              args.method, len(forget_batches), len(r_items), lrs, args.epochs, 100 * floor)
 

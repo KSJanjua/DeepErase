@@ -80,7 +80,9 @@ python gpu/bootstrap.py
 ```
 
 `env.sh` activates the environment, points the model cache at
-`/workspace/Capstone_Project/hf_cache` and moves into the clone. It affects only
+`/workspace/Capstone_Project/hf_cache`, switches Hugging Face to offline mode
+(everything the runs read is cached, so a Hub outage cannot stop a job) and
+moves into the clone. It affects only
 that terminal, so run it in every new one. Pull new code between jobs, not
 while one runs: `replicate.py` starts each run as a fresh process, which would
 pick up the new code mid-matrix.
@@ -162,13 +164,19 @@ Results: `results/lr_scans/<method>_1B_v2_s0.json`. If a method has no usable
 rate, scan again below its slowest "too fast" rate (or above its fastest "too
 slow" one); a new scan adds to the same file.
 
-**1b. One full study per method at the scanned rate (~45 min each)**
+**1b. One full study per method at the scanned rate (~1 h each)**
+
+The 13 Oct scans chose GA 1e-8, GradDiff 5e-8 (provisional) and NPO 1e-8
+(`RESULTS.md` §12.2). All three, one after another:
 
 ```bash
-python gpu/replicate.py --methods ga       --seeds 0 --learning-rate <GA lr>
-python gpu/replicate.py --methods graddiff --seeds 0 --learning-rate <GD lr>
-python gpu/replicate.py --methods npo      --seeds 0 --learning-rate <NPO lr>
-python gpu/summarize.py --glob 'study_v2*'
+nohup sh -c '
+python gpu/replicate.py --methods ga       --seeds 0 --learning-rate 1e-8
+python gpu/replicate.py --methods graddiff --seeds 0 --learning-rate 5e-8
+python gpu/replicate.py --methods npo      --seeds 0 --learning-rate 1e-8
+python gpu/summarize.py --glob "study_v2*"
+' > results/logs/step1b_v2_h100.log 2>&1 &
+tail -f results/logs/step1b_v2_h100.log
 ```
 
 The scan predicts the kept epoch; this checks the rest. In `summarize`, a kept

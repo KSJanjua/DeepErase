@@ -438,6 +438,15 @@ depth-breadth trajectories may be read.
 6. **The α sweep runs past the selection floor.** Every run selects the last
    epoch above 90% of starting utility, so every point beyond about α = 0.2 sits
    below that floor.
+7. **GradDiff trained on part of its own utility test** *(found 13 Oct 2026)*.
+   GradDiff's retain term samples retain90 rows, and the R tier (TOFU's
+   `retain_perturbed`) is drawn from those same rows. 10, 11 and 7 of the 100
+   retain examples of the v1 GradDiff seeds 0, 1 and 2 were R-tier questions,
+   so up to about 3% of R was scored on questions GradDiff had just trained on.
+   That flatters GradDiff's utility, its checkpoint selection and its
+   selectivity. GA and NPO have no retain term and are unaffected. Fixed for
+   all new runs: the retain term now excludes every author the R tier asks
+   about (§12).
 
 Until 1–4 are fixed and the runs repeated, the trajectories in §5–§7 describe
 the pipeline's behaviour, not the depth-breadth relationship.
@@ -669,7 +678,9 @@ them. v2 runs store it (`PROTOCOL_V2.md` §5).
 
 ---
 
-## 12. First run on the H100: v1's learning rate does not carry over (13 Oct 2026)
+## 12. First runs on the H100 (13 Oct 2026)
+
+### 12.1 v1's learning rate does not carry over
 
 The first protocol-v2 run on the H100 was a smoke test: GA, seed 0, lr 1e-6
 (v1's GA rate), 2 epochs (`results/logs/smoke_v2_ga_h100.log`).
@@ -703,3 +714,55 @@ v2's**, and each method's rate is rescanned (`scripts/lr_scan.py`,
 This also confirms §8.5 from the other side. The bf16 rounding that made v1's
 T1 control unreliable also made v1's training far gentler than its nominal
 rate.
+
+### 12.2 Learning-rate scans (13 Oct 2026)
+
+`scripts/lr_scan.py`, seed 0, float32, answer-only loss, 20-epoch budget,
+utility floor 95% (0.765). Each rate restarts from `full`, and a rate stops
+once utility halves (`results/lr_scans/*.json`; the whole job took 3 h
+including the second smoke run).
+
+| Method | Rates tried | Too fast | Usable (kept epoch / 20) | Too slow | Chosen |
+|---|---|---|---|---|---|
+| GA | 1e-7 … 5e-9 | 1e-7, 5e-8 | 2e-8 (3), **1e-8 (10)**, 5e-9 (15) | – | **1e-8** |
+| GradDiff | 3e-7 … 1e-8 | 3e-7 | 1e-7 (3), **5e-8 (6)**, 2e-8 (16) | 1e-8 | **5e-8**, provisional (see below) |
+| NPO | 1e-6 … 1e-8 | 1e-6, 3e-7, 1e-7 | 3e-8 (3), **1e-8 (8)** | – | **1e-8** |
+
+The rates that suit float32 are 60–100 times smaller than v1's (GA 1e-6,
+GradDiff 3e-6). Three observations:
+
+1. **One trade-off for all three methods.** Wherever utility crosses the 95%
+   floor, the forget-set NLL has risen from 0.39 to between about 1.0 and 2.0,
+   whatever the method and rate. Per answer token, the forget answers' average
+   probability falls from about 68% to between 37% and 13%. That is how much
+   forgetting the checkpoint rule allows before the α sweep pushes further.
+2. **NPO saturates; GA does not.** At the larger rates NPO's utility and forget
+   NLL stop moving after a few epochs. Utility holds at 0.47, 0.56 and 0.58
+   with forget NLL 11, 9 and 8, for 1e-6, 3e-7 and 1e-7. This is the
+   self-limiting behaviour NPO is designed for. GA at the same rates collapses
+   outright (forget NLL above 30).
+3. **GradDiff's utility recovers.** At 3e-7 its utility falls to 0.60 and then
+   climbs back to 0.74 while the forget NLL reaches about 100. Its retain term
+   repairs general ability while the forget answers are driven to near-zero
+   probability. That is a candidate case of suppression without removal, which
+   only depth can test.
+
+**A defect found in these scans.** GradDiff's recovery led to a check of what
+its retain term trains on. 22 of its 200 retain examples were R-tier questions
+(§8, issue 7), so part of the recovery was scored on questions it had just
+trained on. From 13 Oct the retain term leaves out all 21 authors the R tier
+asks about, which leaves 3,180 rows from 159 authors
+(`run_study.drop_authors_asked_about`, `tests/test_retain_pool.py`). The
+GradDiff rate above came from the contaminated scan, so it is provisional. The
+first clean GradDiff study shows whether its kept epoch is still mid-budget.
+
+**Second smoke run** (`smoke_v2_ga_h100_lr2e-8`: GA, lr 2e-8, 2 epochs, 20+20
+depth examples, α ∈ {0, 1}). It completed every stage on the H100: training
+(forget NLL 0.39 → 0.66, ||v|| = 0.019), the sweep, the analysis and the
+fact-level analysis, run offline on its output. Its numbers are too small to
+mean anything: breadth ≤ 0.09 and depth ≤ 0.11 after two epochs at a tiny rate.
+Measured costs on the 40 GB slice: about 85 s to score the 2014 items per
+model, about 55 s per α to build the extrapolated weights on the CPU, about
+10 s of depth patching per 40 examples, and about 35 s per training epoch.
+Peak GPU memory in training was 21.9 GB (GA), 23.5 GB (GradDiff) and 26.9 GB
+(NPO). A full v2 study is therefore about an hour.

@@ -22,11 +22,17 @@ export DEEPERASE_HOME="$_de_home"
 export HF_HOME="$_de_home/hf_cache"
 export DEEPERASE_CACHE_DIR="$HF_HOME"
 export HF_HUB_DISABLE_TELEMETRY=1
+# setup_env.sh cached everything the runs read, so runs stay off the network: a
+# Hub outage or rate limit cannot fail a job mid-matrix (the 13 Oct scan log
+# shows one Hub lookup failing). To download something new in this terminal:
+#     export HF_HUB_OFFLINE=0 HF_DATASETS_OFFLINE=0
+export HF_HUB_OFFLINE="${HF_HUB_OFFLINE:-1}"
+export HF_DATASETS_OFFLINE="${HF_DATASETS_OFFLINE:-1}"
 export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True"
 export TOKENIZERS_PARALLELISM=false
 cd "$_de_repo" || return 1
 
 echo "DeepErase ready: $(python --version 2>&1) from $VIRTUAL_ENV"
 echo "  repo  $PWD   (branch $(git rev-parse --abbrev-ref HEAD 2>/dev/null), commit $(git rev-parse --short HEAD 2>/dev/null))"
-echo "  cache $HF_HOME"
+echo "  cache $HF_HOME   (offline: HF_HUB_OFFLINE=$HF_HUB_OFFLINE)"
 unset _de_repo _de_home

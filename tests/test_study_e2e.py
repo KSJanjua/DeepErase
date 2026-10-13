@@ -278,6 +278,7 @@ class TestProtocolV1GradDiff:
         assert (c["forget_split"], c["unlearn"]["loss_scope"]) == ("depth", "full")
         assert c["retain_config"] == "retain90"
         assert c["inputs"]["breadth_items"].endswith("data/breadth_items.json")
+        assert c["unlearn"]["retain_excludes_r_tier_authors"] is True
 
     def test_v1_has_one_trajectory_on_the_pooled_headline(self, run):
         from deeperase.eval.plane import PlaneDataset

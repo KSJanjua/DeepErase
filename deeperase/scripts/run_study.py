@@ -212,10 +212,22 @@ def build_forget_batches(rows: Sequence, tokenizer, fmt, max_length,
     return out
 
 
+def drop_authors_asked_about(rows: Sequence, questions: Set[str]) -> Tuple[list, Set[int]]:
+    """Remove every author with a row whose question is in ``questions``.
+
+    TOFU stores 20 rows per author, in order, so a row's author is its index
+    // 20. Returns the kept rows and the dropped authors.
+    """
+    from deeperase.data.tofu import QAS_PER_AUTHOR
+    hit = {i // QAS_PER_AUTHOR for i, r in enumerate(rows) if r.question in questions}
+    return [r for i, r in enumerate(rows) if i // QAS_PER_AUTHOR not in hit], hit
+
+
 def build_retain_batches(tokenizer, fmt, max_length, n, cache_dir,
                          strategy: SamplingStrategy, seed: int, *,
                          loss_scope: LossScope = LossScope.FULL,
                          data_dir: Optional[str] = None,
+                         exclude_questions: Optional[Set[str]] = None,
                          ) -> List[Dict[str, torch.Tensor]]:
     """Token batches from the **retain** split, for GradDiff's retention term.
 
@@ -230,9 +242,19 @@ def build_retain_batches(tokenizer, fmt, max_length, n, cache_dir,
     is identically zero -- the model would not train at all, would keep full
     utility, would pass checkpoint selection, and would emit a flat trajectory
     that looked like a legitimate null result.
+
+    ``exclude_questions`` (the R tier's questions) removes every author the
+    utility measure asks about. The R tier is drawn from retain90's own rows,
+    so without this GradDiff trains on some of the very questions that score
+    its utility: 22 of its 200 retain examples were R items (13 Oct 2026).
+    That inflates its utility, its checkpoint selection and its selectivity.
     """
     retain_config = FORGET_TO_RETAIN[FORGET_CONFIG]
     examples = load_tofu(retain_config, cache_dir=cache_dir, data_dir=data_dir)
+    if exclude_questions:
+        examples, dropped = drop_authors_asked_about(examples, exclude_questions)
+        log.info("  retain split %s: %d authors held out of the retain term "
+                 "(the R tier asks about them)", retain_config, len(dropped))
     chosen = select_examples(examples, n, strategy=strategy, seed=seed)
     log.info("  retain split %s: %d of %d examples (%s)",
              retain_config, len(chosen), len(examples), strategy.value)
@@ -619,7 +641,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "unlearn": {"epochs": args.epochs, "learning_rate": args.learning_rate,
                     "batch_size": args.batch_size, "beta": args.beta,
                     "min_utility_ratio": settings["min_utility_ratio"],
-                    "loss_scope": loss_scope.value},
+                    "loss_scope": loss_scope.value,
+                    "retain_excludes_r_tier_authors": bool(method.needs_retain)},
         "n_depth_examples": args.n_examples, "n_heldout_examples": n_heldout,
         "n_breadth_per_tier": args.n_breadth,
         "prompt_format": args.prompt_format,
@@ -794,7 +817,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         retain_batches = build_retain_batches(
             tokenizer, fmt, args.max_length, args.n_retain or len(forget_batches),
             args.cache_dir, sampling, args.seed, loss_scope=loss_scope,
-            data_dir=args.tofu_dir)
+            data_dir=args.tofu_dir,
+            exclude_questions={i.question for i in items_all if i.tier == "R"})
 
     try:
         history = unlearn(model, forget_batches, ucfg,

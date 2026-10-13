@@ -220,7 +220,7 @@ therefore never pooled with the runs it is compared against.
 | 3b | A1 loss-scope ablation, GA seed 0 (`--tag lossfull --extra --loss-scope full`) | ~1 h |
 | 3c | α extension where α\* = 1.0 (`--extra --alphas 1.25,1.5,2.0`; the run resumes) | ~20 min per run |
 
-That is about 14–16 GPU hours. If time runs short, the order is: 1 → 2 (GA,
+That is about 14–16 GPU hours. Measured on the H100 slice (13 Oct): the three learning-rate scans took 3 h in all, and a full study takes about 1 h. If time runs short, the order is: 1 → 2 (GA,
 GradDiff) → 3 (scale 1, then the matched scale) → 2 (NPO) → 3b → 3c. H1–H3
 need only steps 1–3 for one method.
 
