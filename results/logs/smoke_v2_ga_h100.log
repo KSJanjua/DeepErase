@@ -1,0 +1,56 @@
+nohup: ignoring input
+08:25:51 WARNING TORCH_ALLOW_TF32_CUBLAS_OVERRIDE=1 would force TF32 matmuls; overriding to 0 for this float32 run.
+08:25:52 INFO    PyTorch version 2.6.0+cu124 available.
+08:25:53 INFO    [1/6] Preparing evaluation data (forget split: half)
+============================================================================
+DEPTH-BREADTH STUDY  |  method=ga  size=1B  protocol=v2
+run=smoke_v2_ga_h100
+============================================================================
+
+[FITS] strategy=all_resident  peak weights=20.77 GB  headroom=8.61 GB
+  training dominates: 4.94 GB weights x 4 (weights + grads + 2 AdamW moments) + 1.0 GB activations = 20.77 GB, within 29.38 GB usable (42.0 GB free minus 30% safety margin).
+  WARNING: Planning at fp32 (4 bytes/param). Use bf16 or fp16 to halve weight memory.
+
+Generating train split:   0%|          | 0/400 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 400/400 [00:00<00:00, 28362.89 examples/s]
+08:25:58 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+08:25:58 INFO      reference annotations (trained): 181 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+08:25:58 INFO      depth example sampling (trained): random (seed 0)
+08:25:58 INFO      20 depth examples tokenised (trained)
+08:25:58 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+08:25:58 INFO      reference annotations (heldout): 186 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+08:25:58 INFO      depth example sampling (heldout): random (seed 1)
+08:25:58 INFO      20 depth examples tokenised (heldout)
+08:25:58 INFO      forget objective: 200 rows (answer loss)
+08:25:58 INFO      2014 breadth items from data/breadth_items_v2.json
+08:25:58 INFO    [2/6] Measuring reference models (anchors both axes)
+08:25:58 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+08:26:08 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 9.9s
+08:27:34 INFO      full  forget:all=0.777  R=0.805  RA=0.890  WF=0.855
+08:27:34 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda:0)
+08:27:43 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 9.7s
+08:29:09 INFO      retain90  forget:all=0.527  R=0.810  RA=0.880  WF=0.855
+08:29:09 INFO      TOFU forget quality, full vs retain90 (before unlearning): {'trained': '4.87e-10', 'heldout': '2.89e-11', 'all': '8.51e-19'}
+08:29:09 INFO      calibration forget:trained: floor=0.527 ceiling=0.770 range=0.243
+08:29:09 INFO      calibration forget:heldout: floor=0.527 ceiling=0.785 range=0.258
+08:29:09 INFO    [3/6] Depth Stage-1 baseline (retain90 -> full)
+08:29:09 INFO    Captured hidden states for 20 examples across 16 layers
+08:29:10 INFO    Captured hidden states for 20 examples across 16 layers
+08:29:20 INFO      trained: 18/20 examples have a Knowledge-Encoding layer
+08:29:20 INFO      heldout: 19/20 examples have a Knowledge-Encoding layer
+08:29:22 INFO    Freed full -- cuda:0: 4.98 GB allocated, 5.01 GB reserved, 36.84 GB free of 42.28 GB (13% used)
+08:29:25 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.06 GB reserved, 41.79 GB free of 42.28 GB (1% used)
+08:29:25 INFO    [4/6] Unlearning with ga (float32, answer)
+08:29:25 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+08:29:29 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.7s
+08:29:51 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+08:29:52 INFO      epoch 0 step 0  loss=-0.3946  forget_nll=1.0887
+08:29:58 INFO      epoch 0 step 20  loss=-24.3020  forget_nll=29.3449
+08:30:03 INFO      epoch 0 step 40  loss=-61.8565  forget_nll=63.6400
+08:30:23 INFO      epoch 0: utility=0.2575 (floor 0.4025) forget_nll=69.6727  REJECTED -- utility too low
+08:30:26 INFO      epoch 1 step 60  loss=-73.9888  forget_nll=74.3062
+08:30:31 INFO      epoch 1 step 80  loss=-78.9447  forget_nll=79.1120
+08:30:55 INFO      epoch 1: utility=0.2275 (floor 0.4025) forget_nll=82.0422  REJECTED -- utility too low
+
+No epoch kept at least 50% of the starting utility (0.8050). Utilities seen: [0.258, 0.228]. Every checkpoint is a damaged model, which would score maximally on all forget metrics and produce a meaningless study. Lower the learning rate or reduce the number of epochs.
+
+The study cannot proceed: a collapsed model scores maximally on every forget metric, so both axes would saturate and the result would be an artefact.
