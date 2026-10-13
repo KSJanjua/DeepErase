@@ -10,11 +10,10 @@ pasted verbatim. Captured: 2026-08-09 21:29
 > tests. They are kept for the environment and defect history. **Section 0 below
 > is the latest captured suite run**, on the university A100.
 >
-> **Section 0 is out of date for the GPU box.** The suite has grown to 686
-> collected tests. Section 0.2 is the current run, on macOS CPU (13 Oct 2026):
-> 684 passed, 2 GPU-only skips. The GPU box is now an H100 (40 GB MIG slice):
-> run `python gpu/bootstrap.py --run-tests` there (`gpu/README.md`) and add the
-> transcript as section 0.3.
+> **Section 0 (the A100) is history.** The GPU box is now an H100 with a 40 GB
+> MIG slice. Its first suite run is section 0.3 (670 passed, 16 tokenizer
+> skips, 13 Oct 2026). The latest run of the current suite (701 collected) is in
+> section 0.2, on macOS CPU: 699 passed, 2 GPU-only skips.
 
 ---
 
@@ -83,6 +82,36 @@ Two caveats this run does **not** settle:
 
 ---
 
+## 0.3 The H100 box (13 October 2026)
+
+Machine: `dgxhnode3`, NVIDIA H100 80GB HBM3, **MIG 3g.40gb** slice (39.4 GiB),
+driver 535.161.08, Jupyter Lab. Environment built by `gpu/setup_env.sh`: an
+isolated venv at `/workspace/Capstone_Project/.venv`, Python 3.11.17 (uv),
+torch **2.6.0+cu124** (CUDA runtime 12.4), and the exact `requirements.txt` pins
+(transformers 4.46.3, datasets 3.1.0, numpy 1.26.4, scipy 1.13.1, pyarrow
+25.0.0). The setup's GPU check: float32 matmul matches float64 to 4.0e-07, so
+TF32 is not in play.
+
+```
+$ python gpu/bootstrap.py --run-tests
+[  OK  ] project environment: /workspace/Capstone_Project/.venv
+[  OK  ] torch 2.6.0+cu124 (CUDA runtime 12.4)
+[  OK  ]   cuda:0 NVIDIA H100 80GB HBM3 MIG 3g.40gb -- 39.4 GB total, 0.3 GB in use by others, 39.1 GB free
+[  OK  ] NVIDIA driver 535.161.08
+[  OK  ] memory plan for 1B GA/GradDiff ...  [FITS] peak 20.77 GB, headroom 8.61 GB
+[  OK  ] memory plan for 1B NPO ...          [FITS] peak 25.72 GB, headroom 3.66 GB
+670 passed, 16 skipped, 10 warnings in 202.40s (0:03:22)
+READY
+```
+
+Both GPU-only tests ran and passed. All 16 skips are the tests that load
+`hf-internal-testing/llama-tokenizer` (`test_breadth.py`, `test_models.py`,
+`test_tofu.py`). The box downloads models from the Hub, so "no network" was
+not the real cause. The fixtures caught every exception under that label.
+They now report the actual error, and the next bootstrap shows it.
+
+---
+
 ## 0.2 Local run on macOS, CPU (9 October 2026)
 
 The GPU box was unavailable, so a CPU environment was built on the
@@ -131,7 +160,10 @@ provenance and bootstrap changes below): **684 passed, 2 skipped in 17.4 s**
 (686 collected from 661 functions). Added: the dirty flag ignores `results/`
 and names the changed files; bootstrap recognises the project environment and
 the cached checkpoints; both runners take `--cache-dir` from
-`DEEPERASE_CACHE_DIR`; `smoke_*` runs are never read as measurements.
+`DEEPERASE_CACHE_DIR`; `smoke_*` runs are never read as measurements. Later the same day, after the
+learning-rate scan (`scripts/lr_scan.py`, its early stop in `unlearn`, and the
+tokenizer fixtures now reporting their real error): **699 passed, 2 skipped**
+(701 collected from 671 functions).
 `gpu/setup_env.sh` steps 1–5 were also run on the Mac against a stand-in
 `nvidia-smi` (CPU torch). They built Python 3.11.17 with the exact pins and
 left nothing outside the project folder. Step 6 stopped as intended, since the

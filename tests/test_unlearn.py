@@ -610,6 +610,30 @@ class TestCheckpointSelection:
     def test_invalid_utility_ratio_rejected(self):
         assert UnlearnConfig(min_utility_ratio=0).validate()
         assert UnlearnConfig(min_utility_ratio=1.5).validate()
+        assert UnlearnConfig(stop_below_utility_ratio=0).validate()
+        assert not UnlearnConfig(stop_below_utility_ratio=0.5).validate()
+
+    def test_training_stops_once_utility_is_below_the_stop_ratio(self):
+        # epoch 1 falls to 0.4 of the start: epochs 2 and 3 never run
+        utilities = iter([1.0, 0.96, 0.4, 0.3, 0.2])
+        calls = []
+        def ev(m):
+            calls.append(1)
+            return next(utilities)
+        h = unlearn(_model(), _data(4),
+                    UnlearnConfig(epochs=4, learning_rate=1e-3, log_every=0,
+                                  min_utility_ratio=0.9, stop_below_utility_ratio=0.5),
+                    eval_fn=ev)
+        assert h.stopped_early and len(h.epoch_evals) == 2 and len(calls) == 3
+        assert h.selected_epoch == 0 and h.to_dict()["stopped_early"] is True
+
+    def test_without_a_stop_ratio_every_epoch_runs(self):
+        utilities = iter([1.0, 0.96, 0.4, 0.3, 0.2])
+        h = unlearn(_model(), _data(4),
+                    UnlearnConfig(epochs=4, learning_rate=1e-3, log_every=0,
+                                  min_utility_ratio=0.9),
+                    eval_fn=lambda m: next(utilities))
+        assert not h.stopped_early and len(h.epoch_evals) == 4
 
 
 # ---------------------------------------------------------------------------

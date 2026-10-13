@@ -149,8 +149,9 @@ class TestScoringAgainstAModel:
         m.eval(); m.requires_grad_(False)
         try:
             tok = AutoTokenizer.from_pretrained("hf-internal-testing/llama-tokenizer")
-        except Exception:
-            pytest.skip("no network for tokenizer")
+        except Exception as e:
+            pytest.skip(f"cannot load hf-internal-testing/llama-tokenizer: "
+                        f"{type(e).__name__}: {str(e)[:200]}")
         if tok.pad_token is None:
             tok.pad_token = tok.eos_token
         return m, tok

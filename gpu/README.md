@@ -127,35 +127,53 @@ tests and the decision rules are fixed in
 order. Each is resumable, and nothing later is worth running if an earlier step
 fails.
 
-**0. Smoke run on the new box (~15 min)**: the whole pipeline on the real
-checkpoints, with 2 training epochs, 20+20 depth examples and α ∈ {0, 1}. It
-checks the box end to end and measures the time per α, from which the rest of
-the plan is timed. Run ids starting with `smoke_` are never read as results.
+**0. Smoke run (~10 min)**: the whole pipeline on the real checkpoints, with 2
+training epochs, 20+20 depth examples and α ∈ {0, 1}. It checks the box end to
+end and times each stage. Run ids starting with `smoke_` are never read as
+results.
+
+The first attempt (13 Oct, `smoke_v2_ga_h100`, lr 1e-6) stopped in training: in
+float32, GA at v1's rate lost two thirds of its utility in the first epoch
+(0.805 → 0.258). That is what step 1 is for. The smoke run uses a rate small
+enough to reach the sweep.
+
+**1. Learning-rate scans, one per method (~2–3 h for all three)**
+
+`scripts/lr_scan.py` runs the study's exact training at several rates with one
+model load, records utility and forget-set NLL after every epoch, and stops a
+rate once utility halves. It reports the epoch the study would keep (≥ 95% of
+utility) and recommends the rate whose kept epoch is nearest mid-budget.
+
+The smoke run and all three scans, one after another, in the background:
 
 ```bash
-nohup python -m deeperase.scripts.run_study --protocol v2 --method ga --seed 0 \
-      --run-id smoke_v2_ga_h100 --alphas 0,1 --epochs 2 --learning-rate 1e-6 \
-      --min-utility-ratio 0.5 --n-examples 20 --n-heldout-examples 20 \
-      > results/logs/smoke_v2_ga_h100.log 2>&1 &
-tail -f results/logs/smoke_v2_ga_h100.log
+nohup sh -c '
+python -m deeperase.scripts.run_study --protocol v2 --method ga --seed 0 \
+       --run-id smoke_v2_ga_h100_lr2e-8 --alphas 0,1 --epochs 2 --learning-rate 2e-8 \
+       --min-utility-ratio 0.5 --n-examples 20 --n-heldout-examples 20
+python -m deeperase.scripts.lr_scan --method ga       --lrs 1e-7,5e-8,2e-8,1e-8,5e-9
+python -m deeperase.scripts.lr_scan --method graddiff --lrs 3e-7,1e-7,5e-8,2e-8,1e-8
+python -m deeperase.scripts.lr_scan --method npo      --lrs 1e-6,3e-7,1e-7,3e-8,1e-8
+' > results/logs/scan_v2_h100.log 2>&1 &
+tail -f results/logs/scan_v2_h100.log
 ```
 
-**1. Learning-rate calibration, one seed per method (~1 h each)**
+Results: `results/lr_scans/<method>_1B_v2_s0.json`. If a method has no usable
+rate, scan again below its slowest "too fast" rate (or above its fastest "too
+slow" one); a new scan adds to the same file.
 
-float32 training moves every weight, unlike the bf16 v1 runs. The v1 learning
-rates (GA 1e-6, GradDiff 3e-6) are therefore starting points, not settings.
-NPO needs a fresh scan in any case: its v1 runs used the defective loss.
+**1b. One full study per method at the scanned rate (~45 min each)**
 
 ```bash
-python gpu/replicate.py --methods ga       --seeds 0 --learning-rate 1e-6 --epochs 20
-python gpu/replicate.py --methods graddiff --seeds 0 --learning-rate 3e-6 --epochs 20
-python gpu/replicate.py --methods npo      --seeds 0 --learning-rate 1e-5 --epochs 20
+python gpu/replicate.py --methods ga       --seeds 0 --learning-rate <GA lr>
+python gpu/replicate.py --methods graddiff --seeds 0 --learning-rate <GD lr>
+python gpu/replicate.py --methods npo      --seeds 0 --learning-rate <NPO lr>
 python gpu/summarize.py --glob 'study_v2*'
 ```
 
-Read the `sel` column. 0 means the lr is too high; 19 means too low. A middle
-epoch with a depth span ≥ 0.15 is usable. Adjust the lr and repeat for any
-method that is off. Each lr gets its own run id, so nothing is overwritten.
+The scan predicts the kept epoch; this checks the rest. In `summarize`, a kept
+(`sel`) epoch in the middle of the 20 and a depth span ≥ 0.15 mean the rate is
+usable. Each rate gets its own run id, so nothing is overwritten.
 
 **2. The matrix: 3 methods × 3 seeds at the chosen rates (~6 h)**
 

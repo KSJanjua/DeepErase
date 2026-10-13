@@ -287,3 +287,31 @@ class TestProtocolV1GradDiff:
         assert cal["headline_groups"] == ["forget:all"]
         p = _load(run / "partial" / "alpha_0.000.json")
         assert "RA" not in p["groups"]                # v1 item set has no RA/WF
+
+
+class TestLrScan:
+    """The scan must train exactly as the study does and keep every rate's curve."""
+
+    def _scan(self, checkpoints, out, lrs):
+        from deeperase.scripts.lr_scan import main
+        argv = ["--method", "ga", "--lrs", lrs, "--epochs", "2", "--batch-size", "8",
+                "--model-sources", json.dumps(checkpoints), "--tofu-dir", str(TOFU),
+                "--cache-dir", str(out / "cache"), "--device", "cpu",
+                "--n-breadth", "12", "--max-length", "256", "--out-dir", str(out / "scans"),
+                "--breadth-items", str(ITEMS_V2)]
+        assert main(argv) == 0
+        return _load(out / "scans" / "ga_1B_v2_s0.json")
+
+    def test_every_rate_gets_a_curve_and_a_verdict(self, checkpoints, tmp_path):
+        d = self._scan(checkpoints, tmp_path, "1e-2,1e-5")
+        assert set(d["rates"]) == {"0.01", "1e-05"}
+        assert d["loss_scope"] == "answer" and d["dtype"] == "float32"
+        for r in d["rates"].values():
+            assert r["baseline_utility"] is not None and r["epochs"]
+            assert r["verdict"] in ("too fast", "usable", "too slow")
+            assert r["n_epochs_run"] <= 2
+
+    def test_a_second_scan_adds_to_the_same_record(self, checkpoints, tmp_path):
+        self._scan(checkpoints, tmp_path, "1e-5")
+        d = self._scan(checkpoints, tmp_path, "3e-6")
+        assert set(d["rates"]) == {"1e-05", "3e-06"}

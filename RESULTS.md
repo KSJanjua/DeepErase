@@ -665,3 +665,40 @@ checkpoints were trained without the facts, which is cleaner than unlearning,
 so this shows resolution at the two extremes, not calibration in between. The
 v1 study runs did not store per-example depth, so this check cannot be run on
 them. v2 runs store it (`PROTOCOL_V2.md` §5).
+
+---
+
+## 12. First run on the H100: v1's learning rate does not carry over (13 Oct 2026)
+
+The first protocol-v2 run on the H100 was a smoke test: GA, seed 0, lr 1e-6
+(v1's GA rate), 2 epochs (`results/logs/smoke_v2_ga_h100.log`).
+
+**Everything before training reproduced.** In float32 on the H100, the reference
+models read `full` forget 0.777, R 0.805, RA 0.890, WF 0.855 and `retain90`
+forget 0.527, R 0.810, RA 0.880, WF 0.855. These agree with the float32 MPS
+measurements of §8.1 (B0+B1 0.7775 / 0.5275; R 0.805 / 0.810; RA 0.89 / 0.88; WF
+0.855 / 0.855) at the log's three decimals, on different hardware. Calibration ranges:
+0.243 (trained half), 0.258 (held-out half). TOFU Forget Quality of `full`
+against `retain90`: 4.9e-10 (trained), 2.9e-11 (held-out). The Stage-1 depth
+baseline found Knowledge-Encoding layers for 18/20 trained and 19/20 held-out
+examples.
+
+**Training collapsed in the first epoch:**
+
+| | utility (R) | forget-set NLL |
+|---|---|---|
+| before | 0.805 | 0.39 |
+| after epoch 0 (50 steps) | 0.258 | 69.7 |
+| after epoch 1 | 0.228 | 82.0 |
+
+No epoch kept even 50% of utility, so the run stopped before the sweep, as
+designed. In v1, the same rate took 13–14 epochs to reach the utility floor.
+The difference is the precision: in bfloat16, an update of ~1e-6 is rounded
+away for nearly every weight (§8.5), so v1's GA moved far less than its
+nominal rate. In float32 every weight moves. **v1's learning rates are not
+v2's**, and each method's rate is rescanned (`scripts/lr_scan.py`,
+`gpu/README.md` step 1).
+
+This also confirms §8.5 from the other side. The bf16 rounding that made v1's
+T1 control unreliable also made v1's training far gentler than its nominal
+rate.

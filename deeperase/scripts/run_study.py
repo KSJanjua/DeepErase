@@ -408,8 +408,9 @@ def parse_args(argv: Optional[Sequence[str]] = None):
                          "1/(2*N) raw, divided by the calibrated range)")
     ap.add_argument("--epochs", type=int, default=5)
     ap.add_argument("--learning-rate", type=float, default=1e-6,
-                    help="1e-6 for forget10 (UIPE Appendix D.3). 1e-5 is for the "
-                         "smaller splits and collapses GA here.")
+                    help="1e-6 is UIPE's forget10 rate (Appendix D.3) and v1's. Under "
+                         "v2's float32 it collapses GA within one epoch (H100 smoke "
+                         "run, 13 Oct 2026): pick the rate with scripts/lr_scan.py.")
     ap.add_argument("--min-utility-ratio", type=float, default=None,
                     help="Checkpoint selection floor: keep at least this fraction "
                          "of the starting model's utility (v1 0.9, v2 0.95).")

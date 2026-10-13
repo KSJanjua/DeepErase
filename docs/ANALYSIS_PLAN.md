@@ -210,7 +210,7 @@ therefore never pooled with the runs it is compared against.
 | Step | What | Est. GPU time (A100 estimates; the H100 smoke run re-times them) |
 |---|---|---|
 | 0 | Environment and test suite | 15 min |
-| 1 | Learning-rate calibration, seed 0 per method | ~3 h |
+| 1 | Learning-rate scans (`scripts/lr_scan.py`), then one full study per method at the scanned rate | ~2–3 h + ~2.5 h |
 | 2 | The matrix: 3 methods × 3 seeds | ~6 h |
 | 3 | T1 control ladder, GA seed 0 (scales 1, 3, 10) | ~3–4 h |
 | 3b | A1 loss-scope ablation, GA seed 0 (`--tag lossfull --extra --loss-scope full`) | ~1 h |

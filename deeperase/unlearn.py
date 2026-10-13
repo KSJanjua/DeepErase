@@ -111,6 +111,12 @@ class UnlearnConfig:
     the utility side of that trade-off. Only used when an ``eval_fn`` is
     supplied to :func:`unlearn`."""
 
+    stop_below_utility_ratio: Optional[float] = None
+    """End training early once an epoch's utility falls below this fraction of
+    the starting utility. Off (None) in study runs. Learning-rate scans use it:
+    under gradient ascent utility does not recover, so the remaining epochs
+    could never be selected and would only cost time."""
+
     def validate(self) -> List[str]:
         problems: List[str] = []
         if self.learning_rate <= 0:
@@ -123,6 +129,9 @@ class UnlearnConfig:
             problems.append("NPO requires beta > 0")
         if not 0.0 < self.min_utility_ratio <= 1.0:
             problems.append("min_utility_ratio must be in (0, 1]")
+        if (self.stop_below_utility_ratio is not None
+                and not 0.0 < self.stop_below_utility_ratio <= 1.0):
+            problems.append("stop_below_utility_ratio must be in (0, 1]")
         return problems
 
     def to_dict(self) -> dict:
@@ -248,6 +257,10 @@ class CollapsedError(RuntimeError):
     whose conclusion is an artefact.
     """
 
+    history: Optional["UnlearnHistory"] = None
+    """The training record up to the collapse, so a caller can still see the
+    utility curve (a learning-rate scan needs exactly that)."""
+
 
 @dataclass
 class EpochEval:
@@ -278,6 +291,9 @@ class UnlearnHistory:
     baseline_forget_nll: Optional[float] = None
     final_forget_nll: Optional[float] = None
     selected_epoch: Optional[int] = None
+    stopped_early: bool = False
+    """True when ``stop_below_utility_ratio`` ended training before the
+    configured number of epochs."""
 
     @property
     def forget_nll_change(self) -> Optional[float]:
@@ -307,6 +323,7 @@ class UnlearnHistory:
                 "forget_nll_change": self.forget_nll_change,
                 "baseline_utility": self.baseline_utility,
                 "selected_epoch": self.selected_epoch,
+                "stopped_early": self.stopped_early,
                 "epoch_evals": [e.to_dict() for e in self.epoch_evals]}
 
 
@@ -542,11 +559,18 @@ def unlearn(
                 best_snapshot = snapshot(model)
                 history.selected_epoch = epoch
             model.train()
+            stop = config.stop_below_utility_ratio
+            if stop is not None and utility < stop * history.baseline_utility:
+                history.stopped_early = True
+                logger.info("  utility is below %.0f%% of the start: no later epoch "
+                            "could be kept, so training stops here", 100 * stop)
+                break
 
     if eval_fn is not None:
         if best_snapshot is None:
             model.eval()
-            raise CollapsedError(
+            history.seconds = time.time() - t0
+            err = CollapsedError(
                 f"No epoch kept at least {config.min_utility_ratio:.0%} of the "
                 f"starting utility ({history.baseline_utility:.4f}). "
                 f"Utilities seen: {[round(e.utility, 3) for e in history.epoch_evals]}. "
@@ -554,6 +578,8 @@ def unlearn(
                 "on all forget metrics and produce a meaningless study. "
                 "Lower the learning rate or reduce the number of epochs."
             )
+            err.history = history
+            raise err
         model.load_state_dict(best_snapshot)
         for e in history.epoch_evals:
             e.selected = (e.epoch == history.selected_epoch)

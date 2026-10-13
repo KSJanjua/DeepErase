@@ -204,8 +204,9 @@ def tokenizer():
     from transformers import AutoTokenizer
     try:
         return AutoTokenizer.from_pretrained("hf-internal-testing/llama-tokenizer")
-    except Exception:
-        pytest.skip("no network for tokenizer download")
+    except Exception as e:
+        pytest.skip(f"cannot load hf-internal-testing/llama-tokenizer: "
+                    f"{type(e).__name__}: {str(e)[:200]}")
 
 
 class TestTokenisation:
