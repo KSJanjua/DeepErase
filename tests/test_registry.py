@@ -54,3 +54,12 @@ def test_smoke_runs_are_never_measurements():
     assert run_status({}, "smoke_v2_ga_h100", {"control": "none"})[0] == "smoke"
     assert run_status({"invalid": {"smoke_x": "broken"}}, "smoke_x")[0] == "invalid"
     assert run_status({}, "study_v2_ga_1B_s0_lr1e-06")[0] == "ok"
+
+
+def test_tagged_runs_are_exploratory_not_replicates():
+    for rid in ("study_v2_ga_1B_s0_lr1e-08_ext", "study_v2_ga_1B_s0_lr1e-08_lossfull"):
+        status, why = run_status({}, rid, {"control": "none"})
+        assert status == "exploratory" and rid.rsplit("_", 1)[1] in why
+    for rid in ("study_v2_ga_1B_s0_lr1e-08", "study_graddiff_1B_s0_lr1e-5",
+                "study_graddiff_1B_s0_lr3e-06", "lrscan_graddiff_3e-6", "study_ga_1B_s0"):
+        assert run_status({}, rid, {"control": "none"})[0] == "ok", rid

@@ -851,3 +851,123 @@ these facts, still "keeps" about 65% of them by the forced-choice rule and
 answers about 73% of their indirect items, by plausibility alone.
 
 Next: the matched-damage controls and seeds 1–2 (`gpu/README.md`, step 2 + 3).
+
+---
+
+## 14. The full v2 matrix: 3 methods × 3 seeds, with matched-damage controls (14–15 Oct 2026)
+
+Seeds 1 and 2 of each method, plus one matched-damage T1 control per method
+(seed 0), on the H100 slice. All runs used commit `a4768f0` on a clean tree, at
+52–55 min each. The control scales came from `scripts/control_probe.py`: GA ×540,
+GradDiff ×320, NPO ×480. Each control's random direction is that many times the
+size of the real update, chosen so its utility at α = 1 matches the real
+run's. Every verdict below comes from `scripts/hypothesis_report.py`
+(`results/analysis/hypotheses_v2.{md,json}`), which applies the rules of
+`docs/ANALYSIS_PLAN.md` seed by seed.
+
+### 14.1 Mean over three seeds
+
+| | GA, 1e-8 | GradDiff, 5e-8 | NPO, 1e-8 |
+|---|---|---|---|
+| Kept epoch (seeds 0, 1, 2) | 10, 10, 7 | 7, 6, 7 | 8, 10, 7 |
+| Depth, trained, α 0 → 1 | 0.22 ± 0.09 → 0.54 ± 0.18 | 0.15 ± 0.03 → 0.47 ± 0.05 | 0.17 ± 0.05 → 0.46 ± 0.12 |
+| Breadth, trained | 0.11 ± 0.08 → 0.30 ± 0.11 | 0.17 ± 0.05 → 0.41 ± 0.07 | 0.08 ± 0.04 → 0.24 ± 0.06 |
+| Depth, held-out | 0.19 → 0.50 | 0.06 → 0.31 | 0.15 → 0.43 |
+| Breadth, held-out | 0.16 → 0.38 | 0.19 → 0.41 | 0.15 → 0.31 |
+| R (other TOFU authors) | 0.768 → 0.698 | 0.768 → 0.708 | 0.767 → 0.720 |
+| RA (real authors) | 0.72 → 0.54 | 0.86 → 0.72 | 0.76 → 0.55 |
+| WF (world facts) | 0.76 → 0.68 | 0.83 → 0.73 | 0.78 → 0.70 |
+
+`full` scores R 0.805, RA 0.89 and WF 0.855. Depth rises faster than breadth
+in every method on trained facts (slopes 0.31 vs 0.19, 0.33 vs 0.26, 0.28 vs
+0.17; `results/analysis/matrix_v2.md`). B3's calibration range on trained facts
+is 0.076, 0.094 and 0.055 in the three seeds. That passes the 0.05 rule
+narrowly. On held-out facts it is 0.044, 0.027 and 0.065: the reversal curse
+of §13 holds.
+
+### 14.2 Matched-damage controls: how much is just damage?
+
+The probes show a cliff. A random direction costs no utility up to about 200
+times the update's size, then utility collapses within one doubling (GA, α = 1:
+0.80 at ×200, 0.71 at ×500, 0.38 at ×1000).
+
+| Seed 0, α = 1 | Depth, trained | Breadth, trained | R | RA | WF |
+|---|---|---|---|---|---|
+| GA, real | 0.65 | 0.37 | 0.672 | 0.55 | 0.65 |
+| GA, control ×540 | 0.51 | 0.30 | 0.690 | 0.67 | 0.78 |
+| GradDiff, real | 0.45 | 0.35 | 0.728 | 0.77 | 0.76 |
+| GradDiff, control ×320 | 0.34 | 0.24 | 0.738 | 0.78 | 0.80 |
+| NPO, real | 0.45 | 0.22 | 0.740 | 0.56 | 0.72 |
+| NPO, control ×480 | 0.27 | 0.19 | 0.740 | 0.79 | 0.80 |
+
+1. **Damage alone produces most of the rise.** A random direction that costs
+   the same utility reaches 61–78% of the real run's depth and 68–86% of its
+   breadth at α = 1. A high UDS by itself cannot distinguish erasure from
+   damage. It has to be read against a matched-damage control.
+2. **What the real update adds beyond damage depends on the method.**
+   `hypothesis_report.py` records the *damage-matched excess*: real minus
+   control at the same R utility, at every α the two paths share.
+   * GA and NPO add internal erasure: about +0.1 of depth above damage at
+     larger α, up to +0.18. It is near zero close to α = 0, and mixed in GA
+     seed 2. GA's behavioural forgetting of trained facts adds about nothing
+     (seeds 1 and 2).
+   * GradDiff adds behavioural forgetting (+0.05 to +0.21 in two of three
+     seeds) but erases *less* than random damage would, especially on
+     held-out facts (−0.09 to −0.20). It is targeted silence, not deeper
+     erasure.
+3. **Real updates harm general knowledge more than random damage does.** At
+   the same cost on the R tier, GA and NPO leave real-author knowledge at
+   0.55–0.56 where their controls keep 0.67–0.79. World facts fall the same
+   way. Unlearning fictional authors damages knowledge *about authors*
+   broadly. The R-tier utility that checkpoint selection watches cannot see
+   this.
+
+### 14.3 The pre-registered hypotheses, three seeds
+
+| Hypothesis | GA | GradDiff | NPO |
+|---|---|---|---|
+| H1 selectivity, the gate | not supported: never > 0 in seed 1 | **supported** | not supported: never > 0 in seed 1 |
+| H2 suppression common at α = 0 | **supported** | **supported** | **supported** |
+| H2 extrapolation converts it | supported, not robust at θ = 0.7 | **supported, robust** | not supported (seed 2) |
+| H3 fact-level coupling | **refuted** | not supported (one seed only) | **refuted** |
+| H4 reach to untrained facts | not supported: held-out selectivity ≤ 0 in seed 0 | not supported: ≤ 0 in seed 1 | **supported** |
+| H5 indirect tiers B2, B4 | **supported** | not supported: B2 in seed 0 | **supported** |
+
+Where H1 or H4 fails, it fails at the margin: the best selectivity in the
+failing seed is −0.04 to −0.003. Per the plan, H1's failure means GA's and
+NPO's depth and breadth changes are read as damage-confounded. The excess
+over the control in §14.2 is the part that is not damage.
+
+### 14.4 Fact level, all nine runs
+
+* **Suppression rate at the checkpoint (α = 0), trained facts: 0.67–0.90.**
+  Every run is above the 0.25 threshold, and the lower confidence bound is
+  above 0.10 in 8 of 9. At α = 1 it falls to 0.20–0.62, except GA seed 2
+  (0.79) and NPO seed 2 (0.79). Each run counts 6 to 21 forgotten facts, so
+  the intervals are wide.
+* **GradDiff's held-out facts stay suppressed** (1.00, 1.00, 0.88 at α = 1).
+  It silences facts it never trained on without erasing them, which matches
+  its negative depth excess in §14.2.
+* **Partial erasure is robust:** 36–55% of facts are in the 0.2–0.8 band at
+  α = 1 in every run, against 1–8% for checkpoints that never saw the facts.
+* **No fact-level coupling:** ρ(depth_i, margin drop) at α = 1 is between
+  −0.05 and +0.25. Only 1 of the 9 trained-fact intervals excludes 0.
+
+### 14.5 What the study now says
+
+At the checkpoint each method would report, unlearning is mostly suppression:
+the model stops giving answers it still encodes, in all three methods and all
+seeds. Pushing along the update direction converts part of that into internal
+erasure, but a random direction with the same damage reproduces most of the
+measured erasure. So depth scores need a damage control before they can be
+read as unlearning. Of the three methods, GradDiff alone forgets selectively,
+and its selectivity is behavioural: internally it erases less than damage
+would. Fact by fact, how deeply a fact is erased says nearly nothing about
+whether the model still answers it. The average co-movement along α is not a
+per-fact relationship. Finally, the standard utility check misses collateral
+damage to related real-world knowledge.
+
+Optional runs that would sharpen this (`gpu/README.md`): matched-damage controls
+for GradDiff seeds 1–2, an α extension to 2.0 for GA and GradDiff (does
+GradDiff's held-out silence ever become erasure?), and the loss-scope ablation
+A1.

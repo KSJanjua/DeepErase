@@ -11,11 +11,15 @@ Stdlib only: used by the torch-free viewers.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 REGISTRY_NAME = "run_registry.json"
 SMOKE_PREFIX = "smoke_"
+#: ``gpu/replicate.py --tag`` appends ``_<tag>`` after the learning rate: an
+#: ablation or an extension of a main run, never another replicate of it.
+TAGGED = re.compile(r"_lr[0-9][0-9e.+-]*_([A-Za-z][A-Za-z0-9-]*)$")
 
 
 def load_registry(studies_dir) -> Dict[str, object]:
@@ -28,11 +32,13 @@ def load_registry(studies_dir) -> Dict[str, object]:
 
 def run_status(registry: Dict[str, object], run_id: str,
                config: Optional[dict] = None) -> Tuple[str, str]:
-    """``(status, reason)``: invalid / control / superseded / smoke / ok.
+    """``(status, reason)``: invalid / control / superseded / smoke / exploratory / ok.
 
     Invalid wins over everything; a control is never a measurement whatever
     else is true of it. A run whose id starts with ``smoke_`` is a plumbing
-    check by convention, so it never needs registering before it exists.
+    check, and a run whose id carries a ``--tag`` suffix is an ablation or an
+    extension, by convention, so neither needs registering before it exists.
+    Both are kept out of the main matrix.
     """
     invalid = registry.get("invalid") or {}
     superseded = registry.get("superseded") or {}
@@ -44,6 +50,10 @@ def run_status(registry: Dict[str, object], run_id: str,
         return "superseded", str(superseded[run_id])
     if run_id.startswith(SMOKE_PREFIX):
         return "smoke", "plumbing check (run id starts with 'smoke_'), not a measurement"
+    m = TAGGED.search(run_id)
+    if m:
+        return "exploratory", (f"tagged run ('{m.group(1)}'): an ablation or extension, "
+                               "kept out of the main matrix")
     return "ok", ""
 
 

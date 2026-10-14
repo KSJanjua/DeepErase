@@ -183,7 +183,7 @@ The scan predicts the kept epoch; this checks the rest. In `summarize`, a kept
 (`sel`) epoch in the middle of the 20 and a depth span ≥ 0.15 mean the rate is
 usable. Each rate gets its own run id, so nothing is overwritten.
 
-**2 + 3. Matched-damage controls, then seeds 1 and 2 (~9 h, one overnight job)**
+**2 + 3. Matched-damage controls, then seeds 1 and 2 (~9 h, one overnight job)** *(done 14–15 Oct; `RESULTS.md` §14)*
 
 Seed 0 of every method was run in step 1b. This job adds one matched-damage T1
 control per method, then seeds 1 and 2 of each method:
@@ -208,7 +208,26 @@ only the matched-*damage* control can show whether damage alone raises depth
 and breadth. Under v2 each seed also draws its own per-author trained/held-out
 split, so seeds are genuine replicates.
 
-**3b. Loss-scope ablation, GA seed 0 (~1 h)**: v1's full-sequence loss under
+**4. Optional sharpening runs (~6 h, one job).** These cover what §14 left
+open. Matched-damage controls for GradDiff seeds 1–2 test whether "silence,
+not erasure" holds beyond seed 0. An α extension to 2.0 for GA and GradDiff
+(seed 0, tagged `ext`) asks whether GradDiff's silenced held-out facts ever
+become erased. The loss-scope ablation A1 is the third. Tagged runs are
+exploratory, never pooled into the main matrix (`deeperase/registry.py`).
+
+```bash
+nohup sh -c '
+SEED=1 bash gpu/matched_controls.sh graddiff:5e-8
+SEED=2 bash gpu/matched_controls.sh graddiff:5e-8
+python gpu/replicate.py --methods graddiff --seeds 0 --learning-rate 5e-8 --tag ext --extra --alphas 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0
+python gpu/replicate.py --methods ga       --seeds 0 --learning-rate 1e-8 --tag ext --extra --alphas 0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0
+python gpu/replicate.py --methods ga       --seeds 0 --learning-rate 1e-8 --tag lossfull --extra --loss-scope full
+python gpu/summarize.py --glob "*_v2_*"
+' > results/logs/step4_v2_h100.log 2>&1 &
+tail -f results/logs/step4_v2_h100.log
+```
+
+**3b. Loss-scope ablation, GA seed 0 (~1 h)** *(included in step 4)*: v1's full-sequence loss under
 v2's design. The tag gives it its own directory and keeps it out of the main
 matrix's averages.
 

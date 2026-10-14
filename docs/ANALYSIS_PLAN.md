@@ -205,6 +205,8 @@ comparison is selectivity and R retention at matched breadth.
 | H1 matched control | `gpu/summarize.py`, the `control_*` runs | console |
 | H2, H3, partial band, indirect leak | `python -m deeperase.scripts.fact_level_analysis --glob 'study_v2_*'` | `results/analysis/fact_level.{json,md}` |
 | §2 per-fact resolution | `python -m deeperase.scripts.depth_fact_resolution` | `results/analysis/depth_fact_resolution.json` |
+| H1's matched-damage scale | `python -m deeperase.scripts.control_probe` (via `gpu/matched_controls.sh`) | `results/control_probes/*.json` |
+| **Every verdict, seed by seed** | `python -m deeperase.scripts.hypothesis_report` | `results/analysis/hypotheses_v2.{json,md}` |
 
 All of these read saved JSON only. No GPU is needed after the runs.
 `aggregate_matrix` and `fact_level_analysis` group runs by protocol, **design

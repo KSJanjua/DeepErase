@@ -12,8 +12,8 @@ pasted verbatim. Captured: 2026-08-09 21:29
 >
 > **Section 0 (the A100) is history.** The GPU box is now an H100 with a 40 GB
 > MIG slice. Its first suite run is section 0.3 (670 passed, 16 tokenizer
-> skips, 13 Oct 2026). The latest run of the current suite (717 collected) is in
-> section 0.2, on macOS CPU: 715 passed, 2 GPU-only skips.
+> skips, 13 Oct 2026). The latest run of the current suite (728 collected) is in
+> section 0.2, on macOS CPU: 726 passed, 2 GPU-only skips.
 
 ---
 
@@ -167,7 +167,7 @@ tokenizer fixtures now reporting their real error): **699 passed, 2 skipped**
 **707 passed, 2 skipped** (709 collected from 679 functions). After the
 GradDiff retain-pool fix and offline mode (13 Oct, evening): **710 passed, 2
 skipped** (712 collected from 682 functions). With the matched-damage probe
-(14 Oct): **715 passed, 2 skipped** (717 collected from 687 functions).
+(14 Oct): **715 passed, 2 skipped** (717 collected from 687 functions). With the hypothesis report and tagged-run status (15 Oct): **726 passed, 2 skipped** (728 collected from 698 functions).
 `gpu/setup_env.sh` steps 1–5 were also run on the Mac against a stand-in
 `nvidia-smi` (CPU torch). They built Python 3.11.17 with the exact pins and
 left nothing outside the project folder. Step 6 stopped as intended, since the

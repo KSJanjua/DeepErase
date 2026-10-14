@@ -98,6 +98,8 @@ def verdict(r: dict) -> str:
         return "COLLAPSED (no checkpoint selection)"
     if r["status"] == "smoke":
         return "SMOKE TEST -- not a measurement"
+    if r["status"] == "exploratory":
+        return "EXPLORATORY (tagged) -- " + r["reason"].split("'")[1]
     prefix = "superseded; " if r["status"] == "superseded" else ""
     if r["sel"] == 0:
         return prefix + "DIVERGED (lr too high)"
