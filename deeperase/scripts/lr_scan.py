@@ -38,6 +38,7 @@ import os
 import random
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Dict, List, Optional, Sequence
 
 import torch
@@ -128,6 +129,13 @@ def parse_args(argv: Optional[Sequence[str]] = None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--method", required=True, choices=[m.value for m in UnlearnMethod])
     ap.add_argument("--lrs", required=True, help="comma-separated, e.g. 1e-7,3e-8,1e-8")
+    add_training_args(ap)
+    ap.add_argument("--out-dir", default="results/lr_scans")
+    return ap.parse_args(argv)
+
+
+def add_training_args(ap: argparse.ArgumentParser) -> None:
+    """The settings :func:`prepare` and the training read, shared with control_probe."""
     ap.add_argument("--epochs", type=int, default=20,
                     help="budget per rate; use the study's (gpu/replicate.py: 20)")
     ap.add_argument("--size", choices=sorted(TOFU_MODELS), default="1B")
@@ -153,19 +161,21 @@ def parse_args(argv: Optional[Sequence[str]] = None):
                     help="JSON mapping split -> local model dir (tests)")
     ap.add_argument("--tofu-dir", default=None)
     ap.add_argument("--cache-dir", default=os.environ.get("DEEPERASE_CACHE_DIR", "./hf_cache"))
-    ap.add_argument("--out-dir", default="results/lr_scans")
-    return ap.parse_args(argv)
 
 
-def main(argv: Optional[Sequence[str]] = None) -> int:
-    args = parse_args(argv)
+def prepare(args) -> SimpleNamespace:
+    """Everything a training probe needs, built exactly as run_study builds it.
+
+    Shared by this scan and ``control_probe``: the same per-author split,
+    answer-only loss, retain data (GradDiff), reference model (NPO), utility
+    measure (the R tier) and starting weights.
+    """
     proto = PROTOCOLS[args.protocol]
-    loss_scope = LossScope(args.loss_scope or proto["loss_scope"])
+    ns = SimpleNamespace(proto=proto, method=UnlearnMethod(args.method))
+    ns.loss_scope = LossScope(args.loss_scope or proto["loss_scope"])
     dtype_req = args.dtype or str(proto["dtype"])
-    floor = float(args.floor if args.floor is not None else proto["min_utility_ratio"])
-    precision = configure_precision(dtype_req)
-    method = UnlearnMethod(args.method)
-    lrs = [float(x) for x in args.lrs.split(",") if x.strip()]
+    ns.floor = float(args.floor if args.floor is not None else proto["min_utility_ratio"])
+    ns.precision = configure_precision(dtype_req)
 
     random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -173,10 +183,63 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     device = torch.device(args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
     if device.type == "cuda" and device.index is None:
         device = torch.device("cuda", torch.cuda.current_device())
-    dtype_name = "float32" if device.type == "cpu" else dtype_req
-    torch_dtype = {"float32": torch.float32, "bfloat16": torch.bfloat16}[dtype_name]
+    ns.device = device
+    ns.dtype_name = "float32" if device.type == "cpu" else dtype_req
+    ns.torch_dtype = {"float32": torch.float32, "bfloat16": torch.bfloat16}[ns.dtype_name]
     sources = json.loads(args.model_sources) if args.model_sources else {}
     full_source = sources.get("full") or TOFU_MODELS[args.size]["full"].repo_id
+
+    fmt = PromptFormat(args.prompt_format)
+    tokenizer = load_tokenizer(full_source, cache_dir=args.cache_dir)
+    forget_rows = load_tofu(FORGET_CONFIG, cache_dir=args.cache_dir, data_dir=args.tofu_dir)
+    trained, _ = split_by_author(len(forget_rows), train_fraction=args.train_fraction,
+                                 seed=args.seed)
+    ns.forget_batches = build_forget_batches([forget_rows[i] for i in trained], tokenizer,
+                                             fmt, args.max_length, ns.loss_scope)
+    items_path = args.breadth_items or proto["breadth_items"]
+    all_items = load_breadth_items_file(items_path)
+    items = subsample(all_items, args.n_breadth)
+    ns.r_items = [i for i in items if i.tier == "R"]
+    ns.general_items = [i for i in items if i.tier in ("RA", "WF")]
+    prefix = PROMPT_PREFIXES.get(args.prompt_format, "{question} ")
+    ns.retain_batches = None
+    if ns.method.needs_retain:
+        ns.retain_batches = build_retain_batches(
+            tokenizer, fmt, args.max_length, args.n_retain or len(ns.forget_batches),
+            args.cache_dir, SamplingStrategy(str(proto["sampling"])), args.seed,
+            loss_scope=ns.loss_scope, data_dir=args.tofu_dir,
+            exclude_questions={i.question for i in all_items if i.tier == "R"})
+
+    def utility_of(m) -> float:
+        return score_breadth(m, tokenizer, ns.r_items, max_length=args.max_length,
+                             prompt_prefix=prefix).tiers["R"].knows_rate
+
+    def general_of(m) -> Optional[float]:
+        if not ns.general_items:
+            return None
+        res = score_breadth(m, tokenizer, ns.general_items, max_length=args.max_length,
+                            prompt_prefix=prefix)
+        n = sum(t.n for t in res.tiers.values())
+        return sum(t.n_knows for t in res.tiers.values()) / n if n else None
+
+    ns.utility_of, ns.general_of = utility_of, general_of
+    ns.model = load_model(full_source, device=device, dtype=ns.torch_dtype,
+                          cache_dir=args.cache_dir)
+    ns.theta_ini = snapshot(ns.model)
+    ns.reference = (load_model(full_source, device=device, dtype=ns.torch_dtype,
+                               cache_dir=args.cache_dir) if ns.method.needs_reference
+                    else None)
+    return ns
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    args = parse_args(argv)
+    lrs = [float(x) for x in args.lrs.split(",") if x.strip()]
+    ns = prepare(args)
+    method, loss_scope, floor, device = ns.method, ns.loss_scope, ns.floor, ns.device
+    dtype_name = ns.dtype_name
+    forget_batches, retain_batches, r_items = ns.forget_batches, ns.retain_batches, ns.r_items
+    utility_of, model, theta_ini, reference = ns.utility_of, ns.model, ns.theta_ini, ns.reference
 
     out = Path(args.out_dir) / f"{args.method}_{args.size}_{args.protocol}_s{args.seed}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -185,43 +248,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "what": "learning-rate scan: the study's training, utility and forget NLL per epoch",
         "method": args.method, "size": args.size, "protocol": args.protocol,
         "seed": args.seed, "batch_size": args.batch_size, "beta": args.beta,
-        "loss_scope": loss_scope.value, "dtype": dtype_name, "precision": precision,
+        "loss_scope": loss_scope.value, "dtype": dtype_name, "precision": ns.precision,
         "floor": floor, "stop_ratio": args.stop_ratio,
         "retain_excludes_r_tier_authors": method.needs_retain,
         "git": git_info(), "environment": environment_info()})
     rates: Dict[str, dict] = record.setdefault("rates", {})
-
-    # -- data, exactly as run_study builds it ---------------------------------
-    fmt = PromptFormat(args.prompt_format)
-    tokenizer = load_tokenizer(full_source, cache_dir=args.cache_dir)
-    forget_rows = load_tofu(FORGET_CONFIG, cache_dir=args.cache_dir, data_dir=args.tofu_dir)
-    trained, _ = split_by_author(len(forget_rows), train_fraction=args.train_fraction,
-                                 seed=args.seed)
-    forget_batches = build_forget_batches([forget_rows[i] for i in trained], tokenizer,
-                                          fmt, args.max_length, loss_scope)
-    items_path = args.breadth_items or proto["breadth_items"]
-    r_items = [i for i in subsample(load_breadth_items_file(items_path), args.n_breadth)
-               if i.tier == "R"]
-    prefix = PROMPT_PREFIXES.get(args.prompt_format, "{question} ")
-    retain_batches = None
-    if method.needs_retain:
-        retain_batches = build_retain_batches(
-            tokenizer, fmt, args.max_length, args.n_retain or len(forget_batches),
-            args.cache_dir, SamplingStrategy(str(proto["sampling"])), args.seed,
-            loss_scope=loss_scope, data_dir=args.tofu_dir,
-            exclude_questions={i.question for i in load_breadth_items_file(items_path)
-                               if i.tier == "R"})
     log.info("%s scan: %d trained rows, %d R items, rates %s, %d epochs, floor %.0f%%",
              args.method, len(forget_batches), len(r_items), lrs, args.epochs, 100 * floor)
-
-    def utility_of(m) -> float:
-        return score_breadth(m, tokenizer, r_items, max_length=args.max_length,
-                             prompt_prefix=prefix).tiers["R"].knows_rate
-
-    model = load_model(full_source, device=device, dtype=torch_dtype, cache_dir=args.cache_dir)
-    theta_ini = snapshot(model)
-    reference = (load_model(full_source, device=device, dtype=torch_dtype,
-                            cache_dir=args.cache_dir) if method.needs_reference else None)
 
     for lr in lrs:
         log.info("=== %s lr=%g ===", args.method, lr)

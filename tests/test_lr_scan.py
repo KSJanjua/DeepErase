@@ -63,3 +63,35 @@ def test_collapse_still_hands_back_the_curve():
     h = e.value.history
     assert [round(x.utility, 2) for x in h.epoch_evals] == [0.1, 0.05]
     assert h.baseline_utility == 1.0
+
+
+class TestControlProbe:
+    """scripts/control_probe.py: the matched-damage scale."""
+
+    def test_interpolates_between_the_bracketing_scales(self):
+        from deeperase.scripts.control_probe import recommend_scale
+        pts = [(1, 0.80), (10, 0.79), (100, 0.75), (1000, 0.55)]
+        s, why = recommend_scale(pts, 0.65)
+        assert 100 < s < 1000 and "between 100" in why
+        s, _ = recommend_scale(pts, 0.75)             # exactly at a probed scale
+        assert s == pytest.approx(100)
+
+    def test_reports_when_the_range_misses_the_target(self):
+        from deeperase.scripts.control_probe import recommend_scale
+        assert recommend_scale([(1, 0.80), (10, 0.79)], 0.60)[0] is None
+        assert recommend_scale([(1, 0.50), (10, 0.40)], 0.60)[0] is None
+
+    def test_rounds_to_two_significant_figures(self):
+        from deeperase.scripts.control_probe import recommend_scale
+        s, _ = recommend_scale([(100, 0.80), (1000, 0.60)], 0.70)    # sqrt(10)*100
+        assert s == 320
+
+    def test_a_scale_multiplies_one_fixed_draw(self):
+        # the probe evaluates s * r(1); run_study's control draws r(s) directly
+        import torch
+        from deeperase.core.extrapolation import random_direction_like
+        v = {"a.weight": torch.randn(7, 5), "b.weight": torch.randn(11)}
+        r1 = random_direction_like(v, seed=3, scale=1.0)
+        r250 = random_direction_like(v, seed=3, scale=250.0)
+        for k in v:
+            assert torch.allclose(r250[k], 250.0 * r1[k], rtol=1e-6, atol=0)

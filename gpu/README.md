@@ -183,28 +183,30 @@ The scan predicts the kept epoch; this checks the rest. In `summarize`, a kept
 (`sel`) epoch in the middle of the 20 and a depth span ≥ 0.15 mean the rate is
 usable. Each rate gets its own run id, so nothing is overwritten.
 
-**2. The matrix: 3 methods × 3 seeds at the chosen rates (~6 h)**
+**2 + 3. Matched-damage controls, then seeds 1 and 2 (~9 h, one overnight job)**
+
+Seed 0 of every method was run in step 1b. This job adds one matched-damage T1
+control per method, then seeds 1 and 2 of each method:
 
 ```bash
-python gpu/replicate.py --methods ga       --seeds 0 1 2 --learning-rate <GA lr>
-python gpu/replicate.py --methods graddiff --seeds 0 1 2 --learning-rate <GD lr>
-python gpu/replicate.py --methods npo      --seeds 0 1 2 --learning-rate <NPO lr>
+nohup sh -c '
+bash gpu/matched_controls.sh ga:1e-8 graddiff:5e-8 npo:1e-8
+python gpu/replicate.py --methods ga       --seeds 1 2 --learning-rate 1e-8
+python gpu/replicate.py --methods graddiff --seeds 1 2 --learning-rate 5e-8
+python gpu/replicate.py --methods npo      --seeds 1 2 --learning-rate 1e-8
+python gpu/summarize.py --glob "*_v2_*"
+' > results/logs/step2_v2_h100.log 2>&1 &
+tail -f results/logs/step2_v2_h100.log
 ```
 
-Seed 0 resumes from step 1. Under v2 the seed also changes the per-author
-trained/held-out split, so seeds are genuine replicates.
-
-**3. The T1 control ladder, GA seed 0 (~3–4 h)**
-
-```bash
-python gpu/replicate.py --methods ga --seeds 0 --learning-rate <GA lr> --control random
-python gpu/replicate.py --methods ga --seeds 0 --learning-rate <GA lr> --control random --control-scale 3
-python gpu/replicate.py --methods ga --seeds 0 --learning-rate <GA lr> --control random --control-scale 10
-```
-
-Scale 1 is the matched-magnitude control. Raise the scale until the control's
-utility drop matches the real run's; that gives the matched-damage control.
-Float32 means the random direction is no longer rounded away (`RESULTS.md` §7).
+`gpu/matched_controls.sh` runs, for each method, `scripts/control_probe.py`
+(~25 min): it trains as the study does and measures utility along the
+control's random direction at nine scales. It then runs the full control
+study at the scale whose damage at α = 1 matches the real run's (~50 min).
+A random step of the update's own size does nothing (v1, `RESULTS.md` §7), so
+only the matched-*damage* control can show whether damage alone raises depth
+and breadth. Under v2 each seed also draws its own per-author trained/held-out
+split, so seeds are genuine replicates.
 
 **3b. Loss-scope ablation, GA seed 0 (~1 h)**: v1's full-sequence loss under
 v2's design. The tag gives it its own directory and keeps it out of the main

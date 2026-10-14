@@ -67,7 +67,7 @@ behavioural rate is read against it.
 | suppression rate S | P(depth_i < θ given forgotten): forgotten facts that are still encoded |
 | indirect leak | For facts forgotten on B0/B1, the share of their eligible B2/B3/B4 items still answered correctly |
 | partial band | 0.2 ≤ depth_i < 0.8 |
-| α\* | Per run, the largest α whose point is above the 95% utility floor |
+| α\* | ~~Per run, the largest α whose point is above the 95% utility floor~~ **α = 1**, the end of the pre-registered sweep (§9, 14 Oct). The checkpoint rule puts α = 0 at the floor, so the old definition always gave α\* = 0 |
 | selectivity | breadth − retain_loss (`PROTOCOL_V2.md` §3) |
 
 Every statistic is computed separately for the **trained** facts (the ones the
@@ -189,8 +189,10 @@ comparison is selectivity and R retention at matched breadth.
   are never pooled into a single test.
 * **Multiplicity.** There are three primary hypotheses (H1–H3). Every other
   number is exploratory and labelled that way.
-* **Exclusions.** Collapsed points are always excluded. Points below the 95%
-  floor are shown but excluded from H2–H5.
+* **Exclusions.** Collapsed points (utility below 75% of the start) are always
+  excluded. ~~Points below the 95% floor are shown but excluded from H2–H5.~~
+  Every other point is used, with its utility drop reported beside it, and the
+  matched-damage control separates forgetting from damage (§9, 14 Oct).
 * **Comparability.** TOFU Forget Quality is reported for every run and split,
   alongside the calibrated breadth axis, so the results can be read against
   published work.
@@ -243,6 +245,18 @@ need only steps 1–3 for one method.
 Each entry needs: the date, the change, the reason, and whether any v2 result
 had been seen at the time.
 
+* **14 Oct 2026: α\* is redefined as α = 1, and only collapsed points are
+  excluded.** *Seed-0 results of all three methods had been seen.* The reason
+  holds by construction, whatever the results: the checkpoint rule keeps the
+  most-forgetful epoch still at ≥ 95% utility, so the kept model sits at the
+  floor, and every extrapolated point (α > 0) falls below it. All three seed-0
+  runs show this (α\* = 0 for GA and NPO, 0.1 for GradDiff), and v1 did the
+  same (`RESULTS.md` §8, issue 6). With the old rule, H2's second test,
+  S(α\*) < S(0), compares a point with itself. α = 1 is the end of the sweep
+  fixed before any data. The trajectory's own damage is handled as the plan
+  always intended for H1, by the matched-damage control
+  (`scripts/control_probe.py` finds its scale), not by dropping points.
+  Thresholds, statistics and the other decision rules are unchanged.
 * **13 Oct 2026: B3 added** (365 items, the reverse direction; `PROTOCOL_V2.md`
   §4). Reason: the research plan's breadth-generalisation gap is defined as
   B0 − B3, and the plan had no B3 to compute it from. No v2 result had been

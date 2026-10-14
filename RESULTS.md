@@ -766,3 +766,88 @@ model, about 55 s per α to build the extrapolated weights on the CPU, about
 10 s of depth patching per 40 examples, and about 35 s per training epoch.
 Peak GPU memory in training was 21.9 GB (GA), 23.5 GB (GradDiff) and 26.9 GB
 (NPO). A full v2 study is therefore about an hour.
+
+---
+
+## 13. The first protocol-v2 studies: one seed per method (13–14 Oct 2026)
+
+One study per method at the scanned rate, seed 0, on the H100 slice (commit
+`b8e8707`, clean tree; 53–55 min each). The GradDiff run is the first trained
+without the R-tier authors (§12.2). **One seed is not a finding.** These
+numbers say what to look for in seeds 1–2 and the controls, nothing more.
+
+| Run | Kept epoch | ‖v‖ | R utility α 0 → 1 | Real authors (RA) α 0 → 1 | World facts (WF) α 0 → 1 |
+|---|---|---|---|---|---|
+| GA, 1e-8 | 10 / 20 | 0.052 | 0.765 → 0.672 | 0.670 → 0.550 | 0.735 → 0.650 |
+| GradDiff, 5e-8 | 7 / 20 | 0.087 | 0.775 → 0.728 | 0.880 → 0.770 | 0.821 → 0.761 |
+| NPO, 1e-8 | 8 / 20 | 0.043 | 0.765 → 0.740 | 0.790 → 0.560 | 0.812 → 0.718 |
+
+`full` scores R 0.805, RA 0.890 and WF 0.855. No point collapsed.
+
+| Run | Facts | Depth α 0 → 1 | Breadth α 0 → 1 | Selectivity along α |
+|---|---|---|---|---|
+| GA | trained | 0.282 → 0.649 | 0.196 → 0.371 | +0.05 → −0.11 (negative from α 0.4) |
+| GA | held-out | 0.246 → 0.590 | 0.136 → 0.427 | −0.01 → −0.05 |
+| GradDiff | trained | 0.144 → 0.448 | 0.175 → 0.351 | **+0.07 to +0.13 at every α** |
+| GradDiff | held-out | 0.053 → 0.271 | 0.184 → 0.427 | **+0.06 to +0.15 at every α** |
+| NPO | trained | 0.154 → 0.445 | 0.103 → 0.216 | −0.04 to +0.07 |
+| NPO | held-out | 0.129 → 0.395 | 0.107 → 0.252 | −0.04 to +0.02 |
+
+What seed 0 suggests:
+
+1. **GradDiff is selective; GA is not.** GradDiff's forget tiers fell further
+   than R at every α, on trained and held-out facts alike. That is the first
+   selective trajectory this project has measured. GA's selectivity turns
+   negative once α passes about 0.4. Whether GradDiff beats a random direction
+   of equal damage (H1) is what the matched-damage control decides.
+2. **The utility check misses GA's worst damage.** At its kept checkpoint
+   (α = 0), GA already scores 0.67 on real authors, against 0.89 for `full`.
+   The R tier, which checkpoint selection watches, still reads 0.765. NPO
+   loses real-world knowledge along α (RA 0.79 → 0.56). GradDiff keeps the
+   most. Utility measured on the benchmark's own neighbours is not enough
+   to certify that general knowledge survived.
+3. **Depth rises faster than breadth** for GA and NPO (depth slope about
+   0.29–0.36 per unit α, breadth 0.10–0.14 on trained facts). For GradDiff,
+   breadth leads at small α on trained facts, and on held-out facts throughout.
+4. **Forgetting reaches facts the objective never saw.** Under GA the held-out
+   half loses about as much as the trained half, in depth (0.59 vs 0.65) and in
+   breadth (0.43 vs 0.37). The unit of forgetting looks like the *author*, not
+   the fact. The tier slopes agree. Reaching a fact through the author's
+   description (B2) or a book title (B4) loses more than asking directly (B0):
+   on trained facts, GA's slopes are B0 0.12, B2 0.41, B4 0.52, and NPO's B0
+   0.11, B2 0.19, B4 0.36 (`results/analysis/matrix_v2_s0.md`).
+5. **B3 runs into the reversal curse.** Asked a fact and told to name its
+   author, `full` is right 38% of the time (chance 25%; `retain90` 30–34%).
+   Asked forwards (B0), it is right 76–78%. The fine-tuned link runs almost
+   only from author to fact. By the rule fixed in advance (`ANALYSIS_PLAN.md`
+   H5: a range of at least 0.05), B3 counts on trained facts (range 0.076) but
+   not on held-out facts (0.044).
+
+**Per fact** (`scripts/fact_level_analysis.py`,
+`results/analysis/fact_level_v2_s0.md`; 95 facts per half; suppression rate =
+share of behaviourally forgotten facts still encoded, UDS_i < 0.5):
+
+| Run, trained facts | Suppression rate α = 0 | α = 1 | Facts in the partial band (0.2–0.8) α = 0 → 1 | ρ(depth_i, margin drop), α = 1 |
+|---|---|---|---|---|
+| GA | 0.77 [0.50, 1.00] | 0.20 [0.05, 0.36] | 0.38 → 0.40 | +0.13 [−0.10, +0.33] |
+| GradDiff | 0.89 [0.69, 1.00] | 0.50 [0.27, 0.71] | 0.22 → 0.38 | −0.05 [−0.22, +0.13] |
+| NPO | 0.86 [0.50, 1.00] | 0.42 [0.00, 0.71] | 0.28 → 0.49 | +0.15 [−0.07, +0.32] |
+
+6. **At each method's own checkpoint, forgetting is mostly suppression.** Of
+   the facts a model stops answering, 77–89% are still encoded. Extrapolation
+   turns much of that into erasure (α = 1: 20–50%). GradDiff's held-out facts
+   are the exception: all 14 forgotten at α = 1 are still encoded.
+7. **Unlearning erases facts partially.** At α = 1, 36–55% of facts sit in the
+   partial band, in every run and on both halves, against 1–8% for checkpoints
+   that never saw the facts (§11). So a UDS
+   of 0.5 after unlearning means facts half-erased, not half the facts gone.
+8. **Per fact, depth and behaviour barely move together.** ρ stays between
+   −0.05 and +0.24, and most intervals include 0. GA's held-out facts are the
+   exception, at +0.23 [+0.08, +0.38] for α = 1. The averages co-move along
+   α, but individual facts mostly do not.
+
+Read every behavioural rate against the oracle. `retain90`, which never saw
+these facts, still "keeps" about 65% of them by the forced-choice rule and
+answers about 73% of their indirect items, by plausibility alone.
+
+Next: the matched-damage controls and seeds 1–2 (`gpu/README.md`, step 2 + 3).

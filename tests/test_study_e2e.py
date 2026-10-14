@@ -316,3 +316,20 @@ class TestLrScan:
         self._scan(checkpoints, tmp_path, "1e-5")
         d = self._scan(checkpoints, tmp_path, "3e-6")
         assert set(d["rates"]) == {"1e-05", "3e-06"}
+
+
+class TestControlProbe:
+    def test_probe_records_the_real_path_and_every_scale(self, checkpoints, tmp_path):
+        from deeperase.scripts.control_probe import main
+        argv = ["--method", "ga", "--learning-rate", "1e-4", "--epochs", "2",
+                "--batch-size", "8", "--floor", "0.01", "--scales", "1,1000,100000",
+                "--model-sources", json.dumps(checkpoints), "--tofu-dir", str(TOFU),
+                "--cache-dir", str(tmp_path / "cache"), "--device", "cpu",
+                "--n-breadth", "12", "--max-length", "256",
+                "--out-dir", str(tmp_path / "probes"), "--breadth-items", str(ITEMS_V2)]
+        assert main(argv) in (0, 1)          # 1 only if no scale reaches the damage
+        d = _load(tmp_path / "probes" / "ga_1B_v2_s0.json")
+        assert [p["alpha"] for p in d["real_path"]] == [0.0, 1.0]
+        assert sorted({p["scale"] for p in d["control"]}) == [1.0, 1000.0, 100000.0]
+        assert len(d["control"]) == 6 and d["target"]["alpha"] == 1.0
+        assert d["selected_epoch"] is not None and d["update_norm"] > 0
