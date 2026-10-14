@@ -94,6 +94,135 @@
         "branch": "rishabh-development",
         "dirty": false
       }
+    },
+    {
+      "generated": "2026-10-14 05:19:02",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "ga"
+      ],
+      "seeds": [
+        0
+      ],
+      "control": "random",
+      "control_scale": 540.0,
+      "git": {
+        "commit": "a4768f09950b7ec175aac43f58cbf42879d38610",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 06:36:17",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 5e-08,
+      "methods": [
+        "graddiff"
+      ],
+      "seeds": [
+        0
+      ],
+      "control": "random",
+      "control_scale": 320.0,
+      "git": {
+        "commit": "a4768f09950b7ec175aac43f58cbf42879d38610",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 07:50:00",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "npo"
+      ],
+      "seeds": [
+        0
+      ],
+      "control": "random",
+      "control_scale": 480.0,
+      "git": {
+        "commit": "a4768f09950b7ec175aac43f58cbf42879d38610",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 09:35:34",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "ga"
+      ],
+      "seeds": [
+        1,
+        2
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "a4768f09950b7ec175aac43f58cbf42879d38610",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 11:25:17",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 5e-08,
+      "methods": [
+        "graddiff"
+      ],
+      "seeds": [
+        1,
+        2
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "a4768f09950b7ec175aac43f58cbf42879d38610",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 13:12:42",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "npo"
+      ],
+      "seeds": [
+        1,
+        2
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "a4768f09950b7ec175aac43f58cbf42879d38610",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
     }
   ],
   "runs": {
@@ -138,7 +267,88 @@
       "learning_rate": 1e-08,
       "finished": "2026-10-13 20:57:35",
       "commit": "b8e870730a842987c4ab6db0299981c50d596dca"
+    },
+    "control_x540_v2_ga_1B_s0_lr1e-08": {
+      "run_id": "control_x540_v2_ga_1B_s0_lr1e-08",
+      "status": "ok",
+      "minutes": 52.1,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-14 05:19:02",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "control_x320_v2_graddiff_1B_s0_lr5e-08": {
+      "run_id": "control_x320_v2_graddiff_1B_s0_lr5e-08",
+      "status": "ok",
+      "minutes": 54.5,
+      "protocol": "v2",
+      "learning_rate": 5e-08,
+      "finished": "2026-10-14 06:36:17",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "control_x480_v2_npo_1B_s0_lr1e-08": {
+      "run_id": "control_x480_v2_npo_1B_s0_lr1e-08",
+      "status": "ok",
+      "minutes": 52.7,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-14 07:50:00",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "study_v2_ga_1B_s1_lr1e-08": {
+      "run_id": "study_v2_ga_1B_s1_lr1e-08",
+      "status": "ok",
+      "minutes": 52.9,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-14 09:35:34",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "study_v2_ga_1B_s2_lr1e-08": {
+      "run_id": "study_v2_ga_1B_s2_lr1e-08",
+      "status": "ok",
+      "minutes": 52.6,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-14 09:35:34",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "study_v2_graddiff_1B_s1_lr5e-08": {
+      "run_id": "study_v2_graddiff_1B_s1_lr5e-08",
+      "status": "ok",
+      "minutes": 54.9,
+      "protocol": "v2",
+      "learning_rate": 5e-08,
+      "finished": "2026-10-14 11:25:17",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "study_v2_graddiff_1B_s2_lr5e-08": {
+      "run_id": "study_v2_graddiff_1B_s2_lr5e-08",
+      "status": "ok",
+      "minutes": 54.8,
+      "protocol": "v2",
+      "learning_rate": 5e-08,
+      "finished": "2026-10-14 11:25:17",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "study_v2_npo_1B_s1_lr1e-08": {
+      "run_id": "study_v2_npo_1B_s1_lr1e-08",
+      "status": "ok",
+      "minutes": 53.6,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-14 13:12:42",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "study_v2_npo_1B_s2_lr1e-08": {
+      "run_id": "study_v2_npo_1B_s2_lr1e-08",
+      "status": "ok",
+      "minutes": 53.7,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-14 13:12:42",
+      "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
     }
   },
-  "updated": "2026-10-13 20:57:35"
+  "updated": "2026-10-14 13:12:42"
 }
