@@ -223,6 +223,111 @@
         "branch": "rishabh-development",
         "dirty": false
       }
+    },
+    {
+      "generated": "2026-10-14 21:25:44",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 5e-08,
+      "methods": [
+        "graddiff"
+      ],
+      "seeds": [
+        1
+      ],
+      "control": "random",
+      "control_scale": 450.0,
+      "git": {
+        "commit": "87d67557b1e028c9952851466f4e53caa9ee1402",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 22:42:38",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 5e-08,
+      "methods": [
+        "graddiff"
+      ],
+      "seeds": [
+        2
+      ],
+      "control": "random",
+      "control_scale": 340.0,
+      "git": {
+        "commit": "87d67557b1e028c9952851466f4e53caa9ee1402",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-14 23:51:07",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 5e-08,
+      "methods": [
+        "graddiff"
+      ],
+      "seeds": [
+        0
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "87d67557b1e028c9952851466f4e53caa9ee1402",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-15 00:57:32",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "ga"
+      ],
+      "seeds": [
+        0
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "87d67557b1e028c9952851466f4e53caa9ee1402",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-15 01:50:07",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "ga"
+      ],
+      "seeds": [
+        0
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "87d67557b1e028c9952851466f4e53caa9ee1402",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
     }
   ],
   "runs": {
@@ -348,7 +453,52 @@
       "learning_rate": 1e-08,
       "finished": "2026-10-14 13:12:42",
       "commit": "a4768f09950b7ec175aac43f58cbf42879d38610"
+    },
+    "control_x450_v2_graddiff_1B_s1_lr5e-08": {
+      "run_id": "control_x450_v2_graddiff_1B_s1_lr5e-08",
+      "status": "ok",
+      "minutes": 55.2,
+      "protocol": "v2",
+      "learning_rate": 5e-08,
+      "finished": "2026-10-14 21:25:44",
+      "commit": "87d67557b1e028c9952851466f4e53caa9ee1402"
+    },
+    "control_x340_v2_graddiff_1B_s2_lr5e-08": {
+      "run_id": "control_x340_v2_graddiff_1B_s2_lr5e-08",
+      "status": "ok",
+      "minutes": 54.3,
+      "protocol": "v2",
+      "learning_rate": 5e-08,
+      "finished": "2026-10-14 22:42:38",
+      "commit": "87d67557b1e028c9952851466f4e53caa9ee1402"
+    },
+    "study_v2_graddiff_1B_s0_lr5e-08_ext": {
+      "run_id": "study_v2_graddiff_1B_s0_lr5e-08_ext",
+      "status": "ok",
+      "minutes": 68.4,
+      "protocol": "v2",
+      "learning_rate": 5e-08,
+      "finished": "2026-10-14 23:51:07",
+      "commit": "87d67557b1e028c9952851466f4e53caa9ee1402"
+    },
+    "study_v2_ga_1B_s0_lr1e-08_ext": {
+      "run_id": "study_v2_ga_1B_s0_lr1e-08_ext",
+      "status": "ok",
+      "minutes": 66.4,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-15 00:57:32",
+      "commit": "87d67557b1e028c9952851466f4e53caa9ee1402"
+    },
+    "study_v2_ga_1B_s0_lr1e-08_lossfull": {
+      "run_id": "study_v2_ga_1B_s0_lr1e-08_lossfull",
+      "status": "ok",
+      "minutes": 52.5,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-15 01:50:07",
+      "commit": "87d67557b1e028c9952851466f4e53caa9ee1402"
     }
   },
-  "updated": "2026-10-14 13:12:42"
+  "updated": "2026-10-15 01:50:07"
 }
