@@ -57,6 +57,19 @@ def run_status(registry: Dict[str, object], run_id: str,
     return "ok", ""
 
 
+def arm_of(run_id: str, config: Optional[dict] = None) -> str:
+    """The arm of the design a run belongs to: ``control`` (a T1 control),
+    the ``--tag`` of an ablation or extension, or ``main``.
+
+    Runs of different arms share method and learning rate but are never
+    replicates of each other, so aggregators group by arm too.
+    """
+    if config and config.get("control", "none") not in ("none", None):
+        return "control"
+    m = TAGGED.search(run_id)
+    return m.group(1) if m else "main"
+
+
 def protocol_of(config: Optional[dict]) -> str:
     """Runs from before protocols existed are v1."""
     return str((config or {}).get("protocol") or "v1")

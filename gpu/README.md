@@ -208,8 +208,9 @@ only the matched-*damage* control can show whether damage alone raises depth
 and breadth. Under v2 each seed also draws its own per-author trained/held-out
 split, so seeds are genuine replicates.
 
-**4. Optional sharpening runs (~6 h, one job).** These cover what §14 left
-open. Matched-damage controls for GradDiff seeds 1–2 test whether "silence,
+**4. Optional sharpening runs (~6 h, one job).** *Done 15–16 Oct (5 h 42 min);
+results in `RESULTS.md` §15. Nothing further is planned on the GPU.* These
+cover what §14 left open. Matched-damage controls for GradDiff seeds 1–2 test whether "silence,
 not erasure" holds beyond seed 0. An α extension to 2.0 for GA and GradDiff
 (seed 0, tagged `ext`) asks whether GradDiff's silenced held-out facts ever
 become erased. The loss-scope ablation A1 is the third. Tagged runs are

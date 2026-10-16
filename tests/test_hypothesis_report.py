@@ -88,3 +88,11 @@ def test_the_committed_runs_produce_a_verdict_for_every_hypothesis(tmp_path):
     for m in ("ga", "graddiff", "npo"):
         assert set(d[m]) >= {"H1", "H2", "H3", "H4", "H5", "damage_matched_excess"}
         assert d[m]["control"] and len(d[m]["runs"]) == 3
+
+
+def test_own_control_cell_names_the_failing_seeds():
+    assert hr._own_control_cell({}) == "–"
+    assert hr._own_control_cell({0: True, 1: True}) == "2 of 2 seeds"
+    assert hr._own_control_cell({0: True, 1: False, 2: True}) == "2 of 3 seeds (fails seed 1)"
+    assert hr.mean_excess([None, 0.1, 0.3]) == pytest.approx(0.2)
+    assert hr.mean_excess([None]) is None

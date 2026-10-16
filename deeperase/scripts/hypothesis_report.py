@@ -9,7 +9,9 @@ It also reports the **damage-matched excess**: each real point's depth and
 breadth minus the matched-damage control's at the same R utility
 (interpolated along the control's path). That is the comparison H1 asks for,
 made at every alpha instead of only at alpha = 1, and it is exploratory beyond
-the H1 rule itself.
+the H1 rule itself. Where other seeds have their own matched control, it also
+repeats H1's control comparison per seed (a robustness check; the rule itself
+reads seed 0).
 
     python -m deeperase.scripts.hypothesis_report
     python -m deeperase.scripts.hypothesis_report --fact-json results/analysis/fact_level_v2.json
@@ -157,6 +159,12 @@ def excess_over_control(real: dict, control: dict, key: str) -> List[Optional[fl
     return out
 
 
+def mean_excess(values: Sequence[Optional[float]]) -> Optional[float]:
+    """Mean of the defined excess values along a path (None if there are none)."""
+    vals = [v for v in values if v is not None]
+    return float(np.mean(vals)) if vals else None
+
+
 # ---------------------------------------------------------------------------
 # Gathering the numbers from the run directories
 # ---------------------------------------------------------------------------
@@ -216,7 +224,7 @@ def collect(method: str, studies: Path, facts: Dict[str, dict]) -> dict:
                     for th in ("0.3", "0.5", "0.7")}
         h3_in[s] = [(r["alpha"], r["rho_margin"], r["rho_margin_ci"]) for r in rows]
 
-    h4_in, h5_in, excess = {}, {}, {}
+    h4_in, h5_in, excess, beats_own = {}, {}, {}, {}
     for s, r in loaded.items():
         ho, tr = r["trajectories"]["heldout"], r["trajectories"]["trained"]
         h4_in[s] = {"breadth_slope": slope(ho["alpha"], ho["breadth"]),
@@ -237,14 +245,30 @@ def collect(method: str, studies: Path, facts: Dict[str, dict]) -> dict:
                                                          own["trajectories"][k], key)
                                 for key in ("depth", "breadth")}
                             for k in ("trained", "heldout")}}
+            excess[s]["mean"] = {f"{k}_{key}": mean_excess(excess[s][k][key])
+                                 for k in ("trained", "heldout")
+                                 for key in ("depth", "breadth")}
+        if s in controls:                      # H1's control comparison, per seed
+            c = controls[s]["trajectories"]["trained"]
+            beats_own[s] = tr["depth"][-1] > c["depth"][-1] and tr["breadth"][-1] > c["breadth"][-1]
 
     return {"method": method, "runs": {s: d.name for s, d in sorted(runs.items())},
             "control": control_dirs[0].name if 0 in control_dirs else None,
             "controls_by_seed": {s: d.name for s, d in sorted(control_dirs.items())},
-            "H1": h1_verdict(max_sel, real_top, control_top),
+            "H1": {**h1_verdict(max_sel, real_top, control_top),
+                   "beats_own_control_by_seed": beats_own},
             "H2": h2_verdict(h2_in), "H3": h3_verdict(h3_in),
             "H4": h4_verdict(h4_in), "H5": h5_verdict(h5_in),
             "damage_matched_excess": excess}
+
+
+def _own_control_cell(beats: Dict[int, bool]) -> str:
+    if not beats:
+        return "–"
+    won = [s for s, b in sorted(beats.items()) if b]
+    return (f"{len(won)} of {len(beats)} seeds"
+            + (f" (fails seed {', '.join(str(s) for s, b in sorted(beats.items()) if not b)})"
+               if len(won) < len(beats) else ""))
 
 
 def to_markdown(report: Dict[str, dict]) -> str:
@@ -253,6 +277,8 @@ def to_markdown(report: Dict[str, dict]) -> str:
     def cell(x):
         return x.replace("|", "/")
     rows = [("H1 selectivity (gate)", lambda r: r["H1"]["verdict"]),
+            ("H1 check: beats its own seed's control", lambda r: _own_control_cell(
+                r["H1"].get("beats_own_control_by_seed") or {})),
             ("H2 suppression common at α = 0", lambda r: r["H2"]["suppression_common"]),
             ("H2 extrapolation converts it", lambda r: r["H2"]["extrapolation_converts"]),
             ("H2 robust to θ = 0.3 / 0.7", lambda r: "yes" if r["H2"]["robust_to_theta"] else "no"),

@@ -67,7 +67,7 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 
 from deeperase.data.tofu import QAS_PER_AUTHOR
-from deeperase.registry import load_registry, protocol_of, run_status, variant_of
+from deeperase.registry import arm_of, load_registry, protocol_of, run_status, variant_of
 from deeperase.scripts.aggregate_matrix import _fmt, _mean_sd
 
 FACT_TIERS = ("B0", "B1", "B2", "B3", "B4")
@@ -301,7 +301,8 @@ def analyse_run(run: Path, *, thetas: Sequence[float] = THRESHOLDS,
     ref = cal.get("reference_outcomes") or {}
     base = ref.get("full")
     result = {"run": run.name, "protocol": protocol_of(cfg) if cfg else None,
-              "variant": variant_of(cfg), "method": cfg.get("method"),
+              "variant": variant_of(cfg), "arm": arm_of(run.name, cfg),
+              "method": cfg.get("method"),
               "lr": (cfg.get("unlearn") or {}).get("learning_rate"),
               "seed": cfg.get("seed"),
               "baseline": "full" if base else "none",
@@ -346,6 +347,10 @@ def analyse_run(run: Path, *, thetas: Sequence[float] = THRESHOLDS,
                    # all-or-none erasure leaves few facts here; partial erasure, many
                    "share_partial_depth": (sum(0.2 <= depth[r] < 0.8 for r in rows) / len(rows))
                    if rows else None,
+                   # with the band, the shape of the depth distribution: random damage
+                   # spreads facts into the band, targeted erasure pushes some past it
+                   "share_full_depth": (sum(depth[r] >= 0.8 for r in rows) / len(rows))
+                   if rows else None,
                    "forgotten_mean": float(np.mean([beh[r]["forgotten"] for r in elig]))
                    if elig else None,
                    "rho_margin": rho(rows),
@@ -373,17 +378,18 @@ def analyse_run(run: Path, *, thetas: Sequence[float] = THRESHOLDS,
 
 def pool(results: List[dict], theta: float = 0.5) -> List[dict]:
     """Mean ± sd across seeds of the headline statistics, per (protocol, variant,
-    method, lr, split)."""
+    arm, method, lr, split). A control or a tagged run is never pooled with the
+    main runs it is compared against."""
     groups: Dict[tuple, List[dict]] = {}
     for r in results:
         for k, sp in r["splits"].items():
-            groups.setdefault((r["protocol"], r["variant"], r["method"], r["lr"], k),
-                              []).append(
+            groups.setdefault((r["protocol"], r["variant"], r.get("arm", "main"), r["method"],
+                               r["lr"], k), []).append(
                 {"run": r["run"], "sp": sp, "oracle": r["oracle"].get(k)})
     th = f"{theta:g}"
     out = []
-    for (protocol, variant, method, lr, k), members in sorted(groups.items(),
-                                                              key=lambda kv: str(kv[0])):
+    for (protocol, variant, arm, method, lr, k), members in sorted(
+            groups.items(), key=lambda kv: str(kv[0])):
         alphas = sorted({row["alpha"] for m in members for row in m["sp"]["per_alpha"]})
         rows = []
         for a in alphas:
@@ -394,6 +400,7 @@ def pool(results: List[dict], theta: float = 0.5) -> List[dict]:
                 "alpha": a,
                 "depth_mean": _mean_sd([g["depth_mean"] for g in got]),
                 "share_partial_depth": _mean_sd([g.get("share_partial_depth") for g in got]),
+                "share_full_depth": _mean_sd([g.get("share_full_depth") for g in got]),
                 "forgotten_mean": _mean_sd([g["forgotten_mean"] for g in got]),
                 "rho_margin": _mean_sd([g["rho_margin"] for g in got]),
                 "suppression_rate": _mean_sd([c.get("suppression_rate") for c in cls]),
@@ -404,7 +411,8 @@ def pool(results: List[dict], theta: float = 0.5) -> List[dict]:
                                           for c in cls]) for x in CLASSES}})
         order = [m["sp"]["order"].get(th) or {} for m in members]
         out.append({
-            "protocol": protocol, "variant": variant, "method": method, "lr": lr, "split": k,
+            "protocol": protocol, "variant": variant, "arm": arm, "method": method, "lr": lr,
+            "split": k,
             "theta": theta, "runs": [m["run"] for m in members], "per_alpha": rows,
             "oracle_share_forgotten": _mean_sd([(m["oracle"] or {}).get("share_forgotten")
                                                 for m in members]),
@@ -420,7 +428,10 @@ def to_markdown(pooled: List[dict]) -> str:
     lines = []
     for g in pooled:
         lr = f"{g['lr']:g}" if isinstance(g["lr"], (int, float)) else str(g["lr"])
-        lines.append(f"### {g['method']} · lr {lr} · {g['protocol']} ({g['variant']}) · "
+        arm = g.get("arm") or "main"
+        arm = ("" if arm == "main" else " · matched-damage control" if arm == "control"
+               else f" · tag `{arm}`")
+        lines.append(f"### {g['method']} · lr {lr} · {g['protocol']} ({g['variant']}){arm} · "
                      f"`{g['split']}` facts · "
                      f"{len(g['runs'])} run(s) · depth threshold {g['theta']:g}\n")
         lines.append("| α | depth | UDS_i in [0.2, 0.8) | forgotten | ρ(depth, margin drop) "

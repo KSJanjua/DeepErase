@@ -207,11 +207,13 @@ comparison is selectivity and R retention at matched breadth.
 | §2 per-fact resolution | `python -m deeperase.scripts.depth_fact_resolution` | `results/analysis/depth_fact_resolution.json` |
 | H1's matched-damage scale | `python -m deeperase.scripts.control_probe` (via `gpu/matched_controls.sh`) | `results/control_probes/*.json` |
 | **Every verdict, seed by seed** | `python -m deeperase.scripts.hypothesis_report` | `results/analysis/hypotheses_v2.{json,md}` |
+| Controls and tagged runs, fact level (exploratory) | `python -m deeperase.scripts.fact_level_analysis --run <dir> ...` | `results/analysis/fact_level_v2_exploratory.{json,md}` |
 
 All of these read saved JSON only. No GPU is needed after the runs.
 `aggregate_matrix` and `fact_level_analysis` group runs by protocol, **design
-variant** (loss scope and dtype), method and learning rate. An ablation is
-therefore never pooled with the runs it is compared against.
+variant** (loss scope and dtype), **arm** (main, a matched-damage control, or
+a `--tag` such as `ext`), method and learning rate. An ablation, extension or
+control is therefore never pooled with the runs it is compared against.
 
 ## 7. GPU budget and priority
 
@@ -246,6 +248,19 @@ need only steps 1–3 for one method.
 
 Each entry needs: the date, the change, the reason, and whether any v2 result
 had been seen at the time.
+
+* **16 Oct 2026: exploratory analyses added after the matrix was seen. No
+  rule changed.** (1) `hypothesis_report.py` repeats H1's control comparison
+  against each seed's own matched control where one exists (GradDiff: all
+  three seeds). The H1 verdict still follows the rule, which reads seed 0.
+  (2) `fact_level_analysis.py` is run on the matched-damage controls. This
+  gives a damage baseline for H2's suppression rate and the partial band, and
+  it records the share of fully erased facts (UDS_i ≥ 0.8). (3) A1 is
+  compared "at matched breadth" by a straight-line fit of each variable on
+  breadth along the α ≤ 1 path, because the two paths share no breadth values
+  exactly. All three are labelled exploratory in `RESULTS.md` §15. Reason: the
+  plan named the comparisons but not these baselines. The first two make the
+  reading stricter, not looser. Every result had been seen.
 
 * **14 Oct 2026: α\* is redefined as α = 1, and only collapsed points are
   excluded.** *Seed-0 results of all three methods had been seen.* The reason

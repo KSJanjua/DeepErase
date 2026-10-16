@@ -83,3 +83,24 @@ def test_ablations_are_not_pooled_with_the_main_design(tmp_path):
     rows = aggregate([load_run(d) for d in sorted(tmp_path.iterdir())])
     trained = {g["variant"]: g["n_seeds"] for g in rows if g["trajectory"] == "trained"}
     assert trained == {"answer/float32": 2, "full/float32": 1}
+
+
+def test_controls_and_tagged_runs_are_their_own_arms(tmp_path):
+    # --include-all reads controls and extensions too; they must not join the
+    # seeds of the main design they share method and rate with.
+    for name, seed in (("study_v2_ga_1B_s0_lr1e-06", 0), ("study_v2_ga_1B_s1_lr1e-06", 1),
+                       ("study_v2_ga_1B_s0_lr1e-06_ext", 0),
+                       ("control_x540_v2_ga_1B_s0_lr1e-06", 0)):
+        d = _write_run(tmp_path, name, seed, 0.6, {"B0": 0.3})
+        if name.startswith("control"):
+            cfg = json.loads((d / "config.json").read_text())
+            cfg["control"], cfg["control_scale"] = "random", 540.0
+            (d / "config.json").write_text(json.dumps(cfg))
+    out = tmp_path / "out" / "m"
+    assert main(["--dir", str(tmp_path), "--glob", "*_v2_*", "--include-all",
+                 "--out", str(out)]) == 0
+    groups = json.loads(out.with_suffix(".json").read_text())["groups"]
+    trained = {g["arm"]: g["n_seeds"] for g in groups if g["trajectory"] == "trained"}
+    assert trained == {"main": 2, "ext": 1, "control": 1}
+    md = out.with_suffix(".md").read_text()
+    assert "matched-damage control" in md and "tag `ext`" in md

@@ -10,11 +10,16 @@
     "study_v2_npo_1B_s1_lr1e-08",
     "study_v2_npo_1B_s2_lr1e-08"
   ],
-  "skipped": [],
+  "skipped": [
+    "study_v2_ga_1B_s0_lr1e-08_ext (exploratory)",
+    "study_v2_ga_1B_s0_lr1e-08_lossfull (exploratory)",
+    "study_v2_graddiff_1B_s0_lr5e-08_ext (exploratory)"
+  ],
   "groups": [
     {
       "protocol": "v2",
       "variant": "answer/float32",
+      "arm": "main",
       "method": "ga",
       "lr": 1e-08,
       "trajectory": "heldout",
@@ -672,6 +677,7 @@
     {
       "protocol": "v2",
       "variant": "answer/float32",
+      "arm": "main",
       "method": "ga",
       "lr": 1e-08,
       "trajectory": "trained",
@@ -1329,6 +1335,7 @@
     {
       "protocol": "v2",
       "variant": "answer/float32",
+      "arm": "main",
       "method": "graddiff",
       "lr": 5e-08,
       "trajectory": "heldout",
@@ -1986,6 +1993,7 @@
     {
       "protocol": "v2",
       "variant": "answer/float32",
+      "arm": "main",
       "method": "graddiff",
       "lr": 5e-08,
       "trajectory": "trained",
@@ -2643,6 +2651,7 @@
     {
       "protocol": "v2",
       "variant": "answer/float32",
+      "arm": "main",
       "method": "npo",
       "lr": 1e-08,
       "trajectory": "heldout",
@@ -3300,6 +3309,7 @@
     {
       "protocol": "v2",
       "variant": "answer/float32",
+      "arm": "main",
       "method": "npo",
       "lr": 1e-08,
       "trajectory": "trained",

@@ -63,3 +63,12 @@ def test_tagged_runs_are_exploratory_not_replicates():
     for rid in ("study_v2_ga_1B_s0_lr1e-08", "study_graddiff_1B_s0_lr1e-5",
                 "study_graddiff_1B_s0_lr3e-06", "lrscan_graddiff_3e-6", "study_ga_1B_s0"):
         assert run_status({}, rid, {"control": "none"})[0] == "ok", rid
+
+
+def test_arm_of_separates_controls_and_tagged_runs():
+    from deeperase.registry import arm_of
+    assert arm_of("study_v2_ga_1B_s0_lr1e-08", {"control": "none"}) == "main"
+    assert arm_of("study_v2_ga_1B_s0_lr1e-08_ext", {"control": "none"}) == "ext"
+    assert arm_of("study_v2_ga_1B_s0_lr1e-08_lossfull") == "lossfull"
+    assert arm_of("control_x540_v2_ga_1B_s0_lr1e-08", {"control": "random"}) == "control"
+    assert arm_of("study_ga_1B_s0") == "main"

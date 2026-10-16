@@ -30,7 +30,7 @@ import math
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
-from deeperase.registry import load_registry, protocol_of, run_status, variant_of
+from deeperase.registry import arm_of, load_registry, protocol_of, run_status, variant_of
 
 TIERS = ("B0", "B1", "B2", "B3", "B4")
 
@@ -98,7 +98,8 @@ def load_run(run: Path) -> Optional[dict]:
         for tag, a in (("alpha0", a0), ("alpha_max", a1)):
             fq[tag] = (partials[a].get("tofu_forget_quality") or {})
     return {"run": run.name, "config": cfg, "protocol": protocol_of(cfg),
-            "variant": variant_of(cfg), "method": cfg.get("method"),
+            "variant": variant_of(cfg), "arm": arm_of(run.name, cfg),
+            "method": cfg.get("method"),
             "lr": (cfg.get("unlearn") or {}).get("learning_rate"),
             "seed": cfg.get("seed"), "trajectories": trajs, "forget_quality": fq}
 
@@ -107,12 +108,12 @@ def aggregate(runs: List[dict]) -> List[dict]:
     groups: Dict[tuple, List[dict]] = {}
     for r in runs:
         for split, t in r["trajectories"].items():
-            groups.setdefault((r["protocol"], r["variant"], r["method"], r["lr"], split),
-                              []).append(
+            groups.setdefault((r["protocol"], r["variant"], r.get("arm", "main"), r["method"],
+                               r["lr"], split), []).append(
                 {"run": r["run"], "seed": r["seed"], "t": t, "fq": r["forget_quality"]})
     out = []
-    for (protocol, variant, method, lr, split), members in sorted(groups.items(),
-                                                                  key=lambda kv: str(kv[0])):
+    for (protocol, variant, arm, method, lr, split), members in sorted(
+            groups.items(), key=lambda kv: str(kv[0])):
         alphas = sorted({a for m in members for a in m["t"]["alpha"]})
         per_alpha = []
         for a in alphas:
@@ -134,13 +135,20 @@ def aggregate(runs: List[dict]) -> List[dict]:
             for m in members])
         fq = {tag: _mean_sd([(m["fq"].get(tag) or {}).get(split if split != "all" else "all")
                              for m in members]) for tag in ("alpha0", "alpha_max")}
-        out.append({"protocol": protocol, "variant": variant, "method": method, "lr": lr,
-                    "trajectory": split,
+        out.append({"protocol": protocol, "variant": variant, "arm": arm, "method": method,
+                    "lr": lr, "trajectory": split,
                     "n_seeds": len(members), "runs": [m["run"] for m in members],
                     "seeds": [m["seed"] for m in members], "per_alpha": per_alpha,
                     "slopes": slopes, "mean_depth_minus_breadth": gap,
                     "tofu_forget_quality": fq})
     return out
+
+
+def _arm_label(arm: Optional[str]) -> str:
+    """'' for the main runs, else which arm: a control or a tagged run."""
+    if not arm or arm == "main":
+        return ""
+    return " · matched-damage control" if arm == "control" else f" · tag `{arm}`"
 
 
 def _fmt(ms: dict, digits: int = 3) -> str:
@@ -154,7 +162,8 @@ def to_markdown(rows: List[dict]) -> str:
     lines = []
     for g in rows:
         lines.append(f"### {g['method']} · lr {g['lr']:g} · {g['protocol']} "
-                     f"({g.get('variant', '?')}) · trajectory `{g['trajectory']}` · "
+                     f"({g.get('variant', '?')}){_arm_label(g.get('arm'))} · "
+                     f"trajectory `{g['trajectory']}` · "
                      f"{g['n_seeds']} seed(s)\n")
         lines.append("| α | depth | breadth | utility | selectivity |")
         lines.append("|---|---|---|---|---|")
@@ -179,11 +188,13 @@ def plot(rows: List[dict], path: Path) -> None:
     splits = sorted({g["trajectory"] for g in rows})
     fig, axes = plt.subplots(1, len(splits), figsize=(6.2 * len(splits), 5.4), squeeze=False)
     cmap = plt.get_cmap("tab10")
-    methods = sorted({(g["method"], g["lr"], g.get("variant")) for g in rows}, key=str)
+    methods = sorted({(g["method"], g["lr"], g.get("variant"), g.get("arm")) for g in rows},
+                     key=str)
     for ax, split in zip(axes[0], splits):
-        for i, (method, lr, variant) in enumerate(methods):
+        for i, (method, lr, variant, arm) in enumerate(methods):
             g = next((g for g in rows if g["trajectory"] == split and g["method"] == method
-                      and g["lr"] == lr and g.get("variant") == variant), None)
+                      and g["lr"] == lr and g.get("variant") == variant
+                      and g.get("arm") == arm), None)
             if not g:
                 continue
             b = [r["breadth"]["mean"] for r in g["per_alpha"]]
@@ -191,7 +202,9 @@ def plot(rows: List[dict], path: Path) -> None:
             be = [r["breadth"]["sd"] or 0 for r in g["per_alpha"]]
             de = [r["depth"]["sd"] or 0 for r in g["per_alpha"]]
             ax.errorbar(b, d, xerr=be, yerr=de, fmt="-o", color=cmap(i % 10), ms=4,
-                        capsize=2, label=f"{method} (lr {lr:g}, {variant}, n={g['n_seeds']})")
+                        capsize=2, label=f"{method} (lr {lr:g}, {variant}"
+                                         f"{'' if arm in (None, 'main') else ', ' + arm}"
+                                         f", n={g['n_seeds']})")
         ax.plot([0, 1], [0, 1], ":", color="grey", lw=0.8)
         ax.set_xlim(0, 1); ax.set_ylim(0, 1)
         ax.set_xlabel("breadth (calibrated; 1 = retain oracle)")

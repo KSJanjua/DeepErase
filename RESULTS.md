@@ -18,6 +18,10 @@ Sections 6–7: the shared NVIDIA A100-SXM4-80GB `dgxanode02` (29 Aug – 3 Sep 
 > **10 Oct:** section 10 cross-checks UDS against the authors' code, and section
 > 11 shows that per-fact UDS identifies unseen facts exactly. The v2 analysis
 > is pre-registered in [`docs/ANALYSIS_PLAN.md`](docs/ANALYSIS_PLAN.md).
+> **13–16 Oct:** sections 12–15 are the protocol-v2 study on an H100: the
+> first runs (12), one seed per method (13), the full 3 × 3 matrix with
+> matched-damage controls (14) and the sharpening runs (15). The current
+> conclusions are §14.5 as amended by §15.5.
 
 ---
 
@@ -914,7 +918,8 @@ times the update's size, then utility collapses within one doubling (GA, α = 1:
    * GradDiff adds behavioural forgetting (+0.05 to +0.21 in two of three
      seeds) but erases *less* than random damage would, especially on
      held-out facts (−0.09 to −0.20). It is targeted silence, not deeper
-     erasure.
+     erasure. (Seeds 1 and 2 are compared here with seed 0's control. §15.1
+     repeats this with each seed's own control, and it holds in all three.)
 3. **Real updates harm general knowledge more than random damage does.** At
    the same cost on the R tier, GA and NPO leave real-author knowledge at
    0.55–0.56 where their controls keep 0.67–0.79. World facts fall the same
@@ -950,6 +955,8 @@ over the control in §14.2 is the part that is not damage.
   its negative depth excess in §14.2.
 * **Partial erasure is robust:** 36–55% of facts are in the 0.2–0.8 band at
   α = 1 in every run, against 1–8% for checkpoints that never saw the facts.
+  (§15.2 amends the reading: random damage puts even more facts in the band,
+  so the band is mostly a damage signature.)
 * **No fact-level coupling:** ρ(depth_i, margin drop) at α = 1 is between
   −0.05 and +0.25. Only 1 of the 9 trained-fact intervals excludes 0.
 
@@ -967,7 +974,196 @@ whether the model still answers it. The average co-movement along α is not a
 per-fact relationship. Finally, the standard utility check misses collateral
 damage to related real-world knowledge.
 
-Optional runs that would sharpen this (`gpu/README.md`): matched-damage controls
-for GradDiff seeds 1–2, an α extension to 2.0 for GA and GradDiff (does
-GradDiff's held-out silence ever become erasure?), and the loss-scope ablation
-A1.
+The optional runs that sharpen this (GradDiff controls for seeds 1–2, α to
+2.0, and the loss-scope ablation A1) ran on 15 Oct. They are in §15.
+
+---
+
+## 15. Sharpening runs: GradDiff controls, α to 2.0, loss scope (15–16 Oct 2026)
+
+One overnight job on the H100 slice (`results/logs/step4_v2_h100.log`, 5 h 42
+min, commit `87d6755`, clean tree). It ran:
+
+* matched-damage controls for GradDiff seeds 1 and 2, at ×450 and ×340;
+* seed 0 of GA and GradDiff swept to α = 2.0 (tag `ext`);
+* the loss-scope ablation A1 (tag `lossfull`).
+
+Tagged runs are exploratory and stay out of the main matrix. Seed 0's GradDiff
+control was ×320.
+
+**Reproducibility.** The two `ext` runs retrained from scratch at a later
+commit. Their points at α ≤ 1 equal the original runs' to every saved digit
+(22 points each, largest difference 0.0).
+
+**Matching.** Seed 2's control ends at R 0.710 at α = 1, against the real run's
+0.685. Its probe brackets the target between ×300 (0.735) and ×500 (0.540),
+and the cliff is too steep for the log interpolation to land exactly. The
+excess below is taken only where both paths reach the same R. For seed 2 that
+range stops at α = 0.8.
+
+Exploratory fact-level tables, including all five controls, are in
+`results/analysis/fact_level_v2_exploratory.{md,json}`.
+
+### 15.1 GradDiff against each seed's own control
+
+The table gives the damage-matched excess (real minus control at the same R),
+averaged along α. It comes from `hypotheses_v2.json`, `damage_matched_excess.*.mean`.
+
+| Seed | Control | Depth, trained | Depth, held-out | Breadth, trained | Breadth, held-out | Beats control at α = 1 on both axes |
+|---|---|---|---|---|---|---|
+| 0 | ×320 | +0.03 | −0.12 | +0.10 | +0.15 | yes |
+| 1 | ×450 | −0.09 | −0.14 | +0.27 | +0.07 | no: depth 0.43 vs 0.50 |
+| 2 | ×340 | +0.01 | −0.13 | +0.04 | +0.21 | yes, but the real run is 0.025 R more damaged |
+
+1. **Targeted silence holds in all three seeds.**
+   * In behaviour, GradDiff forgets more than damage on both trained and
+     held-out facts.
+   * Internally, it erases its held-out facts *less* than damage does. The
+     gap is −0.09 to −0.19 at every α in every seed.
+   * On trained facts its depth is at the damage level (−0.09 to +0.03).
+2. **H1's verdict for GradDiff stands, but it is fragile.** The pre-registered
+   rule reads seed 0, which passes. Repeated per seed, GradDiff beats its own
+   control on both axes in two of three seeds (`hypotheses_v2.md`, "H1 check").
+   Its selectivity is behavioural.
+3. **GradDiff's collateral damage looks different from GA's and NPO's.** Unlike
+   §14.2 item 3, GradDiff does not hit real-author knowledge harder than damage
+   does. At α = 1, RA is 0.77 vs 0.78, 0.74 vs 0.63 and 0.65 vs 0.71 (seed 2
+   at more damage). World facts are 0.03–0.04 lower than under damage in all
+   three seeds. Its retain term protects authors in general, not facts in
+   general.
+
+### 15.2 What random damage does fact by fact
+
+Running `fact_level_analysis` on the five controls gives a baseline for the
+fact-level findings of §14.4. Ranges are over runs and both splits.
+
+| At θ = 0.5 | Real runs (9) | Matched controls (5) |
+|---|---|---|
+| Forgotten facts still encoded, α = 0 | 0.67–1.00 | 0.71–1.00 (only 2–8 facts forgotten) |
+| The same, α = 1, trained / held-out | 0.20–0.79 / 0.30–1.00 | 0.46–0.92 / 0.55–0.73 |
+| Facts in the partial band at α = 1 | 0.36–0.55 | 0.51–0.74 |
+
+1. **Behaviour flips before depth under any perturbation.** The few facts
+   random damage makes the model forget are also mostly still encoded. A
+   forced-choice margin crosses zero long before a fact's UDS reaches 0.5.
+   * So H2's finding stands: at the checkpoint, behavioural tests overstate
+     erasure.
+   * But "forgotten yet still stored" at α = 0 is the generic first stage of
+     any weight change, not a hiding mechanism peculiar to unlearning.
+2. **What separates the methods is what happens next.** At α = 1, each run is
+   compared with its own control at the same damage:
+
+   | Run (seed) | Real, trained / held-out | Its control |
+   |---|---|---|
+   | GA (0) | 0.20 / 0.30 | 0.46 / 0.55 |
+   | NPO (0) | 0.42 / 0.75 | 0.90 / 0.70 |
+   | GradDiff (0) | 0.50 / 1.00 | 0.92 / 0.73 |
+   | GradDiff (1) | 0.57 / 1.00 | 0.50 / 0.57 |
+   | GradDiff (2) | 0.62 / 0.88 | 0.50 / 0.64 |
+
+   * GA and NPO erase the trained facts they silence more often than damage
+     does.
+   * GradDiff keeps more held-out facts silenced than damage does, in every
+     seed.
+   * Each cell rests on 7–21 forgotten facts, so these are directions, not
+     estimates.
+3. **The partial band is mostly a damage signature.** Random damage puts
+   *more* facts into the 0.2–0.8 band than unlearning does (0.51–0.74). The
+   retain checkpoints of §14.4 (1–8%) only show that models which never
+   learned the facts do not sit there.
+   * At matched mean depth, unlearning is more concentrated than damage. In
+     the six real/control pairs whose mean depths agree within 0.02, the real
+     run has 0.10–0.29 fewer facts in the band.
+   * It also has 0.03–0.15 more facts fully erased (UDS_i ≥ 0.8). Example:
+     GA seed 0, trained facts, mean depth 0.52 in both: band 0.45 vs 0.74,
+     fully erased 0.32 vs 0.17.
+   * What unlearning adds over damage is a set of facts erased outright, on
+     top of a damage-like spread (`share_full_depth` in the fact-level JSON).
+
+### 15.3 α extended to 2.0 (seed 0)
+
+| Run, α | Depth T / H | Breadth T / H | R | RA | WF | Selectivity T / H | Held-out suppression |
+|---|---|---|---|---|---|---|---|
+| GradDiff, 1.0 | 0.45 / 0.27 | 0.35 / 0.43 | 0.728 | 0.77 | 0.76 | +0.07 / +0.15 | 1.00 |
+| GradDiff, 1.5 | 0.57 / 0.40 | 0.42 / 0.52 | 0.718 | 0.77 | 0.79 | +0.11 / +0.21 | 0.72 |
+| GradDiff, 2.0 | 0.69 / 0.52 | 0.53 / 0.60 | 0.680 | 0.76 | 0.71 | +0.08 / +0.15 | 0.61 |
+| GA, 1.0 | 0.65 / 0.59 | 0.37 / 0.43 | 0.672 | 0.55 | 0.65 | −0.11 / −0.05 | 0.30 |
+| GA, 1.5 | 0.71 / 0.69 | 0.43 / 0.50 | 0.660 | 0.58 | 0.65 | −0.09 / −0.03 | 0.18 |
+| GA, 2.0 | 0.76 / 0.75 | 0.55 / 0.52 | 0.652 | 0.59 | 0.64 | −0.00 / −0.03 | 0.09 |
+
+T = trained facts, H = held-out facts.
+
+1. **There is no cliff out to twice the update.**
+   * From α = 1 to 2, R falls by only 0.02 (GA) and 0.05 (GradDiff). That is
+     far above the collapse line, 75% of the starting utility.
+   * Depth and breadth keep rising.
+2. **GradDiff stays selective at every α up to 2.0, and GA never is.**
+   * GradDiff keeps real-author knowledge at 0.76.
+   * GA's selectivity recovers from −0.15 (α 0.7–0.9) to zero at α = 2, but
+     never turns positive.
+3. **GradDiff's held-out silence breaks only past α = 1, and slowly.**
+   * The held-out suppression rate is 1.00 at every α ≤ 1, then 0.88, 0.72,
+     0.61 and 0.61 at α = 1.25 to 2.
+   * Following individual facts: of the 14 held-out facts silenced at α = 1,
+     5 are erased at α = 2, 8 are still silenced and 1 is answered again.
+   * No matched control reaches α = 2's damage: the control path collapses
+     beyond about ×1000 in total. So whether the late erasure comes from the
+     update or from damage is open.
+4. **Depth and behaviour stay decoupled.**
+   * At α = 2 the share of facts that are deep yet still answered reaches
+     0.43–0.59.
+   * ρ(depth, margin drop) stays between −0.07 and +0.29.
+   * Part of the "still answered" share is plausibility. `retain90`, which
+     never saw the facts, still answers 62–66% of them in forced choice.
+
+### 15.4 Loss-scope ablation A1 (GA, seed 0)
+
+`docs/ANALYSIS_PLAN.md` asks whether v1's full-sequence loss caused its
+collateral damage, comparing selectivity and R at matched breadth. Matched
+values come from a straight-line fit along each path, α ≤ 1.
+
+| | Answer-only loss (the main design) | Full-sequence loss (v1's) |
+|---|---|---|
+| Kept epoch | 10 | 11 |
+| Checkpoint (α = 0, both at R 0.765): depth / breadth, trained | 0.28 / 0.20 | 0.16 / 0.11 |
+| Checkpoint: RA / WF | 0.67 / 0.74 | 0.77 / 0.82 |
+| At breadth 0.20: R / selectivity / depth | 0.749 / −0.00 / 0.38 | 0.747 / −0.01 / 0.29 |
+| At breadth 0.25: R / selectivity / depth | 0.720 / −0.06 / 0.48 | 0.735 / −0.00 / 0.38 |
+| At R 0.72: RA / WF | 0.57 / 0.69 | 0.55 / 0.70 |
+
+1. **The loss scope does not explain v1's collateral damage.** At matched
+   breadth both designs keep about the same R (within 0.015) and selectivity
+   (within 0.06). At matched R they lose real-author and world knowledge
+   alike.
+2. **Answer-only training gets further per checkpoint.**
+   * At the same 95% floor it reaches about twice the breadth and depth.
+   * RA falls in proportion: about 1.1 per unit of breadth under both losses.
+3. **At matched breadth, answer-only loss is about 0.1 deeper.** That is
+   consistent with it pushing on exactly the answer tokens that UDS reads.
+   This is one seed, so it is exploratory.
+4. Forget NLL (2.05 vs 2.77) cannot be compared: each run measures it over its
+   own loss scope (baselines 0.39 and 1.66).
+
+### 15.5 What this changes in §14.5
+
+* **GradDiff's "targeted silence" now rests on three seeds**, each against its
+  own control. H1 stays supported under its pre-registered rule, but the
+  per-seed check passes in two of three. GradDiff's selectivity is
+  behavioural.
+* **Suppression at the checkpoint is real but generic.** Random damage shows
+  the same order: behaviour flips before depth. The method-specific part is
+  what follows.
+  * GA and NPO erase what they silence more than damage does.
+  * GradDiff keeps its held-out facts silenced, and only begins to erase them
+    past α = 1.
+* **Partial erasure is what damage looks like.** Against damage, unlearning is
+  *more* all-or-none: fewer partial facts and more facts erased outright. This
+  replaces the "partial erasure is robust" reading of §14.4.
+* **Twice the update does not collapse either model.** It does not make GA
+  selective either.
+* **v1's choice of loss was not the cause of its damage.** Answer-only loss
+  (v2) buys more forgetting per checkpoint at the same price per unit of
+  forgetting.
+
+GPU time for the whole v2 study, including the 13 Oct setup and scans, is
+about 22–23 hours on the 40 GB slice.

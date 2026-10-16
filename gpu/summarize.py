@@ -132,14 +132,15 @@ def main() -> int:
         print(f"no completed runs under {args.dir}/{args.glob}")
         return 1
 
-    hdr = (f"{'run':34s} {'traj':7s} {'prot':4s} {'meth':8s} {'lr':8s} {'sel':>4s} "
+    w = max(34, *(len(r["run"]) for r in rows))       # never cut a tag off a run id
+    hdr = (f"{'run':{w}s} {'traj':7s} {'prot':4s} {'meth':8s} {'lr':8s} {'sel':>4s} "
            f"{'nll':>7s} {'depth 0->1':14s} {'breadth 0->1':14s} {'dutil':>7s} "
            f"{'sel@1':>6s}  verdict")
     print(hdr)
     print("-" * len(hdr))
     for r in rows:
         s1 = f"{r['sel_last']:+.3f}" if r["sel_last"] is not None else "   -  "
-        print(f"{r['run'][:34]:34s} {r['trajectory'][:7]:7s} {r['protocol']:4s} "
+        print(f"{r['run']:{w}s} {r['trajectory'][:7]:7s} {r['protocol']:4s} "
               f"{r['method'][:8]:8s} {r['lr']:<8.0e} "
               f"{str(r['sel']):>4s} {r['nll']:>7.3f} "
               f"{r['d0']:.3f}->{r['d1']:.3f}   "

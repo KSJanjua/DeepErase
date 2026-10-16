@@ -190,6 +190,15 @@ class TestAnalyseRun:
         assert c["0.5"]["removed"] == 40 and c["0.5"]["suppression_rate"] == 0.0
         assert c["0.7"]["suppressed"] == sum(1 for i in range(10, 20) if i / 19 < 0.7) * 4
 
+    def test_depth_shape_shares(self, tmp_path):
+        # depth = s * a with s = k/19: at a = 1, 4 of 20 strengths are < 0.2,
+        # 4 are >= 0.8 (16/19 .. 19/19) and 12 sit in the band
+        at1 = fla.analyse_run(make_run(tmp_path), n_boot=10)["splits"]
+        rows = at1["trained"]["per_alpha"][-1], at1["heldout"]["per_alpha"][-1]
+        assert rows[0]["share_full_depth"] == 0.0             # trained s <= 9/19
+        assert rows[1]["share_full_depth"] == pytest.approx(0.4)    # 16..19 of 10..19
+        assert rows[1]["share_partial_depth"] == pytest.approx(0.6)
+
     def test_suppression_is_detected(self, tmp_path):
         # behaviour collapses everywhere while depth never moves: pure suppression
         run = make_run(tmp_path, depth_fn=lambda s, a: 0.05, drop_fn=lambda s, a: 3.0 * a)
@@ -231,6 +240,23 @@ class TestAnalyseRun:
         assert len(g["runs"]) == 2 and g["per_alpha"][-1]["rho_margin"]["mean"] == \
             pytest.approx(1.0)
         assert "suppression rate" in out.with_suffix(".md").read_text()
+
+    def test_controls_and_tagged_runs_are_pooled_apart(self, tmp_path):
+        studies = tmp_path / "studies"
+        runs = [make_run(studies, "study_v2_ga_1B_s0_lr1e-05"),
+                make_run(studies, "study_v2_ga_1B_s1_lr1e-05", seed=1),
+                make_run(studies, "study_v2_ga_1B_s0_lr1e-05_ext"),
+                make_run(studies, "control_x540_v2_ga_1B_s0_lr1e-05")]
+        cfg = json.loads((runs[-1] / "config.json").read_text())
+        cfg["control"] = "random"
+        _write(runs[-1] / "config.json", cfg)
+        out = tmp_path / "fl"
+        argv = [x for r in runs for x in ("--run", str(r))]
+        assert fla.main(argv + ["--out", str(out), "--n-boot", "10"]) == 0
+        d = json.loads(out.with_suffix(".json").read_text())
+        arms = {g["arm"]: len(g["runs"]) for g in d["pooled"] if g["split"] == "trained"}
+        assert arms == {"main": 2, "ext": 1, "control": 1}
+        assert "matched-damage control" in out.with_suffix(".md").read_text()
 
     def test_main_reports_when_nothing_is_usable(self, tmp_path):
         assert fla.main(["--dir", str(tmp_path), "--out", str(tmp_path / "x")]) == 1
