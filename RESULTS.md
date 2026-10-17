@@ -1503,3 +1503,52 @@ The latent index after the attack is (unlearned − retain90) / (full − retain
    protection against fine-tuning.
 
 **Caveats.** One seed, one attack set of 100 facts, one strength so far.
+
+### 19.4 Fact level: more facts removed, and many "erased" facts still answered
+
+`fact_level_analysis.py` on the UNASKED seed-0 run, written to
+`results/analysis/fact_level_unasked.md`. Trained facts, depth threshold
+θ = 0.5. Each fact falls in one class:
+
+| Class | Deep by UDS (≥ 0.5)? | Forgotten (≥ half its eligible forced-choice items now wrong)? |
+|---|---|---|
+| removed | yes | yes |
+| suppressed | no | yes |
+| erased, still answered | yes | no |
+| intact | no | no |
+
+The suppression rate S is the share of forgotten facts that are still encoded,
+i.e. suppressed / (removed + suppressed). Baselines are 3-seed means; the
+controls are their matched-damage controls.
+
+| Trained facts | Mean depth | Removed | Suppressed | Erased, still answered | Intact | S |
+|---|---|---|---|---|---|---|
+| **UNASKED, α = 0 (seed 0)** | **0.53** | **0.10** | **0.09** | **0.39** | **0.43** | **0.47** |
+| GA, α = 0 | 0.22 | 0.02 | 0.09 | 0.14 | 0.75 | 0.83 |
+| NPO, α = 0 | 0.17 | 0.02 | 0.07 | 0.09 | 0.82 | 0.80 |
+| GradDiff, α = 0 | 0.15 | 0.01 | 0.09 | 0.06 | 0.84 | 0.87 |
+| GA, α = 1 | 0.54 | 0.13 | 0.08 | 0.40 | 0.39 | 0.41 |
+| GA's damage control, α = 1 (seed 0) | 0.51 | 0.09 | 0.07 | 0.39 | 0.45 | 0.46 |
+| UNASKED, α = 1 | 0.65 | 0.22 | 0.07 | 0.45 | 0.26 | 0.25 |
+
+1. **At the checkpoint, UNASKED's fact-level profile is GA's at α = 1.** It
+   removes five times as many facts as the baselines do at their checkpoints
+   (0.10 against about 0.02). Fewer of its forgotten facts are still encoded:
+   S is 0.47, against 0.80-0.87.
+2. **A deep UDS does not mean the fact is gone from behaviour.** 39% of
+   UNASKED's trained facts are deep by UDS yet still answered correctly on
+   forced choice. The same share appears for GA at α = 1 (0.40) and for GA's
+   own random-damage control (0.39). At this depth level, UDS and behaviour
+   come apart for every method, not only for UNASKED.
+3. **Per-fact depth does not track per-fact forgetting.** The rank correlation
+   between UDS_i and the drop in the forced-choice margin is 0.06 on trained
+   facts and −0.10 on held-out facts (baselines: 0.04-0.09 trained,
+   −0.05-0.14 held-out).
+
+**A caveat specific to UNASKED.** It trains the states at every answer
+position, which include the positions UDS patches. The paraphrased-question
+split (§19.2) changes the question but not those answer positions. So it rules
+out a trigger tied to the question wording, but not one tied to the measured
+positions. The forced-choice items (other prompt formats) and the relearning
+attack (§19.3) are therefore the independent checks. Both say most of the
+knowledge is still there.

@@ -1,0 +1,4669 @@
+{
+ "runs": [
+  {
+   "run": "study_v2_unasked_1B_s0_lr3e-06",
+   "protocol": "v2",
+   "variant": "answer/float32",
+   "arm": "main",
+   "method": "unasked",
+   "lr": 3e-06,
+   "seed": 0,
+   "baseline": "full",
+   "alphas": [
+    0.0,
+    0.1,
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.8,
+    0.9,
+    1.0
+   ],
+   "oracle": {
+    "trained": {
+     "n_facts": 176,
+     "forgotten_mean": 0.31287878787878787,
+     "share_forgotten": 0.3409090909090909,
+     "indirect_kept_mean": 0.7452830188679245
+    },
+    "heldout": {
+     "n_facts": 181,
+     "forgotten_mean": 0.34226519337016575,
+     "share_forgotten": 0.3756906077348066,
+     "indirect_kept_mean": 0.7172995780590716
+    }
+   },
+   "splits": {
+    "heldout": {
+     "per_alpha": [
+      {
+       "alpha": 0.0,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.39662598947368427,
+       "share_partial_depth": 0.5157894736842106,
+       "share_full_depth": 0.14736842105263157,
+       "forgotten_mean": 0.19999999999999998,
+       "rho_margin": -0.10347772718585044,
+       "rho_margin_ci": [
+        -0.27986802337709626,
+        0.07927598152661931
+       ],
+       "rho_forgotten": 0.05511424600590447,
+       "classes": {
+        "0.3": {
+         "removed": 9,
+         "suppressed": 11,
+         "erased_answering": 36,
+         "intact": 31,
+         "suppression_rate": 0.55,
+         "suppression_rate_ci": [
+          0.3,
+          0.8237745098039213
+         ],
+         "indirect_leak": {
+          "deep": 0.6666666666666666,
+          "n_deep": 6,
+          "shallow": 0.5833333333333334,
+          "n_shallow": 6
+         }
+        },
+        "0.5": {
+         "removed": 7,
+         "suppressed": 13,
+         "erased_answering": 22,
+         "intact": 45,
+         "suppression_rate": 0.65,
+         "suppression_rate_ci": [
+          0.4444444444444444,
+          0.8571428571428571
+         ],
+         "indirect_leak": {
+          "deep": 0.8,
+          "n_deep": 5,
+          "shallow": 0.5,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 5,
+         "suppressed": 15,
+         "erased_answering": 12,
+         "intact": 55,
+         "suppression_rate": 0.75,
+         "suppression_rate_ci": [
+          0.5833333333333334,
+          0.9092803030303028
+         ],
+         "indirect_leak": {
+          "deep": 0.75,
+          "n_deep": 4,
+          "shallow": 0.5625,
+          "n_shallow": 8
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.1,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.4256550842105264,
+       "share_partial_depth": 0.5368421052631579,
+       "share_full_depth": 0.18947368421052632,
+       "forgotten_mean": 0.20670498084291183,
+       "rho_margin": -0.10816789612202415,
+       "rho_margin_ci": [
+        -0.28772062076863175,
+        0.08548464359388268
+       ],
+       "rho_forgotten": 0.06173867269973945,
+       "classes": {
+        "0.3": {
+         "removed": 11,
+         "suppressed": 9,
+         "erased_answering": 36,
+         "intact": 31,
+         "suppression_rate": 0.45,
+         "suppression_rate_ci": [
+          0.21052631578947367,
+          0.7223484848484847
+         ],
+         "indirect_leak": {
+          "deep": 0.5,
+          "n_deep": 7,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        },
+        "0.5": {
+         "removed": 8,
+         "suppressed": 12,
+         "erased_answering": 23,
+         "intact": 44,
+         "suppression_rate": 0.6,
+         "suppression_rate_ci": [
+          0.3684210526315789,
+          0.8421052631578947
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.5,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 5,
+         "suppressed": 15,
+         "erased_answering": 15,
+         "intact": 52,
+         "suppression_rate": 0.75,
+         "suppression_rate_ci": [
+          0.5833333333333334,
+          0.9092803030303028
+         ],
+         "indirect_leak": {
+          "deep": 0.75,
+          "n_deep": 4,
+          "shallow": 0.4375,
+          "n_shallow": 8
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.2,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.4493938,
+       "share_partial_depth": 0.5473684210526316,
+       "share_full_depth": 0.2,
+       "forgotten_mean": 0.23582375478927203,
+       "rho_margin": -0.11024377743133,
+       "rho_margin_ci": [
+        -0.3022958779683307,
+        0.0964809363110833
+       ],
+       "rho_forgotten": 0.01504156432488862,
+       "classes": {
+        "0.3": {
+         "removed": 11,
+         "suppressed": 10,
+         "erased_answering": 39,
+         "intact": 27,
+         "suppression_rate": 0.47619047619047616,
+         "suppression_rate_ci": [
+          0.25,
+          0.7274242424242423
+         ],
+         "indirect_leak": {
+          "deep": 0.5,
+          "n_deep": 7,
+          "shallow": 0.5,
+          "n_shallow": 5
+         }
+        },
+        "0.5": {
+         "removed": 8,
+         "suppressed": 13,
+         "erased_answering": 25,
+         "intact": 41,
+         "suppression_rate": 0.6190476190476191,
+         "suppression_rate_ci": [
+          0.3888888888888889,
+          0.8421052631578947
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.42857142857142855,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 6,
+         "suppressed": 15,
+         "erased_answering": 17,
+         "intact": 49,
+         "suppression_rate": 0.7142857142857143,
+         "suppression_rate_ci": [
+          0.5714285714285714,
+          0.8666666666666667
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.42857142857142855,
+          "n_shallow": 7
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.3,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.4699063157894736,
+       "share_partial_depth": 0.6,
+       "share_full_depth": 0.2,
+       "forgotten_mean": 0.24540229885057468,
+       "rho_margin": -0.10386592252309722,
+       "rho_margin_ci": [
+        -0.2943184845474133,
+        0.09195966669603872
+       ],
+       "rho_forgotten": -0.0017763379679697538,
+       "classes": {
+        "0.3": {
+         "removed": 12,
+         "suppressed": 10,
+         "erased_answering": 43,
+         "intact": 22,
+         "suppression_rate": 0.45454545454545453,
+         "suppression_rate_ci": [
+          0.2497844827586209,
+          0.6924999999999998
+         ],
+         "indirect_leak": {
+          "deep": 0.5,
+          "n_deep": 7,
+          "shallow": 0.5,
+          "n_shallow": 6
+         }
+        },
+        "0.5": {
+         "removed": 8,
+         "suppressed": 14,
+         "erased_answering": 26,
+         "intact": 39,
+         "suppression_rate": 0.6363636363636364,
+         "suppression_rate_ci": [
+          0.4090909090909091,
+          0.85
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.4375,
+          "n_shallow": 8
+         }
+        },
+        "0.7": {
+         "removed": 6,
+         "suppressed": 16,
+         "erased_answering": 18,
+         "intact": 47,
+         "suppression_rate": 0.7272727272727273,
+         "suppression_rate_ci": [
+          0.5908422459893049,
+          0.875
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.4375,
+          "n_shallow": 8
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.4,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.48846648421052624,
+       "share_partial_depth": 0.6210526315789474,
+       "share_full_depth": 0.21052631578947367,
+       "forgotten_mean": 0.2574712643678161,
+       "rho_margin": -0.08877189927156057,
+       "rho_margin_ci": [
+        -0.28314814711057446,
+        0.11424969008846837
+       ],
+       "rho_forgotten": 0.021324788967302864,
+       "classes": {
+        "0.3": {
+         "removed": 14,
+         "suppressed": 9,
+         "erased_answering": 45,
+         "intact": 19,
+         "suppression_rate": 0.391304347826087,
+         "suppression_rate_ci": [
+          0.2104714912280702,
+          0.6191964285714284
+         ],
+         "indirect_leak": {
+          "deep": 0.5,
+          "n_deep": 7,
+          "shallow": 0.5,
+          "n_shallow": 6
+         }
+        },
+        "0.5": {
+         "removed": 9,
+         "suppressed": 14,
+         "erased_answering": 27,
+         "intact": 37,
+         "suppression_rate": 0.6086956521739131,
+         "suppression_rate_ci": [
+          0.38703473945409433,
+          0.85
+         ],
+         "indirect_leak": {
+          "deep": 0.5,
+          "n_deep": 6,
+          "shallow": 0.5,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 6,
+         "suppressed": 17,
+         "erased_answering": 18,
+         "intact": 46,
+         "suppression_rate": 0.7391304347826086,
+         "suppression_rate_ci": [
+          0.6,
+          0.8823529411764706
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.4375,
+          "n_shallow": 8
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.5,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.5055409263157894,
+       "share_partial_depth": 0.6210526315789474,
+       "share_full_depth": 0.25263157894736843,
+       "forgotten_mean": 0.2959770114942529,
+       "rho_margin": -0.09290945388271928,
+       "rho_margin_ci": [
+        -0.2871447901381543,
+        0.10674324742012908
+       ],
+       "rho_forgotten": 0.09683585227626466,
+       "classes": {
+        "0.3": {
+         "removed": 17,
+         "suppressed": 8,
+         "erased_answering": 45,
+         "intact": 17,
+         "suppression_rate": 0.32,
+         "suppression_rate_ci": [
+          0.16666666666666666,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.35,
+          "n_deep": 10,
+          "shallow": 0.4,
+          "n_shallow": 5
+         }
+        },
+        "0.5": {
+         "removed": 12,
+         "suppressed": 13,
+         "erased_answering": 25,
+         "intact": 37,
+         "suppression_rate": 0.52,
+         "suppression_rate_ci": [
+          0.30434782608695654,
+          0.75
+         ],
+         "indirect_leak": {
+          "deep": 0.375,
+          "n_deep": 8,
+          "shallow": 0.35714285714285715,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 6,
+         "suppressed": 19,
+         "erased_answering": 17,
+         "intact": 45,
+         "suppression_rate": 0.76,
+         "suppression_rate_ci": [
+          0.6,
+          0.9090909090909091
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.25,
+          "n_shallow": 10
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.6,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.5217527999999999,
+       "share_partial_depth": 0.6421052631578947,
+       "share_full_depth": 0.25263157894736843,
+       "forgotten_mean": 0.3164750957854406,
+       "rho_margin": -0.09760008262971813,
+       "rho_margin_ci": [
+        -0.29140232894742,
+        0.1140992278819235
+       ],
+       "rho_forgotten": 0.11792553403456395,
+       "classes": {
+        "0.3": {
+         "removed": 20,
+         "suppressed": 7,
+         "erased_answering": 43,
+         "intact": 17,
+         "suppression_rate": 0.25925925925925924,
+         "suppression_rate_ci": [
+          0.10810810810810811,
+          0.45454545454545453
+         ],
+         "indirect_leak": {
+          "deep": 0.4090909090909091,
+          "n_deep": 11,
+          "shallow": 0.25,
+          "n_shallow": 4
+         }
+        },
+        "0.5": {
+         "removed": 14,
+         "suppressed": 13,
+         "erased_answering": 23,
+         "intact": 37,
+         "suppression_rate": 0.48148148148148145,
+         "suppression_rate_ci": [
+          0.2757836990595612,
+          0.7
+         ],
+         "indirect_leak": {
+          "deep": 0.375,
+          "n_deep": 8,
+          "shallow": 0.35714285714285715,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 8,
+         "suppressed": 19,
+         "erased_answering": 15,
+         "intact": 45,
+         "suppression_rate": 0.7037037037037037,
+         "suppression_rate_ci": [
+          0.5517241379310345,
+          0.8485227272727273
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.25,
+          "n_shallow": 10
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.7,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.5375239263157894,
+       "share_partial_depth": 0.6526315789473685,
+       "share_full_depth": 0.25263157894736843,
+       "forgotten_mean": 0.3193486590038314,
+       "rho_margin": -0.09807614644284637,
+       "rho_margin_ci": [
+        -0.28975407526848995,
+        0.11653147071650376
+       ],
+       "rho_forgotten": 0.08496633289739126,
+       "classes": {
+        "0.3": {
+         "removed": 19,
+         "suppressed": 8,
+         "erased_answering": 46,
+         "intact": 14,
+         "suppression_rate": 0.2962962962962963,
+         "suppression_rate_ci": [
+          0.14275793650793658,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.4090909090909091,
+          "n_deep": 11,
+          "shallow": 0.25,
+          "n_shallow": 4
+         }
+        },
+        "0.5": {
+         "removed": 13,
+         "suppressed": 14,
+         "erased_answering": 28,
+         "intact": 32,
+         "suppression_rate": 0.5185185185185185,
+         "suppression_rate_ci": [
+          0.32,
+          0.7222701149425287
+         ],
+         "indirect_leak": {
+          "deep": 0.375,
+          "n_deep": 8,
+          "shallow": 0.35714285714285715,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 8,
+         "suppressed": 19,
+         "erased_answering": 18,
+         "intact": 42,
+         "suppression_rate": 0.7037037037037037,
+         "suppression_rate_ci": [
+          0.55,
+          0.8484848484848485
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.25,
+          "n_shallow": 10
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.8,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.5529358947368422,
+       "share_partial_depth": 0.6631578947368421,
+       "share_full_depth": 0.25263157894736843,
+       "forgotten_mean": 0.3231800766283525,
+       "rho_margin": -0.10556751998904587,
+       "rho_margin_ci": [
+        -0.30981191206093256,
+        0.12382915615264967
+       ],
+       "rho_forgotten": 0.0792862217725928,
+       "classes": {
+        "0.3": {
+         "removed": 20,
+         "suppressed": 7,
+         "erased_answering": 48,
+         "intact": 12,
+         "suppression_rate": 0.25925925925925924,
+         "suppression_rate_ci": [
+          0.11538461538461539,
+          0.4230769230769231
+         ],
+         "indirect_leak": {
+          "deep": 0.3333333333333333,
+          "n_deep": 12,
+          "shallow": 0.16666666666666666,
+          "n_shallow": 3
+         }
+        },
+        "0.5": {
+         "removed": 14,
+         "suppressed": 13,
+         "erased_answering": 31,
+         "intact": 29,
+         "suppression_rate": 0.48148148148148145,
+         "suppression_rate_ci": [
+          0.2962962962962963,
+          0.68
+         ],
+         "indirect_leak": {
+          "deep": 0.3888888888888889,
+          "n_deep": 9,
+          "shallow": 0.16666666666666666,
+          "n_shallow": 6
+         }
+        },
+        "0.7": {
+         "removed": 9,
+         "suppressed": 18,
+         "erased_answering": 19,
+         "intact": 41,
+         "suppression_rate": 0.6666666666666666,
+         "suppression_rate_ci": [
+          0.5,
+          0.8333333333333334
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 5,
+          "shallow": 0.15,
+          "n_shallow": 10
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.9,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.5679510210526315,
+       "share_partial_depth": 0.6736842105263158,
+       "share_full_depth": 0.2631578947368421,
+       "forgotten_mean": 0.3350574712643678,
+       "rho_margin": -0.1174407421356805,
+       "rho_margin_ci": [
+        -0.3212922298279832,
+        0.10777884243119112
+       ],
+       "rho_forgotten": 0.07307040138432935,
+       "classes": {
+        "0.3": {
+         "removed": 21,
+         "suppressed": 6,
+         "erased_answering": 50,
+         "intact": 10,
+         "suppression_rate": 0.2222222222222222,
+         "suppression_rate_ci": [
+          0.08325000000000007,
+          0.38240950226244336
+         ],
+         "indirect_leak": {
+          "deep": 0.2692307692307692,
+          "n_deep": 13,
+          "shallow": 0.16666666666666666,
+          "n_shallow": 3
+         }
+        },
+        "0.5": {
+         "removed": 15,
+         "suppressed": 12,
+         "erased_answering": 32,
+         "intact": 28,
+         "suppression_rate": 0.4444444444444444,
+         "suppression_rate_ci": [
+          0.27586206896551724,
+          0.6296296296296297
+         ],
+         "indirect_leak": {
+          "deep": 0.2222222222222222,
+          "n_deep": 9,
+          "shallow": 0.2857142857142857,
+          "n_shallow": 7
+         }
+        },
+        "0.7": {
+         "removed": 9,
+         "suppressed": 18,
+         "erased_answering": 21,
+         "intact": 39,
+         "suppression_rate": 0.6666666666666666,
+         "suppression_rate_ci": [
+          0.5,
+          0.8333333333333334
+         ],
+         "indirect_leak": {
+          "deep": 0.3,
+          "n_deep": 5,
+          "shallow": 0.22727272727272727,
+          "n_shallow": 11
+         }
+        }
+       }
+      },
+      {
+       "alpha": 1.0,
+       "n_facts": 95,
+       "n_eligible": 87,
+       "depth_mean": 0.5827929157894738,
+       "share_partial_depth": 0.6526315789473685,
+       "share_full_depth": 0.2736842105263158,
+       "forgotten_mean": 0.35268199233716474,
+       "rho_margin": -0.12240440748138526,
+       "rho_margin_ci": [
+        -0.33320925581436794,
+        0.09687158073270084
+       ],
+       "rho_forgotten": 0.019067015922624764,
+       "classes": {
+        "0.3": {
+         "removed": 21,
+         "suppressed": 8,
+         "erased_answering": 50,
+         "intact": 8,
+         "suppression_rate": 0.27586206896551724,
+         "suppression_rate_ci": [
+          0.12487500000000011,
+          0.4444444444444444
+         ],
+         "indirect_leak": {
+          "deep": 0.32142857142857145,
+          "n_deep": 14,
+          "shallow": 0.20833333333333331,
+          "n_shallow": 4
+         }
+        },
+        "0.5": {
+         "removed": 17,
+         "suppressed": 12,
+         "erased_answering": 33,
+         "intact": 25,
+         "suppression_rate": 0.41379310344827586,
+         "suppression_rate_ci": [
+          0.21423160173160177,
+          0.6190476190476191
+         ],
+         "indirect_leak": {
+          "deep": 0.2222222222222222,
+          "n_deep": 9,
+          "shallow": 0.37037037037037035,
+          "n_shallow": 9
+         }
+        },
+        "0.7": {
+         "removed": 9,
+         "suppressed": 20,
+         "erased_answering": 22,
+         "intact": 36,
+         "suppression_rate": 0.6896551724137931,
+         "suppression_rate_ci": [
+          0.53328125,
+          0.84375
+         ],
+         "indirect_leak": {
+          "deep": 0.3,
+          "n_deep": 5,
+          "shallow": 0.2948717948717949,
+          "n_shallow": 13
+         }
+        }
+       }
+      }
+     ],
+     "order": {
+      "0.3": {
+       "depth_first": 5,
+       "same": 9,
+       "behaviour_first": 8,
+       "depth_only": 56,
+       "behaviour_only": 8,
+       "neither": 9,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      },
+      "0.5": {
+       "depth_first": 4,
+       "same": 7,
+       "behaviour_first": 7,
+       "depth_only": 36,
+       "behaviour_only": 12,
+       "neither": 29,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      },
+      "0.7": {
+       "depth_first": 3,
+       "same": 5,
+       "behaviour_first": 3,
+       "depth_only": 22,
+       "behaviour_only": 19,
+       "neither": 43,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      }
+     }
+    },
+    "trained": {
+     "per_alpha": [
+      {
+       "alpha": 0.0,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.5321198421052631,
+       "share_partial_depth": 0.6,
+       "share_full_depth": 0.24210526315789474,
+       "forgotten_mean": 0.16504065040650404,
+       "rho_margin": 0.06092251712270569,
+       "rho_margin_ci": [
+        -0.15072188384019733,
+        0.22809046508200773
+       ],
+       "rho_forgotten": 0.23320222784983316,
+       "classes": {
+        "0.3": {
+         "removed": 13,
+         "suppressed": 2,
+         "erased_answering": 47,
+         "intact": 20,
+         "suppression_rate": 0.13333333333333333,
+         "suppression_rate_ci": [
+          0.0,
+          0.3333333333333333
+         ],
+         "indirect_leak": {
+          "deep": 0.7,
+          "n_deep": 10,
+          "shallow": 0.0,
+          "n_shallow": 1
+         }
+        },
+        "0.5": {
+         "removed": 8,
+         "suppressed": 7,
+         "erased_answering": 32,
+         "intact": 35,
+         "suppression_rate": 0.4666666666666667,
+         "suppression_rate_ci": [
+          0.26657894736842114,
+          0.75
+         ],
+         "indirect_leak": {
+          "deep": 0.7142857142857143,
+          "n_deep": 7,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 6,
+         "suppressed": 9,
+         "erased_answering": 22,
+         "intact": 45,
+         "suppression_rate": 0.6,
+         "suppression_rate_ci": [
+          0.43743206521739136,
+          0.8571428571428571
+         ],
+         "indirect_leak": {
+          "deep": 0.6666666666666666,
+          "n_deep": 6,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.1,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.5542914526315789,
+       "share_partial_depth": 0.6210526315789474,
+       "share_full_depth": 0.25263157894736843,
+       "forgotten_mean": 0.17276422764227642,
+       "rho_margin": 0.059497769280054465,
+       "rho_margin_ci": [
+        -0.15674884381417856,
+        0.22192921039732177
+       ],
+       "rho_forgotten": 0.2735883796478498,
+       "classes": {
+        "0.3": {
+         "removed": 15,
+         "suppressed": 1,
+         "erased_answering": 48,
+         "intact": 18,
+         "suppression_rate": 0.0625,
+         "suppression_rate_ci": [
+          0.0,
+          0.25
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 10,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 11,
+         "suppressed": 5,
+         "erased_answering": 30,
+         "intact": 36,
+         "suppression_rate": 0.3125,
+         "suppression_rate_ci": [
+          0.09977272727272748,
+          0.5555555555555556
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.7": {
+         "removed": 9,
+         "suppressed": 7,
+         "erased_answering": 21,
+         "intact": 45,
+         "suppression_rate": 0.4375,
+         "suppression_rate_ci": [
+          0.25,
+          0.6153846153846154
+         ],
+         "indirect_leak": {
+          "deep": 0.5714285714285714,
+          "n_deep": 7,
+          "shallow": 0.6666666666666666,
+          "n_shallow": 3
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.2,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.5720783368421053,
+       "share_partial_depth": 0.6,
+       "share_full_depth": 0.29473684210526313,
+       "forgotten_mean": 0.18434959349593497,
+       "rho_margin": 0.07002537457384292,
+       "rho_margin_ci": [
+        -0.13978758169642364,
+        0.22708910216812642
+       ],
+       "rho_forgotten": 0.2974511804876593,
+       "classes": {
+        "0.3": {
+         "removed": 15,
+         "suppressed": 1,
+         "erased_answering": 48,
+         "intact": 18,
+         "suppression_rate": 0.0625,
+         "suppression_rate_ci": [
+          0.0,
+          0.25
+         ],
+         "indirect_leak": {
+          "deep": 0.6,
+          "n_deep": 10,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 11,
+         "suppressed": 5,
+         "erased_answering": 33,
+         "intact": 33,
+         "suppression_rate": 0.3125,
+         "suppression_rate_ci": [
+          0.09977272727272748,
+          0.5555555555555556
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.7": {
+         "removed": 9,
+         "suppressed": 7,
+         "erased_answering": 25,
+         "intact": 41,
+         "suppression_rate": 0.4375,
+         "suppression_rate_ci": [
+          0.25,
+          0.6153846153846154
+         ],
+         "indirect_leak": {
+          "deep": 0.5714285714285714,
+          "n_deep": 7,
+          "shallow": 0.6666666666666666,
+          "n_shallow": 3
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.3,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.586647652631579,
+       "share_partial_depth": 0.5894736842105263,
+       "share_full_depth": 0.30526315789473685,
+       "forgotten_mean": 0.20162601626016263,
+       "rho_margin": 0.0658171182573267,
+       "rho_margin_ci": [
+        -0.11798324511498305,
+        0.21892041367769108
+       ],
+       "rho_forgotten": 0.2874377031045092,
+       "classes": {
+        "0.3": {
+         "removed": 17,
+         "suppressed": 0,
+         "erased_answering": 47,
+         "intact": 18,
+         "suppression_rate": 0.0,
+         "suppression_rate_ci": [
+          0.0,
+          0.0
+         ],
+         "indirect_leak": {
+          "deep": 0.6363636363636364,
+          "n_deep": 11,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 12,
+         "suppressed": 5,
+         "erased_answering": 33,
+         "intact": 32,
+         "suppression_rate": 0.29411764705882354,
+         "suppression_rate_ci": [
+          0.0868659420289856,
+          0.5454545454545454
+         ],
+         "indirect_leak": {
+          "deep": 0.6666666666666666,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.7": {
+         "removed": 11,
+         "suppressed": 6,
+         "erased_answering": 25,
+         "intact": 40,
+         "suppression_rate": 0.35294117647058826,
+         "suppression_rate_ci": [
+          0.15,
+          0.5714285714285714
+         ],
+         "indirect_leak": {
+          "deep": 0.5714285714285714,
+          "n_deep": 7,
+          "shallow": 0.75,
+          "n_shallow": 4
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.4,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.5990120842105263,
+       "share_partial_depth": 0.5684210526315789,
+       "share_full_depth": 0.3263157894736842,
+       "forgotten_mean": 0.22520325203252034,
+       "rho_margin": 0.0580542473330329,
+       "rho_margin_ci": [
+        -0.12504256310543646,
+        0.21743053670118825
+       ],
+       "rho_forgotten": 0.26666212298807584,
+       "classes": {
+        "0.3": {
+         "removed": 18,
+         "suppressed": 0,
+         "erased_answering": 47,
+         "intact": 17,
+         "suppression_rate": 0.0,
+         "suppression_rate_ci": [
+          0.0,
+          0.0
+         ],
+         "indirect_leak": {
+          "deep": 0.5416666666666666,
+          "n_deep": 12,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 13,
+         "suppressed": 5,
+         "erased_answering": 33,
+         "intact": 31,
+         "suppression_rate": 0.2777777777777778,
+         "suppression_rate_ci": [
+          0.07692307692307693,
+          0.5005952380952375
+         ],
+         "indirect_leak": {
+          "deep": 0.6111111111111112,
+          "n_deep": 9,
+          "shallow": 0.3333333333333333,
+          "n_shallow": 3
+         }
+        },
+        "0.7": {
+         "removed": 13,
+         "suppressed": 5,
+         "erased_answering": 24,
+         "intact": 40,
+         "suppression_rate": 0.2777777777777778,
+         "suppression_rate_ci": [
+          0.07692307692307693,
+          0.5005952380952375
+         ],
+         "indirect_leak": {
+          "deep": 0.5625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.5,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.6097904105263158,
+       "share_partial_depth": 0.5578947368421052,
+       "share_full_depth": 0.3368421052631579,
+       "forgotten_mean": 0.2516260162601626,
+       "rho_margin": 0.06369860479388026,
+       "rho_margin_ci": [
+        -0.12100847296667538,
+        0.22177248286713225
+       ],
+       "rho_forgotten": 0.2529791891806244,
+       "classes": {
+        "0.3": {
+         "removed": 20,
+         "suppressed": 0,
+         "erased_answering": 46,
+         "intact": 16,
+         "suppression_rate": 0.0,
+         "suppression_rate_ci": [
+          0.0,
+          0.0
+         ],
+         "indirect_leak": {
+          "deep": 0.46153846153846156,
+          "n_deep": 13,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 15,
+         "suppressed": 5,
+         "erased_answering": 33,
+         "intact": 29,
+         "suppression_rate": 0.25,
+         "suppression_rate_ci": [
+          0.06666666666666667,
+          0.46676470588235286
+         ],
+         "indirect_leak": {
+          "deep": 0.4444444444444444,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 13,
+         "suppressed": 7,
+         "erased_answering": 25,
+         "intact": 37,
+         "suppression_rate": 0.35,
+         "suppression_rate_ci": [
+          0.15,
+          0.5833333333333334
+         ],
+         "indirect_leak": {
+          "deep": 0.375,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.6,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.6193559894736843,
+       "share_partial_depth": 0.5578947368421052,
+       "share_full_depth": 0.3368421052631579,
+       "forgotten_mean": 0.28943089430894303,
+       "rho_margin": 0.05673462495046769,
+       "rho_margin_ci": [
+        -0.1403980194323572,
+        0.22201623033614654
+       ],
+       "rho_forgotten": 0.2643948161496658,
+       "classes": {
+        "0.3": {
+         "removed": 21,
+         "suppressed": 1,
+         "erased_answering": 45,
+         "intact": 15,
+         "suppression_rate": 0.045454545454545456,
+         "suppression_rate_ci": [
+          0.0,
+          0.14285714285714285
+         ],
+         "indirect_leak": {
+          "deep": 0.38461538461538464,
+          "n_deep": 13,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 16,
+         "suppressed": 6,
+         "erased_answering": 33,
+         "intact": 27,
+         "suppression_rate": 0.2727272727272727,
+         "suppression_rate_ci": [
+          0.10513157894736853,
+          0.47058823529411764
+         ],
+         "indirect_leak": {
+          "deep": 0.3333333333333333,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 15,
+         "suppressed": 7,
+         "erased_answering": 24,
+         "intact": 36,
+         "suppression_rate": 0.3181818181818182,
+         "suppression_rate_ci": [
+          0.13636363636363635,
+          0.5454545454545454
+         ],
+         "indirect_leak": {
+          "deep": 0.25,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.7,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.6282568631578948,
+       "share_partial_depth": 0.5473684210526316,
+       "share_full_depth": 0.3473684210526316,
+       "forgotten_mean": 0.2965447154471545,
+       "rho_margin": 0.046826202433149264,
+       "rho_margin_ci": [
+        -0.14720925651616018,
+        0.21467497744115527
+       ],
+       "rho_forgotten": 0.2664255627999611,
+       "classes": {
+        "0.3": {
+         "removed": 22,
+         "suppressed": 1,
+         "erased_answering": 45,
+         "intact": 14,
+         "suppression_rate": 0.043478260869565216,
+         "suppression_rate_ci": [
+          0.0,
+          0.13340909090909084
+         ],
+         "indirect_leak": {
+          "deep": 0.3076923076923077,
+          "n_deep": 13,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 18,
+         "suppressed": 5,
+         "erased_answering": 34,
+         "intact": 25,
+         "suppression_rate": 0.21739130434782608,
+         "suppression_rate_ci": [
+          0.05,
+          0.4230769230769231
+         ],
+         "indirect_leak": {
+          "deep": 0.3181818181818182,
+          "n_deep": 11,
+          "shallow": 0.25,
+          "n_shallow": 2
+         }
+        },
+        "0.7": {
+         "removed": 15,
+         "suppressed": 8,
+         "erased_answering": 24,
+         "intact": 35,
+         "suppression_rate": 0.34782608695652173,
+         "suppression_rate_ci": [
+          0.16666666666666666,
+          0.562723214285714
+         ],
+         "indirect_leak": {
+          "deep": 0.125,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.8,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.6368995789473684,
+       "share_partial_depth": 0.5578947368421052,
+       "share_full_depth": 0.35789473684210527,
+       "forgotten_mean": 0.3101626016260163,
+       "rho_margin": 0.05704359290718872,
+       "rho_margin_ci": [
+        -0.1388331768132887,
+        0.22411554499646863
+       ],
+       "rho_forgotten": 0.2843055504505889,
+       "classes": {
+        "0.3": {
+         "removed": 24,
+         "suppressed": 0,
+         "erased_answering": 44,
+         "intact": 14,
+         "suppression_rate": 0.0,
+         "suppression_rate_ci": [
+          0.0,
+          0.0
+         ],
+         "indirect_leak": {
+          "deep": 0.26666666666666666,
+          "n_deep": 15,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 20,
+         "suppressed": 4,
+         "erased_answering": 33,
+         "intact": 25,
+         "suppression_rate": 0.16666666666666666,
+         "suppression_rate_ci": [
+          0.041666666666666664,
+          0.3333333333333333
+         ],
+         "indirect_leak": {
+          "deep": 0.2857142857142857,
+          "n_deep": 14,
+          "shallow": 0.0,
+          "n_shallow": 1
+         }
+        },
+        "0.7": {
+         "removed": 16,
+         "suppressed": 8,
+         "erased_answering": 23,
+         "intact": 35,
+         "suppression_rate": 0.3333333333333333,
+         "suppression_rate_ci": [
+          0.15789473684210525,
+          0.5417613636363635
+         ],
+         "indirect_leak": {
+          "deep": 0.1111111111111111,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 6
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.9,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.6453936210526315,
+       "share_partial_depth": 0.5263157894736842,
+       "share_full_depth": 0.3894736842105263,
+       "forgotten_mean": 0.3217479674796748,
+       "rho_margin": 0.054067425405813434,
+       "rho_margin_ci": [
+        -0.1360239156084063,
+        0.22085319084353322
+       ],
+       "rho_forgotten": 0.25373031697572246,
+       "classes": {
+        "0.3": {
+         "removed": 23,
+         "suppressed": 2,
+         "erased_answering": 46,
+         "intact": 11,
+         "suppression_rate": 0.08,
+         "suppression_rate_ci": [
+          0.0,
+          0.2222222222222222
+         ],
+         "indirect_leak": {
+          "deep": 0.19230769230769232,
+          "n_deep": 13,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 19,
+         "suppressed": 6,
+         "erased_answering": 35,
+         "intact": 22,
+         "suppression_rate": 0.24,
+         "suppression_rate_ci": [
+          0.08695652173913043,
+          0.4212406015037592
+         ],
+         "indirect_leak": {
+          "deep": 0.20833333333333334,
+          "n_deep": 12,
+          "shallow": 0.0,
+          "n_shallow": 1
+         }
+        },
+        "0.7": {
+         "removed": 16,
+         "suppressed": 9,
+         "erased_answering": 23,
+         "intact": 34,
+         "suppression_rate": 0.36,
+         "suppression_rate_ci": [
+          0.17387556221889058,
+          0.5882352941176471
+         ],
+         "indirect_leak": {
+          "deep": 0.1111111111111111,
+          "n_deep": 9,
+          "shallow": 0.375,
+          "n_shallow": 4
+         }
+        }
+       }
+      },
+      {
+       "alpha": 1.0,
+       "n_facts": 95,
+       "n_eligible": 82,
+       "depth_mean": 0.6537817578947369,
+       "share_partial_depth": 0.4842105263157895,
+       "share_full_depth": 0.42105263157894735,
+       "forgotten_mean": 0.3193089430894309,
+       "rho_margin": 0.05636757009233831,
+       "rho_margin_ci": [
+        -0.13222215665337878,
+        0.22484621742648955
+       ],
+       "rho_forgotten": 0.2636773281309792,
+       "classes": {
+        "0.3": {
+         "removed": 22,
+         "suppressed": 2,
+         "erased_answering": 48,
+         "intact": 10,
+         "suppression_rate": 0.08333333333333333,
+         "suppression_rate_ci": [
+          0.0,
+          0.23529411764705882
+         ],
+         "indirect_leak": {
+          "deep": 0.19230769230769232,
+          "n_deep": 13,
+          "shallow": null,
+          "n_shallow": 0
+         }
+        },
+        "0.5": {
+         "removed": 18,
+         "suppressed": 6,
+         "erased_answering": 37,
+         "intact": 21,
+         "suppression_rate": 0.25,
+         "suppression_rate_ci": [
+          0.09090909090909091,
+          0.43767361111111097
+         ],
+         "indirect_leak": {
+          "deep": 0.20833333333333334,
+          "n_deep": 12,
+          "shallow": 0.0,
+          "n_shallow": 1
+         }
+        },
+        "0.7": {
+         "removed": 15,
+         "suppressed": 9,
+         "erased_answering": 25,
+         "intact": 33,
+         "suppression_rate": 0.375,
+         "suppression_rate_ci": [
+          0.18173701298701306,
+          0.6002173913043476
+         ],
+         "indirect_leak": {
+          "deep": 0.1111111111111111,
+          "n_deep": 9,
+          "shallow": 0.375,
+          "n_shallow": 4
+         }
+        }
+       }
+      }
+     ],
+     "order": {
+      "0.3": {
+       "depth_first": 9,
+       "same": 13,
+       "behaviour_first": 3,
+       "depth_only": 57,
+       "behaviour_only": 2,
+       "neither": 11,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      },
+      "0.5": {
+       "depth_first": 8,
+       "same": 9,
+       "behaviour_first": 3,
+       "depth_only": 45,
+       "behaviour_only": 7,
+       "neither": 23,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      },
+      "0.7": {
+       "depth_first": 6,
+       "same": 6,
+       "behaviour_first": 4,
+       "depth_only": 31,
+       "behaviour_only": 11,
+       "neither": 37,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      }
+     }
+    },
+    "trained_para": {
+     "per_alpha": [
+      {
+       "alpha": 0.0,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.41044163157894736,
+       "share_partial_depth": 0.5684210526315789,
+       "share_full_depth": 0.15789473684210525,
+       "forgotten_mean": 0.1646090534979424,
+       "rho_margin": -0.021683289602079093,
+       "rho_margin_ci": [
+        -0.22559940547824164,
+        0.18103563155343297
+       ],
+       "rho_forgotten": 0.14205533136346796,
+       "classes": {
+        "0.3": {
+         "removed": 10,
+         "suppressed": 5,
+         "erased_answering": 34,
+         "intact": 32,
+         "suppression_rate": 0.3333333333333333,
+         "suppression_rate_ci": [
+          0.125,
+          0.5333333333333333
+         ],
+         "indirect_leak": {
+          "deep": 0.6666666666666666,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.5": {
+         "removed": 7,
+         "suppressed": 8,
+         "erased_answering": 24,
+         "intact": 42,
+         "suppression_rate": 0.5333333333333333,
+         "suppression_rate_ci": [
+          0.3333333333333333,
+          0.75
+         ],
+         "indirect_leak": {
+          "deep": 0.7142857142857143,
+          "n_deep": 7,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 6,
+         "suppressed": 9,
+         "erased_answering": 13,
+         "intact": 53,
+         "suppression_rate": 0.6,
+         "suppression_rate_ci": [
+          0.43743206521739136,
+          0.8571428571428571
+         ],
+         "indirect_leak": {
+          "deep": 0.6666666666666666,
+          "n_deep": 6,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.1,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.44548145263157896,
+       "share_partial_depth": 0.5368421052631579,
+       "share_full_depth": 0.2,
+       "forgotten_mean": 0.17242798353909464,
+       "rho_margin": 0.0016797900272753333,
+       "rho_margin_ci": [
+        -0.195422686631129,
+        0.19713659213514217
+       ],
+       "rho_forgotten": 0.11609347952351508,
+       "classes": {
+        "0.3": {
+         "removed": 11,
+         "suppressed": 5,
+         "erased_answering": 39,
+         "intact": 26,
+         "suppression_rate": 0.3125,
+         "suppression_rate_ci": [
+          0.09977272727272748,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.5": {
+         "removed": 9,
+         "suppressed": 7,
+         "erased_answering": 25,
+         "intact": 40,
+         "suppression_rate": 0.4375,
+         "suppression_rate_ci": [
+          0.23076923076923078,
+          0.6666666666666666
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.7": {
+         "removed": 8,
+         "suppressed": 8,
+         "erased_answering": 14,
+         "intact": 51,
+         "suppression_rate": 0.5,
+         "suppression_rate_ci": [
+          0.3333333333333333,
+          0.7223484848484847
+         ],
+         "indirect_leak": {
+          "deep": 0.5714285714285714,
+          "n_deep": 7,
+          "shallow": 0.6666666666666666,
+          "n_shallow": 3
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.2,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.47177921052631583,
+       "share_partial_depth": 0.5368421052631579,
+       "share_full_depth": 0.21052631578947367,
+       "forgotten_mean": 0.18415637860082304,
+       "rho_margin": 0.010148731414788472,
+       "rho_margin_ci": [
+        -0.1893661642309156,
+        0.19306542119175207
+       ],
+       "rho_forgotten": 0.15096226668862686,
+       "classes": {
+        "0.3": {
+         "removed": 11,
+         "suppressed": 5,
+         "erased_answering": 42,
+         "intact": 23,
+         "suppression_rate": 0.3125,
+         "suppression_rate_ci": [
+          0.09977272727272748,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.5": {
+         "removed": 9,
+         "suppressed": 7,
+         "erased_answering": 28,
+         "intact": 37,
+         "suppression_rate": 0.4375,
+         "suppression_rate_ci": [
+          0.23076923076923078,
+          0.6666666666666666
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.7": {
+         "removed": 8,
+         "suppressed": 8,
+         "erased_answering": 16,
+         "intact": 49,
+         "suppression_rate": 0.5,
+         "suppression_rate_ci": [
+          0.3333333333333333,
+          0.7223484848484847
+         ],
+         "indirect_leak": {
+          "deep": 0.5714285714285714,
+          "n_deep": 7,
+          "shallow": 0.6666666666666666,
+          "n_shallow": 3
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.3,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.49356419999999984,
+       "share_partial_depth": 0.5578947368421052,
+       "share_full_depth": 0.21052631578947367,
+       "forgotten_mean": 0.20164609053497942,
+       "rho_margin": 0.026491688555154734,
+       "rho_margin_ci": [
+        -0.17060116918675947,
+        0.2092868817549307
+       ],
+       "rho_forgotten": 0.15931437749129168,
+       "classes": {
+        "0.3": {
+         "removed": 12,
+         "suppressed": 5,
+         "erased_answering": 41,
+         "intact": 23,
+         "suppression_rate": 0.29411764705882354,
+         "suppression_rate_ci": [
+          0.09071969696969714,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.6666666666666666,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 2
+         }
+        },
+        "0.5": {
+         "removed": 10,
+         "suppressed": 7,
+         "erased_answering": 29,
+         "intact": 35,
+         "suppression_rate": 0.4117647058823529,
+         "suppression_rate_ci": [
+          0.199761904761905,
+          0.6666666666666666
+         ],
+         "indirect_leak": {
+          "deep": 0.625,
+          "n_deep": 8,
+          "shallow": 0.6666666666666666,
+          "n_shallow": 3
+         }
+        },
+        "0.7": {
+         "removed": 8,
+         "suppressed": 9,
+         "erased_answering": 17,
+         "intact": 47,
+         "suppression_rate": 0.5294117647058824,
+         "suppression_rate_ci": [
+          0.3528676470588236,
+          0.75
+         ],
+         "indirect_leak": {
+          "deep": 0.5714285714285714,
+          "n_deep": 7,
+          "shallow": 0.75,
+          "n_shallow": 4
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.4,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5117281263157895,
+       "share_partial_depth": 0.5789473684210527,
+       "share_full_depth": 0.22105263157894736,
+       "forgotten_mean": 0.2205761316872428,
+       "rho_margin": 0.03418492344063587,
+       "rho_margin_ci": [
+        -0.16197547984106925,
+        0.2112256145094951
+       ],
+       "rho_forgotten": 0.1413012287833056,
+       "classes": {
+        "0.3": {
+         "removed": 12,
+         "suppressed": 5,
+         "erased_answering": 41,
+         "intact": 23,
+         "suppression_rate": 0.29411764705882354,
+         "suppression_rate_ci": [
+          0.09071969696969714,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.6111111111111112,
+          "n_deep": 9,
+          "shallow": 0.3333333333333333,
+          "n_shallow": 3
+         }
+        },
+        "0.5": {
+         "removed": 10,
+         "suppressed": 7,
+         "erased_answering": 31,
+         "intact": 33,
+         "suppression_rate": 0.4117647058823529,
+         "suppression_rate_ci": [
+          0.199761904761905,
+          0.6666666666666666
+         ],
+         "indirect_leak": {
+          "deep": 0.5625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 10,
+         "suppressed": 7,
+         "erased_answering": 19,
+         "intact": 45,
+         "suppression_rate": 0.4117647058823529,
+         "suppression_rate_ci": [
+          0.199761904761905,
+          0.6666666666666666
+         ],
+         "indirect_leak": {
+          "deep": 0.5625,
+          "n_deep": 8,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.5,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5258666,
+       "share_partial_depth": 0.5684210526315789,
+       "share_full_depth": 0.25263157894736843,
+       "forgotten_mean": 0.24732510288065845,
+       "rho_margin": 0.043289559255669,
+       "rho_margin_ci": [
+        -0.15381964379827218,
+        0.21489102790088485
+       ],
+       "rho_forgotten": 0.12300564195765196,
+       "classes": {
+        "0.3": {
+         "removed": 14,
+         "suppressed": 5,
+         "erased_answering": 42,
+         "intact": 20,
+         "suppression_rate": 0.2631578947368421,
+         "suppression_rate_ci": [
+          0.07678571428571442,
+          0.4666666666666667
+         ],
+         "indirect_leak": {
+          "deep": 0.4444444444444444,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.5": {
+         "removed": 12,
+         "suppressed": 7,
+         "erased_answering": 29,
+         "intact": 33,
+         "suppression_rate": 0.3684210526315789,
+         "suppression_rate_ci": [
+          0.18168449197860975,
+          0.5716165413533832
+         ],
+         "indirect_leak": {
+          "deep": 0.375,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        },
+        "0.7": {
+         "removed": 11,
+         "suppressed": 8,
+         "erased_answering": 18,
+         "intact": 44,
+         "suppression_rate": 0.42105263157894735,
+         "suppression_rate_ci": [
+          0.23076923076923078,
+          0.6364545454545454
+         ],
+         "indirect_leak": {
+          "deep": 0.375,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.6,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5387636842105263,
+       "share_partial_depth": 0.5368421052631579,
+       "share_full_depth": 0.28421052631578947,
+       "forgotten_mean": 0.28559670781893,
+       "rho_margin": 0.04592165406164111,
+       "rho_margin_ci": [
+        -0.1591889673013702,
+        0.22502720248820068
+       ],
+       "rho_forgotten": 0.15154140356271112,
+       "classes": {
+        "0.3": {
+         "removed": 15,
+         "suppressed": 6,
+         "erased_answering": 41,
+         "intact": 19,
+         "suppression_rate": 0.2857142857142857,
+         "suppression_rate_ci": [
+          0.1111111111111111,
+          0.46671874999999996
+         ],
+         "indirect_leak": {
+          "deep": 0.3333333333333333,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.5": {
+         "removed": 13,
+         "suppressed": 8,
+         "erased_answering": 29,
+         "intact": 31,
+         "suppression_rate": 0.38095238095238093,
+         "suppression_rate_ci": [
+          0.21052631578947367,
+          0.5714285714285714
+         ],
+         "indirect_leak": {
+          "deep": 0.3333333333333333,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 12,
+         "suppressed": 9,
+         "erased_answering": 17,
+         "intact": 43,
+         "suppression_rate": 0.42857142857142855,
+         "suppression_rate_ci": [
+          0.26082930756843803,
+          0.631578947368421
+         ],
+         "indirect_leak": {
+          "deep": 0.25,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.7,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5509695052631579,
+       "share_partial_depth": 0.5368421052631579,
+       "share_full_depth": 0.29473684210526313,
+       "forgotten_mean": 0.292798353909465,
+       "rho_margin": 0.05804478050950384,
+       "rho_margin_ci": [
+        -0.14751239131839228,
+        0.2369175046742038
+       ],
+       "rho_forgotten": 0.16640942496234837,
+       "classes": {
+        "0.3": {
+         "removed": 15,
+         "suppressed": 7,
+         "erased_answering": 42,
+         "intact": 17,
+         "suppression_rate": 0.3181818181818182,
+         "suppression_rate_ci": [
+          0.15384615384615385,
+          0.5
+         ],
+         "indirect_leak": {
+          "deep": 0.2222222222222222,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.5": {
+         "removed": 14,
+         "suppressed": 8,
+         "erased_answering": 29,
+         "intact": 30,
+         "suppression_rate": 0.36363636363636365,
+         "suppression_rate_ci": [
+          0.2,
+          0.5385416666666666
+         ],
+         "indirect_leak": {
+          "deep": 0.2222222222222222,
+          "n_deep": 9,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 12,
+         "suppressed": 10,
+         "erased_answering": 19,
+         "intact": 40,
+         "suppression_rate": 0.45454545454545453,
+         "suppression_rate_ci": [
+          0.2857142857142857,
+          0.6429621848739495
+         ],
+         "indirect_leak": {
+          "deep": 0.125,
+          "n_deep": 8,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.8,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5625207684210527,
+       "share_partial_depth": 0.5263157894736842,
+       "share_full_depth": 0.3157894736842105,
+       "forgotten_mean": 0.3065843621399177,
+       "rho_margin": 0.06400257911203523,
+       "rho_margin_ci": [
+        -0.1368489135582339,
+        0.23579628397111943
+       ],
+       "rho_forgotten": 0.1855040762322786,
+       "classes": {
+        "0.3": {
+         "removed": 17,
+         "suppressed": 6,
+         "erased_answering": 41,
+         "intact": 17,
+         "suppression_rate": 0.2608695652173913,
+         "suppression_rate_ci": [
+          0.13043478260869565,
+          0.38461538461538464
+         ],
+         "indirect_leak": {
+          "deep": 0.20833333333333334,
+          "n_deep": 12,
+          "shallow": 0.5,
+          "n_shallow": 3
+         }
+        },
+        "0.5": {
+         "removed": 16,
+         "suppressed": 7,
+         "erased_answering": 29,
+         "intact": 29,
+         "suppression_rate": 0.30434782608695654,
+         "suppression_rate_ci": [
+          0.14285714285714285,
+          0.47058823529411764
+         ],
+         "indirect_leak": {
+          "deep": 0.18181818181818182,
+          "n_deep": 11,
+          "shallow": 0.5,
+          "n_shallow": 4
+         }
+        },
+        "0.7": {
+         "removed": 14,
+         "suppressed": 9,
+         "erased_answering": 18,
+         "intact": 40,
+         "suppression_rate": 0.391304347826087,
+         "suppression_rate_ci": [
+          0.23529411764705882,
+          0.5625
+         ],
+         "indirect_leak": {
+          "deep": 0.1,
+          "n_deep": 10,
+          "shallow": 0.6,
+          "n_shallow": 5
+         }
+        }
+       }
+      },
+      {
+       "alpha": 0.9,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5736587157894737,
+       "share_partial_depth": 0.5263157894736842,
+       "share_full_depth": 0.3157894736842105,
+       "forgotten_mean": 0.3183127572016461,
+       "rho_margin": 0.06601316924788043,
+       "rho_margin_ci": [
+        -0.13494870271001838,
+        0.23521589808435225
+       ],
+       "rho_forgotten": 0.16400067016612058,
+       "classes": {
+        "0.3": {
+         "removed": 19,
+         "suppressed": 5,
+         "erased_answering": 42,
+         "intact": 15,
+         "suppression_rate": 0.20833333333333334,
+         "suppression_rate_ci": [
+          0.07142857142857142,
+          0.3888888888888889
+         ],
+         "indirect_leak": {
+          "deep": 0.20833333333333334,
+          "n_deep": 12,
+          "shallow": 0.0,
+          "n_shallow": 1
+         }
+        },
+        "0.5": {
+         "removed": 16,
+         "suppressed": 8,
+         "erased_answering": 29,
+         "intact": 28,
+         "suppression_rate": 0.3333333333333333,
+         "suppression_rate_ci": [
+          0.16,
+          0.520095238095238
+         ],
+         "indirect_leak": {
+          "deep": 0.1,
+          "n_deep": 10,
+          "shallow": 0.5,
+          "n_shallow": 3
+         }
+        },
+        "0.7": {
+         "removed": 14,
+         "suppressed": 10,
+         "erased_answering": 20,
+         "intact": 37,
+         "suppression_rate": 0.4166666666666667,
+         "suppression_rate_ci": [
+          0.24981060606060623,
+          0.6155172413793103
+         ],
+         "indirect_leak": {
+          "deep": 0.1,
+          "n_deep": 10,
+          "shallow": 0.5,
+          "n_shallow": 3
+         }
+        }
+       }
+      },
+      {
+       "alpha": 1.0,
+       "n_facts": 95,
+       "n_eligible": 81,
+       "depth_mean": 0.5842852000000001,
+       "share_partial_depth": 0.5473684210526316,
+       "share_full_depth": 0.3157894736842105,
+       "forgotten_mean": 0.3183127572016461,
+       "rho_margin": 0.0828726131410267,
+       "rho_margin_ci": [
+        -0.11474732119424229,
+        0.24957805692523927
+       ],
+       "rho_forgotten": 0.17837487901516783,
+       "classes": {
+        "0.3": {
+         "removed": 20,
+         "suppressed": 4,
+         "erased_answering": 44,
+         "intact": 13,
+         "suppression_rate": 0.16666666666666666,
+         "suppression_rate_ci": [
+          0.04,
+          0.35294117647058826
+         ],
+         "indirect_leak": {
+          "deep": 0.20833333333333334,
+          "n_deep": 12,
+          "shallow": 0.0,
+          "n_shallow": 1
+         }
+        },
+        "0.5": {
+         "removed": 16,
+         "suppressed": 8,
+         "erased_answering": 29,
+         "intact": 28,
+         "suppression_rate": 0.3333333333333333,
+         "suppression_rate_ci": [
+          0.16,
+          0.520095238095238
+         ],
+         "indirect_leak": {
+          "deep": 0.1,
+          "n_deep": 10,
+          "shallow": 0.5,
+          "n_shallow": 3
+         }
+        },
+        "0.7": {
+         "removed": 14,
+         "suppressed": 10,
+         "erased_answering": 23,
+         "intact": 34,
+         "suppression_rate": 0.4166666666666667,
+         "suppression_rate_ci": [
+          0.24981060606060623,
+          0.6155172413793103
+         ],
+         "indirect_leak": {
+          "deep": 0.1,
+          "n_deep": 10,
+          "shallow": 0.5,
+          "n_shallow": 3
+         }
+        }
+       }
+      }
+     ],
+     "order": {
+      "0.3": {
+       "depth_first": 6,
+       "same": 11,
+       "behaviour_first": 4,
+       "depth_only": 54,
+       "behaviour_only": 5,
+       "neither": 15,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      },
+      "0.5": {
+       "depth_first": 6,
+       "same": 7,
+       "behaviour_first": 3,
+       "depth_only": 39,
+       "behaviour_only": 10,
+       "neither": 30,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      },
+      "0.7": {
+       "depth_first": 4,
+       "same": 6,
+       "behaviour_first": 4,
+       "depth_only": 27,
+       "behaviour_only": 12,
+       "neither": 42,
+       "n": 95,
+       "median_lag": 0.0,
+       "note": "lag = alpha(behaviour) - alpha(depth); positive = depth first"
+      }
+     }
+    }
+   }
+  }
+ ],
+ "pooled": [
+  {
+   "protocol": "v2",
+   "variant": "answer/float32",
+   "arm": "main",
+   "method": "unasked",
+   "lr": 3e-06,
+   "split": "heldout",
+   "theta": 0.5,
+   "runs": [
+    "study_v2_unasked_1B_s0_lr3e-06"
+   ],
+   "per_alpha": [
+    {
+     "alpha": 0.0,
+     "depth_mean": {
+      "mean": 0.39662598947368427,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5157894736842106,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.14736842105263157,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.19999999999999998,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.10347772718585044,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.65,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.8,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.08045977011494253,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.14942528735632185,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.25287356321839083,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.5172413793103449,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.1,
+     "depth_mean": {
+      "mean": 0.4256550842105264,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.18947368421052632,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.20670498084291183,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.10816789612202415,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.09195402298850575,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.13793103448275862,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.26436781609195403,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.5057471264367817,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.2,
+     "depth_mean": {
+      "mean": 0.4493938,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5473684210526316,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.2,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.23582375478927203,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.11024377743133,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.6190476190476191,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.42857142857142855,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.09195402298850575,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.14942528735632185,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.28735632183908044,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.47126436781609193,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.3,
+     "depth_mean": {
+      "mean": 0.4699063157894736,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.2,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.24540229885057468,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.10386592252309722,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.6363636363636364,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.4375,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.09195402298850575,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.16091954022988506,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.2988505747126437,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.4482758620689655,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.4,
+     "depth_mean": {
+      "mean": 0.48846648421052624,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6210526315789474,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.21052631578947367,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.2574712643678161,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.08877189927156057,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.6086956521739131,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.10344827586206896,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.16091954022988506,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.3103448275862069,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.42528735632183906,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.5,
+     "depth_mean": {
+      "mean": 0.5055409263157894,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6210526315789474,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.25263157894736843,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.2959770114942529,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.09290945388271928,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.52,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.375,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.35714285714285715,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.13793103448275862,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.14942528735632185,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.28735632183908044,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.42528735632183906,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.6,
+     "depth_mean": {
+      "mean": 0.5217527999999999,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6421052631578947,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.25263157894736843,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3164750957854406,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.09760008262971813,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.48148148148148145,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.375,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.35714285714285715,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.16091954022988506,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.14942528735632185,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.26436781609195403,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.42528735632183906,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.7,
+     "depth_mean": {
+      "mean": 0.5375239263157894,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6526315789473685,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.25263157894736843,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3193486590038314,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.09807614644284637,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.5185185185185185,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.375,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.35714285714285715,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.14942528735632185,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.16091954022988506,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.3218390804597701,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.367816091954023,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.8,
+     "depth_mean": {
+      "mean": 0.5529358947368422,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6631578947368421,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.25263157894736843,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3231800766283525,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.10556751998904587,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.48148148148148145,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.3888888888888889,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.16666666666666666,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.16091954022988506,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.14942528735632185,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.3563218390804598,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.3333333333333333,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.9,
+     "depth_mean": {
+      "mean": 0.5679510210526315,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6736842105263158,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.2631578947368421,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3350574712643678,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.1174407421356805,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.4444444444444444,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.2222222222222222,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.2857142857142857,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.1724137931034483,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.13793103448275862,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.367816091954023,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.3218390804597701,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 1.0,
+     "depth_mean": {
+      "mean": 0.5827929157894738,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6526315789473685,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.2736842105263158,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.35268199233716474,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.12240440748138526,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.41379310344827586,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.2222222222222222,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.37037037037037035,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.19540229885057472,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.13793103448275862,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.3793103448275862,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.28735632183908044,
+      "sd": null,
+      "n": 1
+     }
+    }
+   ],
+   "oracle_share_forgotten": {
+    "mean": 0.3756906077348066,
+    "sd": null,
+    "n": 1
+   },
+   "oracle_indirect_kept": {
+    "mean": 0.7172995780590716,
+    "sd": null,
+    "n": 1
+   },
+   "order": {
+    "depth_first": {
+     "mean": 4.0,
+     "sd": null,
+     "n": 1
+    },
+    "same": {
+     "mean": 7.0,
+     "sd": null,
+     "n": 1
+    },
+    "behaviour_first": {
+     "mean": 7.0,
+     "sd": null,
+     "n": 1
+    },
+    "depth_only": {
+     "mean": 36.0,
+     "sd": null,
+     "n": 1
+    },
+    "behaviour_only": {
+     "mean": 12.0,
+     "sd": null,
+     "n": 1
+    },
+    "neither": {
+     "mean": 29.0,
+     "sd": null,
+     "n": 1
+    },
+    "median_lag": {
+     "mean": 0.0,
+     "sd": null,
+     "n": 1
+    }
+   }
+  },
+  {
+   "protocol": "v2",
+   "variant": "answer/float32",
+   "arm": "main",
+   "method": "unasked",
+   "lr": 3e-06,
+   "split": "trained",
+   "theta": 0.5,
+   "runs": [
+    "study_v2_unasked_1B_s0_lr3e-06"
+   ],
+   "per_alpha": [
+    {
+     "alpha": 0.0,
+     "depth_mean": {
+      "mean": 0.5321198421052631,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.24210526315789474,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.16504065040650404,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.06092251712270569,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.4666666666666667,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.7142857142857143,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.0975609756097561,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08536585365853659,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.3902439024390244,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.4268292682926829,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.1,
+     "depth_mean": {
+      "mean": 0.5542914526315789,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6210526315789474,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.25263157894736843,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.17276422764227642,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.059497769280054465,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.3125,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.625,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.13414634146341464,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.06097560975609756,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.36585365853658536,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.43902439024390244,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.2,
+     "depth_mean": {
+      "mean": 0.5720783368421053,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.29473684210526313,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.18434959349593497,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.07002537457384292,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.3125,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.625,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.13414634146341464,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.06097560975609756,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.3,
+     "depth_mean": {
+      "mean": 0.586647652631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5894736842105263,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.30526315789473685,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.20162601626016263,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.0658171182573267,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.29411764705882354,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.6666666666666666,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.14634146341463414,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.06097560975609756,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.3902439024390244,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.4,
+     "depth_mean": {
+      "mean": 0.5990120842105263,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5684210526315789,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3263157894736842,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.22520325203252034,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.0580542473330329,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.2777777777777778,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.6111111111111112,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.3333333333333333,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.15853658536585366,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.06097560975609756,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.3780487804878049,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.5,
+     "depth_mean": {
+      "mean": 0.6097904105263158,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5578947368421052,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.2516260162601626,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.06369860479388026,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.25,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.4444444444444444,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.18292682926829268,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.06097560975609756,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.35365853658536583,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.6,
+     "depth_mean": {
+      "mean": 0.6193559894736843,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5578947368421052,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.28943089430894303,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.05673462495046769,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.2727272727272727,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.3333333333333333,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.1951219512195122,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.07317073170731707,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.32926829268292684,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.7,
+     "depth_mean": {
+      "mean": 0.6282568631578948,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5473684210526316,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3473684210526316,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.2965447154471545,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.046826202433149264,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.21739130434782608,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.3181818181818182,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.25,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.21951219512195122,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.06097560975609756,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4146341463414634,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.3048780487804878,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.8,
+     "depth_mean": {
+      "mean": 0.6368995789473684,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5578947368421052,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.35789473684210527,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3101626016260163,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.05704359290718872,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.16666666666666666,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.2857142857142857,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.0,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.24390243902439024,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.04878048780487805,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4024390243902439,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.3048780487804878,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.9,
+     "depth_mean": {
+      "mean": 0.6453936210526315,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5263157894736842,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3894736842105263,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3217479674796748,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.054067425405813434,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.24,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.20833333333333334,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.0,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.23170731707317074,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.07317073170731707,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.4268292682926829,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.2682926829268293,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 1.0,
+     "depth_mean": {
+      "mean": 0.6537817578947369,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.4842105263157895,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.42105263157894735,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3193089430894309,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.05636757009233831,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.25,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.20833333333333334,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.0,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.21951219512195122,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.07317073170731707,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.45121951219512196,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.25609756097560976,
+      "sd": null,
+      "n": 1
+     }
+    }
+   ],
+   "oracle_share_forgotten": {
+    "mean": 0.3409090909090909,
+    "sd": null,
+    "n": 1
+   },
+   "oracle_indirect_kept": {
+    "mean": 0.7452830188679245,
+    "sd": null,
+    "n": 1
+   },
+   "order": {
+    "depth_first": {
+     "mean": 8.0,
+     "sd": null,
+     "n": 1
+    },
+    "same": {
+     "mean": 9.0,
+     "sd": null,
+     "n": 1
+    },
+    "behaviour_first": {
+     "mean": 3.0,
+     "sd": null,
+     "n": 1
+    },
+    "depth_only": {
+     "mean": 45.0,
+     "sd": null,
+     "n": 1
+    },
+    "behaviour_only": {
+     "mean": 7.0,
+     "sd": null,
+     "n": 1
+    },
+    "neither": {
+     "mean": 23.0,
+     "sd": null,
+     "n": 1
+    },
+    "median_lag": {
+     "mean": 0.0,
+     "sd": null,
+     "n": 1
+    }
+   }
+  },
+  {
+   "protocol": "v2",
+   "variant": "answer/float32",
+   "arm": "main",
+   "method": "unasked",
+   "lr": 3e-06,
+   "split": "trained_para",
+   "theta": 0.5,
+   "runs": [
+    "study_v2_unasked_1B_s0_lr3e-06"
+   ],
+   "per_alpha": [
+    {
+     "alpha": 0.0,
+     "depth_mean": {
+      "mean": 0.41044163157894736,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5684210526315789,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.15789473684210525,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.1646090534979424,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": -0.021683289602079093,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.5333333333333333,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.7142857142857143,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.09876543209876543,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.2962962962962963,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.5185185185185185,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.1,
+     "depth_mean": {
+      "mean": 0.44548145263157896,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.2,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.17242798353909464,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.0016797900272753333,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.4375,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.625,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.1111111111111111,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.30864197530864196,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.49382716049382713,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.2,
+     "depth_mean": {
+      "mean": 0.47177921052631583,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.21052631578947367,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.18415637860082304,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.010148731414788472,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.4375,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.625,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.1111111111111111,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.345679012345679,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.4567901234567901,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.3,
+     "depth_mean": {
+      "mean": 0.49356419999999984,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5578947368421052,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.21052631578947367,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.20164609053497942,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.026491688555154734,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.4117647058823529,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.625,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.6666666666666666,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.12345679012345678,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.43209876543209874,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.4,
+     "depth_mean": {
+      "mean": 0.5117281263157895,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5789473684210527,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.22105263157894736,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.2205761316872428,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.03418492344063587,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.4117647058823529,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.5625,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.12345679012345678,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.38271604938271603,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.4074074074074074,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.5,
+     "depth_mean": {
+      "mean": 0.5258666,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5684210526315789,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.25263157894736843,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.24732510288065845,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.043289559255669,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.3684210526315789,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.375,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.6,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.14814814814814814,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.4074074074074074,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.6,
+     "depth_mean": {
+      "mean": 0.5387636842105263,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.28421052631578947,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.28559670781893,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.04592165406164111,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.38095238095238093,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.3333333333333333,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.16049382716049382,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.09876543209876543,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.38271604938271603,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.7,
+     "depth_mean": {
+      "mean": 0.5509695052631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5368421052631579,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.29473684210526313,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.292798353909465,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.05804478050950384,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.36363636363636365,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.2222222222222222,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.1728395061728395,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.09876543209876543,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.37037037037037035,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.8,
+     "depth_mean": {
+      "mean": 0.5625207684210527,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5263157894736842,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3157894736842105,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3065843621399177,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.06400257911203523,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.30434782608695654,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.18181818181818182,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.19753086419753085,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.08641975308641975,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 0.9,
+     "depth_mean": {
+      "mean": 0.5736587157894737,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5263157894736842,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3157894736842105,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3183127572016461,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.06601316924788043,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.3333333333333333,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.1,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.19753086419753085,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.09876543209876543,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.345679012345679,
+      "sd": null,
+      "n": 1
+     }
+    },
+    {
+     "alpha": 1.0,
+     "depth_mean": {
+      "mean": 0.5842852000000001,
+      "sd": null,
+      "n": 1
+     },
+     "share_partial_depth": {
+      "mean": 0.5473684210526316,
+      "sd": null,
+      "n": 1
+     },
+     "share_full_depth": {
+      "mean": 0.3157894736842105,
+      "sd": null,
+      "n": 1
+     },
+     "forgotten_mean": {
+      "mean": 0.3183127572016461,
+      "sd": null,
+      "n": 1
+     },
+     "rho_margin": {
+      "mean": 0.0828726131410267,
+      "sd": null,
+      "n": 1
+     },
+     "suppression_rate": {
+      "mean": 0.3333333333333333,
+      "sd": null,
+      "n": 1
+     },
+     "leak_deep": {
+      "mean": 0.1,
+      "sd": null,
+      "n": 1
+     },
+     "leak_shallow": {
+      "mean": 0.5,
+      "sd": null,
+      "n": 1
+     },
+     "share_removed": {
+      "mean": 0.19753086419753085,
+      "sd": null,
+      "n": 1
+     },
+     "share_suppressed": {
+      "mean": 0.09876543209876543,
+      "sd": null,
+      "n": 1
+     },
+     "share_erased_answering": {
+      "mean": 0.35802469135802467,
+      "sd": null,
+      "n": 1
+     },
+     "share_intact": {
+      "mean": 0.345679012345679,
+      "sd": null,
+      "n": 1
+     }
+    }
+   ],
+   "oracle_share_forgotten": {
+    "mean": null,
+    "sd": null,
+    "n": 0
+   },
+   "oracle_indirect_kept": {
+    "mean": null,
+    "sd": null,
+    "n": 0
+   },
+   "order": {
+    "depth_first": {
+     "mean": 6.0,
+     "sd": null,
+     "n": 1
+    },
+    "same": {
+     "mean": 7.0,
+     "sd": null,
+     "n": 1
+    },
+    "behaviour_first": {
+     "mean": 3.0,
+     "sd": null,
+     "n": 1
+    },
+    "depth_only": {
+     "mean": 39.0,
+     "sd": null,
+     "n": 1
+    },
+    "behaviour_only": {
+     "mean": 10.0,
+     "sd": null,
+     "n": 1
+    },
+    "neither": {
+     "mean": 30.0,
+     "sd": null,
+     "n": 1
+    },
+    "median_lag": {
+     "mean": 0.0,
+     "sd": null,
+     "n": 1
+    }
+   }
+  }
+ ],
+ "skipped": []
+}
