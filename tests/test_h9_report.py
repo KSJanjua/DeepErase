@@ -51,10 +51,13 @@ def test_rule_criteria_and_controls(tmp_path):
     # lambda_g = 3 (tag g3): meets C1-C3 on seed 0
     _run(tmp_path, "study_v2_unaskedg_1B_s0_lr3e-06_g3", 0, strict=0.35, breadth=0.36,
          gw=3.0)
+    _run(tmp_path, "study_v2_graddiffg_1B_s0_lr5e-08", 0, strict=0.14, breadth=0.17,
+         ra=0.88, gw=1.0)
     out = tmp_path / "rep"
     assert h9.main(["--dir", str(tmp_path), "--out", str(out)]) == 0
     rep = json.loads(out.with_suffix(".json").read_text())
-    assert len(rep["graddiff"]) == 3
+    assert len(rep["graddiff"]) == 3 and len(rep["graddiff_g"]) == 1
+    assert "1" in rep["groups"] and "graddiffg" not in json.dumps(rep["groups"])
     g1, g3 = rep["groups"]["1"], rep["groups"]["3"]
     assert g1["all_seeds"]["C1_depth"]["met"] and g1["all_seeds"]["C2_breadth"]["met"]
     assert g1["all_seeds"]["C3_utility"]["met"] is False

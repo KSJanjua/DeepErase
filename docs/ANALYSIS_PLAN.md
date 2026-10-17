@@ -442,7 +442,13 @@ Also reported:
 * held-out depth and breadth;
 * paraphrased-question and paraphrased-answer depth;
 * the relearning attack (seed 0, if GPU time allows);
-* UNASKED (λ_g = 0) beside it, as the ablation without the general anchor.
+* UNASKED (λ_g = 0) beside it, as the ablation without the general anchor;
+* **GradDiff-G**, the fairness baseline: GradDiff with the same general anchor.
+  It uses the same 400 pairs, all 16 layers, the same scale and λ_g = 1,
+  at GradDiff's rate of 5e-8 (method `graddiffg`, seed 0). It was added on
+  17 Oct, before any UNASKED-G result existed. Without it, UNASKED-G would be
+  the only method given general-knowledge data. It is reported beside C1-C3,
+  and no criterion depends on it.
 
 **What each outcome means (stated now).**
 * **C1-C4 met:** a method that is deeper and broader than GradDiff at

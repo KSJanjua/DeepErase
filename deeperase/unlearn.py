@@ -77,10 +77,14 @@ class UnlearnMethod(str, Enum):
     UNASKED_G = "unaskedg"
     """UNASKED plus an anchor on real-world QA pairs (``general_data``), so the
     model keeps reading ordinary questions as before (docs/UNASKED.md)."""
+    GRAD_DIFF_G = "graddiffg"
+    """GradDiff plus the same general anchor: the fairness baseline for
+    UNASKED-G, which would otherwise be the only method given that data."""
 
     @property
     def needs_retain(self) -> bool:
-        return self in (UnlearnMethod.GRAD_DIFF,) or self.representation_targets
+        return self in (UnlearnMethod.GRAD_DIFF, UnlearnMethod.GRAD_DIFF_G) \
+            or self.representation_targets
 
     @property
     def representation_targets(self) -> bool:
@@ -91,7 +95,7 @@ class UnlearnMethod(str, Enum):
     @property
     def needs_general(self) -> bool:
         """Anchors M_full's states on general-knowledge QA (``general_data``)."""
-        return self is UnlearnMethod.UNASKED_G
+        return self in (UnlearnMethod.UNASKED_G, UnlearnMethod.GRAD_DIFF_G)
 
     @property
     def needs_reference(self) -> bool:
@@ -181,7 +185,7 @@ class UnlearnConfig:
         if self.method.needs_general and not self.general_weight > 0:
             problems.append(f"{self.method.value} needs general_weight > 0")
         if not self.method.needs_general and self.general_weight:
-            problems.append("general_weight is only used by unaskedg")
+            problems.append("general_weight is only used by unaskedg and graddiffg")
         if (self.stop_below_utility_ratio is not None
                 and not 0.0 < self.stop_below_utility_ratio <= 1.0):
             problems.append("stop_below_utility_ratio must be in (0, 1]")
@@ -581,6 +585,15 @@ def unlearn(
         targets.stats["initial_forget_term"] = forget_term(
             model, forget_data, targets, config.batch_size, device)
         history.rep_stats = targets.stats
+    elif config.method.needs_general:
+        # GradDiff-G: only the general anchors (and, for their scale, the retain
+        # rows' states), at every layer, exactly as UNASKED-G computes them.
+        from deeperase.stranger import StrangerInputs, compute_targets
+        n_l = int(model.config.num_hidden_layers)
+        targets = compute_targets(model, StrangerInputs(rows=[], layers=tuple(range(n_l)),
+                                                        k=0, target="anchor_only"),
+                                  retain_data, device, general_data=general_data)
+        history.rep_stats = targets.stats
 
     model.train()
     if config.trainable:
@@ -613,23 +626,43 @@ def unlearn(
     step = 0
     bs = config.batch_size
     n_retain = len(retain_data or [])
-    # The general anchor (UNASKED-G) is not tied to the forget set's length:
-    # one iterator runs across epochs, so every row is anchored in turn.
+    # The general anchor (UNASKED-G, GradDiff-G) is not tied to the forget set's
+    # length: one iterator runs across epochs, so every row is anchored in turn.
     general_iter = iter(_batches(general_data, bs, device)) if general_data else None
     g_index = 0
+
+    def next_general():
+        nonlocal general_iter, g_index
+        if general_iter is None:
+            return None, []
+        try:
+            g = next(general_iter)
+        except StopIteration:
+            general_iter, g_index = iter(_batches(general_data, bs, device)), 0
+            g = next(general_iter)
+        g_rows = list(range(g_index * bs, min((g_index + 1) * bs, len(general_data))))
+        g_index += 1
+        return g, g_rows
+
     for epoch in range(config.epochs):
         retain_iter = iter(_batches(retain_data or [], bs, device))
         r_index = 0
         for b_index, batch in enumerate(_batches(forget_data, bs, device)):
             if config.method is UnlearnMethod.GA:
                 loss = ga_loss(model, batch)
-            elif config.method is UnlearnMethod.GRAD_DIFF:
+            elif config.method in (UnlearnMethod.GRAD_DIFF, UnlearnMethod.GRAD_DIFF_G):
                 try:
                     r = next(retain_iter)
                 except StopIteration:
                     retain_iter = iter(_batches(retain_data, bs, device))
                     r = next(retain_iter)
                 loss = grad_diff_loss(model, batch, r, config.retain_weight)
+                if config.method is UnlearnMethod.GRAD_DIFF_G:
+                    from deeperase.stranger import general_term
+                    g, g_rows = next_general()
+                    lg = general_term(model, g, g_rows, targets)
+                    if lg is not None:
+                        loss = loss + config.general_weight * lg
             elif config.method is UnlearnMethod.NPO:
                 loss = npo_loss(model, reference_model, batch, config.beta)
             elif config.method.representation_targets:
@@ -642,15 +675,7 @@ def unlearn(
                 f_rows = list(range(b_index * bs, min((b_index + 1) * bs, len(forget_data))))
                 r_rows = list(range(r_index * bs, min((r_index + 1) * bs, n_retain)))
                 r_index += 1
-                g, g_rows = None, []
-                if general_iter is not None:
-                    try:
-                        g = next(general_iter)
-                    except StopIteration:
-                        general_iter, g_index = iter(_batches(general_data, bs, device)), 0
-                        g = next(general_iter)
-                    g_rows = list(range(g_index * bs, min((g_index + 1) * bs, len(general_data))))
-                    g_index += 1
+                g, g_rows = next_general()
                 loss, _parts = stranger_loss(model, batch, f_rows, r, r_rows, targets,
                                              config.retain_weight, general_batch=g,
                                              general_rows=g_rows,
@@ -692,7 +717,7 @@ def unlearn(
             floor = config.min_utility_ratio * history.baseline_utility
             acceptable = utility >= floor
             rep_gap = None
-            if targets is not None:
+            if targets is not None and config.method.representation_targets:
                 from deeperase.stranger import forget_term
                 start = targets.stats.get("initial_forget_term")
                 now = forget_term(model, forget_data, targets, bs, device)

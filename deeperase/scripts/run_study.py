@@ -393,7 +393,8 @@ def general_settings(args, method: UnlearnMethod) -> Dict[str, object]:
     """Resolved general-anchor settings of UNASKED-G ({} for other methods)."""
     if not method.needs_general:
         if getattr(args, "general_anchor", None) or getattr(args, "general_weight", None):
-            raise SystemExit("--general-anchor/--general-weight are only for unaskedg")
+            raise SystemExit("--general-anchor/--general-weight are only for unaskedg "
+                             "and graddiffg")
         return {}
     out = {k: (getattr(args, k, None) if getattr(args, k, None) is not None else v)
            for k, v in GENERAL_DEFAULTS.items()}
@@ -843,9 +844,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                                 "cf_names_sha256", "rep_target")})
         unlearn_cfg["retain_weight"] = retain_weight
         unlearn_cfg["select_by"] = "rep_gap"
-        unlearn_cfg.update(gen)
     elif args.retain_weight is not None:
         unlearn_cfg["retain_weight"] = retain_weight
+    unlearn_cfg.update(gen)
     config = {
         "run_id": run_id, "method": args.method, "size": args.size,
         "protocol": args.protocol, "alphas": alphas,

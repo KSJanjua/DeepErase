@@ -580,7 +580,7 @@ def test_unlearn_unaskedg_needs_its_anchor_and_others_refuse_it():
     with pytest.raises(ValueError, match="does not take general_data"):
         unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.UNASKED), retain_data=retain,
                 stranger=inp, general_data=general)
-    with pytest.raises(ValueError, match="only used by unaskedg"):
+    with pytest.raises(ValueError, match="only used by unaskedg and graddiffg"):
         unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.UNASKED, general_weight=1.0),
                 retain_data=retain, stranger=inp)
 
@@ -653,4 +653,75 @@ def test_study_runs_unaskedg_end_to_end(word_checkpoints, tmp_path):
     assert u["retain_weight"] == 3.0                    # UNASKED-G's TOFU anchor default
     assert u["general_anchor"] == str(anchor) and len(u["general_anchor_sha256"]) == 64
     hist = json.loads((tmp_path / "g" / "unlearn.json").read_text())["history"]
+    assert hist["rep_stats"]["general_positions"] > 0
+
+
+# ---------------------------------------------------------------------------
+# GradDiff-G: GradDiff with UNASKED-G's general anchor (the fairness baseline)
+# ---------------------------------------------------------------------------
+
+def _gd_inputs():
+    inp, forget, retain = _train_inputs(target="unasked")
+    for f in forget:
+        f["labels"] = f["input_ids"].masked_fill(f["loss_mask"] == 0, -100)
+    for r in retain:
+        r["labels"] = r["input_ids"].clone()
+        r["loss_mask"] = torch.ones_like(r["input_ids"])
+    return forget, retain
+
+
+def test_graddiffg_needs_the_anchor_and_validates():
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, unlearn
+    m = _tiny()
+    forget, retain = _gd_inputs()
+    with pytest.raises(ValueError, match="general_weight > 0"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.GRAD_DIFF_G), retain_data=retain,
+                general_data=_general_rows())
+    with pytest.raises(ValueError, match="requires general_data"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.GRAD_DIFF_G, general_weight=1.0),
+                retain_data=retain)
+    with pytest.raises(ValueError, match="does not take general_data"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.GRAD_DIFF), retain_data=retain,
+                general_data=_general_rows())
+
+
+def test_graddiffg_holds_the_general_rows_that_graddiff_moves():
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, unlearn
+    cpu = torch.device("cpu")
+
+    def drift(general_weight: float) -> float:
+        m = _tiny()
+        forget, retain = _gd_inputs()
+        general = _general_rows()
+        inp = st.StrangerInputs(rows=[], layers=(0, 1, 2), k=0, target="anchor_only")
+        anchors = st.compute_targets(m, inp, retain, cpu, general_data=general)
+        method = UnlearnMethod.GRAD_DIFF_G if general_weight else UnlearnMethod.GRAD_DIFF
+        cfg = UnlearnConfig(method=method, learning_rate=1e-3, epochs=6, batch_size=2,
+                            min_utility_ratio=0.01, general_weight=general_weight)
+        hist = unlearn(m, forget, cfg, retain_data=retain, eval_fn=lambda _m: 1.0,
+                       general_data=general if general_weight else None)
+        if general_weight:
+            assert hist.rep_stats["general_positions"] > 0
+        return float(st.general_term(m, _stack(general), list(range(len(general))), anchors))
+
+    assert drift(5.0) < 0.5 * drift(0.0)
+
+
+@needs_data
+def test_study_runs_graddiffg_end_to_end(word_checkpoints, tmp_path):
+    from deeperase.scripts.run_study import main
+    anchor = ROOT / "data" / "general_anchor.json"
+    if not anchor.exists():
+        pytest.skip("needs data/general_anchor.json")
+    argv = ["--method", "graddiffg", "--model-sources", json.dumps(word_checkpoints),
+            "--tofu-dir", str(TOFU), "--reference-spans", str(REF_SPANS),
+            "--output-dir", str(tmp_path), "--run-id", "gd", "--cache-dir", str(tmp_path / "c"),
+            "--device", "cpu", "--alphas", "0,1", "--epochs", "1", "--batch-size", "8",
+            "--learning-rate", "1e-4", "--min-utility-ratio", "0.01", "--n-examples", "6",
+            "--n-breadth", "12", "--general-anchor", str(anchor)]
+    assert main(argv) == 0
+    u = json.loads((tmp_path / "gd" / "config.json").read_text())["unlearn"]
+    assert u["general_weight"] == 1.0 and len(u["general_anchor_sha256"]) == 64
+    assert "rep_target" not in u
+    hist = json.loads((tmp_path / "gd" / "unlearn.json").read_text())["history"]
     assert hist["rep_stats"]["general_positions"] > 0

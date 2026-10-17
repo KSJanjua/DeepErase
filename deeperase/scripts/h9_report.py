@@ -19,7 +19,8 @@ alone (the confirmation seeds), and it applies the lambda_g rule to seed 0:
   (trained) is >= 0.15.
 
 On one seed alone (the lambda_g rule), C1 and C2 use the per-seed thresholds
-and C3 the mean thresholds. Exploratory.
+and C3 the mean thresholds. GradDiff-G runs (GradDiff with the same general
+anchor, the fairness baseline) are listed beside GradDiff. Exploratory.
 
     python -m deeperase.scripts.h9_report
     python -m deeperase.scripts.h9_report --choose     # lambda_g for seeds 1-2
@@ -40,6 +41,7 @@ C3_MEAN = {"R": 0.768, "RA": 0.863, "WF": 0.829}
 C3_SEED = {"R": 0.765, "RA": 0.85, "WF": 0.821}
 C4_SEED = 0.15
 GRADDIFF = "study_v2_graddiff_1B_s*_lr5e-08"
+GRADDIFF_G = "study_v2_graddiffg_1B_s*_lr*"
 
 
 def _tag(name: str) -> str:
@@ -140,7 +142,10 @@ def collect(studies: Path) -> dict:
             controls[(int(a["seed"]), _tag(d.name))] = {"name": d.name, "audit": a}
     graddiff = [c for c in (checkpoint(d) for d in sorted(studies.glob(GRADDIFF))
                             if d.is_dir() and not _tag(d.name)) if c]
+    graddiff_g = [c for c in (checkpoint(d) for d in sorted(studies.glob(GRADDIFF_G))
+                              if d.is_dir()) if c]
     report = {"graddiff": [{k: v for k, v in c.items() if k != "_audit"} for c in graddiff],
+              "graddiff_g": [{k: v for k, v in c.items() if k != "_audit"} for c in graddiff_g],
               "groups": {}}
     for w, by in sorted(groups.items()):
         excess: Dict[int, Optional[float]] = {}
@@ -180,8 +185,8 @@ def to_markdown(rep: dict) -> str:
             lines.append(f"| {c['run']} | {w} | {c['seed']} | "
                          + " | ".join(_f(c.get(k)) for k in cols)
                          + f" | {_f(c.get('excess_strict_trained'))} |")
-    for c in rep["graddiff"]:
-        lines.append(f"| {c['run']} | – | {c['seed']} | "
+    for c in rep["graddiff"] + rep.get("graddiff_g", []):
+        lines.append(f"| {c['run']} | {_f(c.get('general_weight'), 0) if c.get('general_weight') else '–'} | {c['seed']} | "
                      + " | ".join(_f(c.get(k)) for k in cols) + " | – |")
     for w, g in rep["groups"].items():
         for label, crit in (("all seeds", g["all_seeds"]),

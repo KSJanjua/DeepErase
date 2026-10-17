@@ -442,6 +442,12 @@ def stranger_loss(model, forget_batch: dict, forget_rows: Sequence[int],
                   "general": float(lg) if lg is not None else 0.0}
 
 
+def general_term(model, batch: dict, rows: Sequence[int], targets: StrangerTargets
+                 ) -> Optional[torch.Tensor]:
+    """The general-anchor term on its own (GradDiff-G adds it to GradDiff's loss)."""
+    return _term(model, batch, rows, targets.general, targets)
+
+
 @torch.no_grad()
 def forget_term(model, forget_data: Sequence[dict], targets: StrangerTargets,
                 batch_size: int, device) -> Optional[float]:
