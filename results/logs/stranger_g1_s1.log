@@ -1,0 +1,39 @@
+05:02:55 INFO    PyTorch version 2.6.0+cu124 available.
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+05:02:55 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+05:02:55 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+05:02:55 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+05:02:55 INFO      reference annotations (trained): 185 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+05:02:55 INFO      depth example sampling (trained): random (seed 1)
+05:02:55 INFO      100 depth examples tokenised (trained)
+05:02:55 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+05:02:55 INFO      reference annotations (heldout): 182 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+05:02:55 INFO      depth example sampling (heldout): random (seed 2)
+05:02:55 INFO      100 depth examples tokenised (heldout)
+05:02:56 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda)
+05:03:01 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 5.1s
+05:03:05 INFO    Captured hidden states for 100 examples across 16 layers
+05:03:09 INFO    Captured hidden states for 100 examples across 16 layers
+05:03:09 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda)
+05:03:13 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.1s
+05:05:00 INFO    Captured hidden states for 100 examples across 16 layers
+05:14:41 INFO    Captured hidden states for 100 examples across 16 layers
+STRANGER gate 1 (seed 1, K=4, layers [4, 5, 6, 7, 8])
+
+| split | source | UDS | strict | tent | overshoot share | L0-8 | L9-12 | L13-15 |
+|---|---|---|---|---|---|---|---|---|
+| trained | self | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+| trained | hybrid | 0.066 | 0.066 | 0.066 | 0.000 | 0.063 | 0.072 | 0.064 |
+| trained | hybrid_q | 0.062 | 0.062 | 0.062 | 0.000 | 0.067 | 0.066 | 0.059 |
+| trained | scramble | 0.029 | 0.026 | 0.022 | 0.002 | 0.059 | 0.032 | 0.026 |
+| trained | fullswap | 0.194 | 0.150 | 0.144 | 0.044 | 0.202 | 0.192 | 0.186 |
+| heldout | self | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+| heldout | hybrid | 0.089 | 0.089 | 0.086 | 0.000 | 0.072 | 0.082 | 0.095 |
+| heldout | hybrid_q | 0.058 | 0.058 | 0.054 | 0.000 | 0.053 | 0.056 | 0.060 |
+| heldout | scramble | 0.022 | 0.022 | 0.022 | 0.000 | 0.031 | 0.025 | 0.019 |
+| heldout | fullswap | 0.227 | 0.191 | 0.185 | 0.036 | 0.202 | 0.226 | 0.227 |
+
+DECISION (trained, hybrid): NO-GO  (GO: UDS >= 0.5, strict >= 0.45, overshoot <= 0.1; WEAK GO: UDS >= 0.35)
+
+Saved results/gates/stranger_g1_s1.json (1170.7 s)
