@@ -278,10 +278,59 @@ def fig16_unasked_depth_vs_general():
     plt.close(fig)
 
 
+def fig17_relearn_dose():
+    """Latent index against attack strength: UNASKED beside GA (relearning dose-response)."""
+    rows = json.loads((ROOT / "results/analysis/relearn.json").read_text())["rows"]
+    dose = {}
+    for r in rows:
+        if r["record"].endswith("_dose"):
+            dose.setdefault(r["method"], []).append(r)
+    if not dose:
+        print("fig17: no dose-response records yet")
+        return
+    style = {"unasked": (UNASKED_COLOR, "D", "UNASKED"), "ga": (GRAY, "o", "GA"),
+             "npo": (GRAY, "s", "NPO"), "graddiff": (GRAY, "^", "GradDiff")}
+    none_x = 3e-8          # where "no attack" sits on the log axis
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.8), sharey=True)
+    for ax, probe, title in zip(axes, ("probe", "heldout"),
+                                ("facts never shown to the attacker", "held-out facts")):
+        for m, rs in sorted(dose.items(), key=lambda kv: kv[0] == "unasked"):
+            color, mark, name = style.get(m, (GRAY, "o", m))
+            rs = sorted(rs, key=lambda r: r["attack_lr"])
+            x = [none_x] + [r["attack_lr"] for r in rs]
+            y = [rs[0][probe].get("index_nll_before")] + [r[probe].get("index_nll") for r in rs]
+            lw = 2 if m == "unasked" else 1.6
+            ax.plot(x[:2], y[:2], ":", color=color, lw=lw * 0.6, zorder=3)   # no attack -> first
+            ax.plot(x[1:], y[1:], "-", color=color, lw=lw, zorder=3)
+            ax.plot(x, y, mark, color=color, ms=4.5, zorder=4,
+                    markeredgecolor="#fcfcfb", markeredgewidth=0.8)
+            ax.annotate(name, (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
+                        fontsize=7.5, va="center", color=INK if m == "unasked" else INK2)
+        for yref, label in ((0.0, "retain90 (never knew)"), (1.0, "M_full (knew)")):
+            ax.axhline(yref, color=MUTED, lw=0.8, ls=":")
+            ax.text(none_x, yref + 0.03, label, fontsize=6.5, color=INK2)
+        ax.set_xscale("log")
+        ax.minorticks_off()
+        ticks = [none_x, 1e-7, 1e-6, 1e-5]
+        ax.set_xticks(ticks)
+        ax.set_xticklabels(["none", "1e-7", "1e-6", "1e-5"])
+        ax.set_xlim(none_x / 1.6, 3e-5)
+        ax.set_xlabel("attack learning rate (2 epochs, 100 facts)")
+        ax.set_title(title, fontsize=9, color=INK)
+        _grid(ax)
+    axes[0].set_ylabel("latent index (answer NLL)")
+    axes[0].set_ylim(-0.1, 1.15)
+    fig.suptitle("How much of the forgotten knowledge a relearning attack brings back (seed 0)",
+                 fontsize=10, color=INK, y=1.03)
+    fig.savefig(OUT / "fig17_relearn_dose.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig12_depth_vs_damage()
     fig13_overshoot()
     fig14_memory_keys()
     fig15_partial_vs_depth()
     fig16_unasked_depth_vs_general()
+    fig17_relearn_dose()
     print("wrote", sorted(p.name for p in OUT.glob("fig1[2-9]*.png")))
