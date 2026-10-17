@@ -326,6 +326,51 @@ def fig17_relearn_dose():
     plt.close(fig)
 
 
+def fig18_h9():
+    """UNASKED-G against GradDiff at the checkpoint: the five H9 measures, per seed."""
+    from deeperase.scripts.h9_report import collect, C1_SEED, C2_SEED, C3_MEAN
+    rep = collect(STUDIES)
+    rows = [("GradDiff", rep["graddiff"], GRAY, "o", True)]
+    if rep.get("graddiff_g"):
+        rows.append(("GradDiff + general anchor", rep["graddiff_g"], GRAY, "o", False))
+    main = rep["groups"].get("lr3e-06")
+    if main:
+        rows.append(("UNASKED-G", main["runs"], UNASKED_COLOR, "D", True))
+    extra = rep["groups"].get("lr3e-06_lam10")
+    if extra:
+        rows.append(("UNASKED-G, TOFU anchor 10", extra["runs"], UNASKED_COLOR, "D", False))
+    measures = [("strict_trained", "strict depth (trained)", C1_SEED),
+                ("breadth_trained", "breadth (trained)", C2_SEED),
+                ("R", "R (TOFU retain)", C3_MEAN["R"]),
+                ("RA", "RA (real authors)", C3_MEAN["RA"]),
+                ("WF", "WF (world facts)", C3_MEAN["WF"])]
+    fig, axes = plt.subplots(1, len(measures), figsize=(9.2, 0.55 + 0.42 * len(rows)),
+                             sharey=True)
+    for ax, (key, title, thr) in zip(axes, measures):
+        for y, (label, runs, color, mark, filled) in enumerate(rows):
+            vals = [r.get(key) for r in runs if r.get(key) is not None]
+            for v in vals:
+                ax.plot(v, y, mark, ms=5.5, zorder=3,
+                        color=color if filled else "#fcfcfb",
+                        markeredgecolor=color if not filled else "#fcfcfb",
+                        markeredgewidth=1.2 if not filled else 0.8)
+            if len(vals) > 1:
+                m = sum(vals) / len(vals)
+                ax.plot([m, m], [y - 0.28, y + 0.28], "-", color=INK, lw=1.4, zorder=4)
+        ax.axvline(thr, color=INK2, lw=0.8, ls="--", zorder=1)
+        ax.set_title(title, fontsize=8.5, color=INK)
+        ax.tick_params(axis="x", labelsize=7)
+        _grid(ax)
+    axes[0].set_yticks(range(len(rows)))
+    axes[0].set_yticklabels([r[0] for r in rows], fontsize=8, color=INK)
+    axes[0].set_ylim(-0.6, len(rows) - 0.4)
+    axes[0].invert_yaxis()
+    fig.suptitle("UNASKED-G against GradDiff at the checkpoint (dots: seeds; bar: mean; "
+                 "dashed: H9 threshold)", fontsize=9.5, color=INK, y=1.02)
+    fig.savefig(OUT / "fig18_h9.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig12_depth_vs_damage()
     fig13_overshoot()
@@ -333,4 +378,5 @@ if __name__ == "__main__":
     fig15_partial_vs_depth()
     fig16_unasked_depth_vs_general()
     fig17_relearn_dose()
+    fig18_h9()
     print("wrote", sorted(p.name for p in OUT.glob("fig1[2-9]*.png")))
