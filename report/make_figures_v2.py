@@ -179,9 +179,74 @@ def fig15_partial_vs_depth():
     plt.close(fig)
 
 
+UNASKED_COLOR = "#6250d6"   # violet: the emphasis hue; baselines go gray in fig16
+GRAY = "#a3a29e"
+
+
+def _strict_path(runs, split="trained"):
+    """Mean over runs of (general knowledge, strict UDS) at each alpha they share."""
+    per = {}
+    for d in runs:
+        t = load_run(d)["trajectories"][split]
+        for r in audit_run(d)["splits"][split]:
+            if r["alpha"] in t["alpha"]:
+                i = t["alpha"].index(r["alpha"])
+                per.setdefault(r["alpha"], []).append((t["general_utility"][i], r["strict"]))
+    shared = [a for a, v in sorted(per.items()) if len(v) == len(runs)]
+    return ([sum(x[0] for x in per[a]) / len(runs) for a in shared],
+            [sum(x[1] for x in per[a]) / len(runs) for a in shared])
+
+
+def fig16_unasked_depth_vs_general():
+    """Strict depth against general knowledge: UNASKED beside the baselines' paths."""
+    fig, ax = plt.subplots(figsize=(5.0, 3.3))
+    marks = {"ga": "o", "npo": "s", "graddiff": "^"}
+    for m in ("ga", "npo", "graddiff"):
+        x, y = _strict_path([STUDIES / f"study_v2_{m}_1B_s{s}_lr{LR[m]}" for s in (0, 1, 2)])
+        ax.plot(x, y, "-", color=GRAY, lw=1.6, zorder=2)
+        ax.plot(x[0], y[0], marks[m], color=GRAY, ms=5.5, zorder=3,
+                markeredgecolor="#fcfcfb", markeredgewidth=1.0)
+        ax.annotate(f"{NAME[m]}", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
+                    fontsize=7.5, va="center", color=INK2)
+    runs = sorted(d for d in STUDIES.glob("study_v2_unasked_1B_s*_lr*")
+                  if d.is_dir() and not d.name.split("_lr", 1)[1].count("_"))
+    x, y = _strict_path(runs)
+    ax.plot(x, y, "-", color=UNASKED_COLOR, lw=2, zorder=4)
+    ax.plot(x[0], y[0], "D", color=UNASKED_COLOR, ms=6, zorder=5,
+            markeredgecolor="#fcfcfb", markeredgewidth=1.0)
+    n = len(runs)
+    ax.annotate(f"UNASKED ({n} seed{'s' if n > 1 else ''})", (x[0], y[0]), xytext=(-6, 9),
+                textcoords="offset points", fontsize=7.5, ha="right", color=INK)
+    ax.annotate("α = 1", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
+                fontsize=7, va="center", color=INK2)
+    ax.plot(0.8725, 0.0, "*", color=INK2, ms=8, zorder=5, clip_on=False)
+    ax.annotate("M_full", (0.8725, 0.0), xytext=(0, 7), textcoords="offset points",
+                fontsize=7, ha="center", color=INK2)
+    from matplotlib.legend_handler import HandlerTuple
+    h_un = plt.Line2D([], [], ls="", marker="D", color=UNASKED_COLOR, ms=5)
+    h_base = tuple(plt.Line2D([], [], ls="", marker=marks[m], color=GRAY, ms=5)
+                   for m in ("ga", "npo", "graddiff"))
+    h_path = plt.Line2D([], [], color=GRAY, lw=1.6)
+    ax.legend([h_un, h_base, h_path],
+              ["UNASKED checkpoint (α = 0)", "GA, NPO, GradDiff checkpoints",
+               "baselines, α 0 → 1 (mean of 3 seeds)"],
+              handler_map={tuple: HandlerTuple(ndivide=None, pad=0.6)},
+              frameon=False, fontsize=7, loc="lower right")
+    ax.set_xlabel("general knowledge (mean of RA and WF knows-rate)")
+    ax.set_ylabel("strict UDS, trained facts")
+    ax.invert_xaxis()
+    ax.set_ylim(0, 0.62)
+    _grid(ax)
+    ax.set_title("At equal general-knowledge cost, UNASKED's checkpoint is the deepest",
+                 fontsize=9.5, color=INK)
+    fig.savefig(OUT / "fig16_unasked_depth_vs_general.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig12_depth_vs_damage()
     fig13_overshoot()
     fig14_memory_keys()
     fig15_partial_vs_depth()
+    fig16_unasked_depth_vs_general()
     print("wrote", sorted(p.name for p in OUT.glob("fig1[2-9]*.png")))
