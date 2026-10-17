@@ -93,7 +93,16 @@ GradDiff and NPO reach at their checkpoint.
 
 ## UNASKED-G: UNASKED with a general-knowledge anchor (ANALYSIS_PLAN H9)
 
-> **Status, 17 Oct 2026, 3 seeds (RESULTS.md §20).** At the checkpoint:
+> **Status, 18 Oct 2026 (RESULTS.md §20.8, ANALYSIS_PLAN H9b).** With the TOFU
+> anchor raised to 10, UNASKED-G meets the depth, breadth and utility
+> criteria on both confirmation seeds:
+> * strict UDS 0.376 against GradDiff's 0.141, and breadth 0.375 against 0.169;
+> * R 0.789, RA 0.880 and WF 0.855, against GradDiff's 0.768, 0.863 and 0.829.
+>
+> The matched-damage controls (C4) are running. Use `--retain-weight 10` for
+> the cited version.
+>
+> **Status, 17 Oct 2026, 3 seeds, TOFU anchor 3 (RESULTS.md §20).** At the checkpoint:
 > * strict UDS 0.396 against GradDiff's 0.141, and breadth 0.345 against 0.169;
 > * R 0.794, RA 0.857 and WF 0.843, against GradDiff's 0.768, 0.863 and 0.829.
 >
