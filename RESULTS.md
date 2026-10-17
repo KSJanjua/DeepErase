@@ -1632,83 +1632,104 @@ UNASKED-G uses λ = 3 (ANALYSIS_PLAN H9).
 
 ---
 
-## 20. UNASKED-G: deeper and broader than GradDiff at its R, short of it on RA (17 Oct 2026, H9, exploratory)
+## 20. UNASKED-G: deeper and broader than GradDiff at equal or better utility (17 Oct 2026, H9, exploratory)
 
 UNASKED-G (`docs/UNASKED.md`, ANALYSIS_PLAN H9) is UNASKED with two anchors:
 * a general-knowledge anchor: 400 real-world QA pairs from Natural Questions,
   none sharing an answer, name or title with an RA/WF item;
 * the TOFU retain anchor at weight 3.
 
-Its criteria C1-C4 against GradDiff were fixed before its first run. Seed 0
-ran on the H100 slice at commit `db84af9`, with the checkpoint at epoch 19.
-R never fell below its starting 0.805 in any epoch.
+Its criteria C1-C4 against GradDiff were fixed before its first run. Three
+seeds ran on the H100 slice (seed 0 at commit `db84af9`; seeds 1-2 after it).
+Every seed kept its last epoch, and R never fell near the floor.
 
-| Checkpoint (α = 0) | Strict UDS, trained | UDS, trained | Breadth, trained | Strict UDS, held-out | Breadth, held-out | R | RA | WF |
-|---|---|---|---|---|---|---|---|---|
-| **UNASKED-G, seed 0** | **0.405** | **0.479** | **0.309** | **0.259** | **0.320** | **0.805** | **0.840** | **0.829** |
-| GradDiff, mean of 3 seeds | 0.141 | 0.146 | 0.169 | 0.060 | 0.191 | 0.768 | 0.863 | 0.829 |
-| GradDiff, range | 0.120-0.158 | 0.121-0.174 | 0.112-0.220 | 0.053-0.071 | 0.119-0.269 | 0.765-0.775 | 0.85-0.88 | 0.821-0.838 |
-| H9 threshold | ≥ 0.26 per seed | | ≥ 0.32 per seed | | | ≥ 0.768 mean | ≥ 0.863 mean | ≥ 0.829 mean |
+### 20.1 At the checkpoint (α = 0), the pre-registered comparison
 
-**On seed 0:**
-* **C1 depth: met.** Strict depth is 2.9× GradDiff's mean.
-* **C2 breadth: missed by 0.011.** Breadth is 1.8× GradDiff's mean.
-* **C3 utility:** R and WF are met, RA is missed by 0.023.
+| | Strict UDS, trained | Breadth, trained | Strict UDS, held-out | Breadth, held-out | R | RA | WF |
+|---|---|---|---|---|---|---|---|
+| UNASKED-G seed 0 | 0.405 | 0.309 | 0.259 | 0.320 | 0.805 | 0.840 | 0.829 |
+| UNASKED-G seed 1 | 0.381 | 0.297 | 0.292 | 0.422 | 0.792 | 0.860 | 0.846 |
+| UNASKED-G seed 2 | 0.402 | 0.430 | 0.315 | 0.409 | 0.785 | 0.870 | 0.855 |
+| **UNASKED-G, mean** | **0.396** | **0.345** | **0.289** | **0.384** | **0.794** | **0.857** | **0.843** |
+| GradDiff, mean | 0.141 | 0.169 | 0.060 | 0.191 | 0.768 | 0.863 | 0.829 |
+| GradDiff, range | 0.120-0.158 | 0.112-0.220 | 0.053-0.071 | 0.119-0.269 | 0.765-0.775 | 0.85-0.88 | 0.821-0.838 |
+| M_full | 0 | 0 | 0 | 0 | 0.805 | 0.890 | 0.855 |
 
-Neither miss is larger than one seed's measurement noise. That is about 0.09
-for calibrated breadth (400 items over a 0.25 calibration gap) and 0.035 for
-RA (100 items, so 0.023 is two to three items).
+Against GradDiff's means, UNASKED-G has:
+* 2.8× the strict depth on trained facts and 4.8× on held-out facts;
+* 2.0× the breadth on trained facts and 2.0× on held-out facts;
+* better R (+0.026) and WF (+0.014), and RA 0.006 below (under one item in
+  100, against a sampling sd of about 0.035).
 
-**By the λ_g rule, seeds 1-2 run at λ_g = 1.** C2 failed, so λ_g = 3 is not
-tried: a stronger general anchor would lower breadth further. Seeds 1-2 and
-the R-matched controls of all three seeds are running.
+**The H9 criteria:**
+* **C1 depth: met.** Every seed is ≥ 0.26, and the mean of 0.396 is ≥ 0.282.
+* **C2 breadth: not met.** The mean of 0.345 clears its bar of 0.338, and
+  seed 2 is at 0.430. But seeds 0 and 1 (0.309 and 0.297) fall below the
+  per-seed bar of 0.32.
+* **C3 utility: not met over three seeds.** RA's mean is 0.857 against
+  0.863, and seed 0's RA of 0.840 is below the 0.85 floor. **It is met on the
+  confirmation seeds 1-2**: R 0.789, RA 0.865, WF 0.850.
+* **C4 beyond damage:** the R-matched controls are running.
 
-1. **The anchors trade breadth for general knowledge, and leave depth.**
-   Seed 0, at the checkpoint:
+### 20.2 At equal utility: UNASKED-G is broader and deeper in every seed (exploratory)
 
-   | | Strict UDS | Breadth | R | RA | WF |
-   |---|---|---|---|---|---|
-   | UNASKED, λ = 1 | 0.452 | 0.423 | 0.772 | 0.72 | 0.735 |
-   | UNASKED, λ = 3 | 0.430 | 0.423 | 0.788 | 0.81 | 0.786 |
-   | UNASKED-G (λ = 3, λ_g = 1) | 0.405 | 0.309 | 0.805 | 0.840 | 0.829 |
+The checkpoints sit at different costs. GradDiff's is held at the R floor.
+UNASKED-G's ends where its 20-epoch budget ends, with R at 0.79-0.805.
+`h9_report` therefore sets each UNASKED-G seed against GradDiff's run of the
+same seed (the same facts) along both α paths. It interpolates GradDiff at
+UNASKED-G's utility and averages the excess over the overlapping range
+(ANALYSIS_PLAN §9, 17 Oct).
 
-   * **Two anchors, two costs.** The TOFU anchor bought RA and WF at no cost
-     in breadth. The general anchor bought more RA and WF, and cost breadth.
-   * **A likely reason.** The general anchor's short answers have the format
-     of the RA/WF options ("William Shakespeare"). It holds the model's
-     question-to-short-answer behaviour, which the forget facts' forced-choice
-     items partly share.
-   * **The target is reached equally either way.** The remaining gap to it
-     levels off at 0.15 with and without the general anchor.
-2. **Along α, UNASKED-G stays above GradDiff on every measure but RA:**
+| Seed | Matched on general knowledge (mean of RA and WF): excess breadth / strict UDS | Matched on R: excess breadth / strict UDS |
+|---|---|---|
+| 0 | +0.235 / +0.186 (10 α) | +0.399 / +0.321 (4 α) |
+| 1 | +0.187 / +0.194 (8 α) | +0.275 / +0.259 (6 α) |
+| 2 | +0.532 / +0.257 (6 α) | +0.386 / +0.175 (9 α) |
 
-   | α | R | RA | WF | Breadth, trained | Strict UDS, trained |
-   |---|---|---|---|---|---|
-   | 0 | 0.805 | 0.840 | 0.829 | 0.309 | 0.405 |
-   | 0.1 | 0.800 | 0.830 | 0.829 | 0.402 | 0.429 |
-   | 0.2 | 0.800 | 0.820 | 0.812 | 0.454 | 0.447 |
-   | 0.5 | 0.792 | 0.800 | 0.795 | 0.588 | 0.490 |
-   | 1 | 0.755 | 0.730 | 0.786 | 0.649 | 0.531 |
+At equal cost, in all three seeds, UNASKED-G forgets more in behaviour (+0.19
+to +0.53 breadth) and deeper (+0.18 to +0.32 strict UDS). Figure 19 shows the
+paths: UNASKED-G's lies above every baseline's at every level of general
+knowledge. Seed 0 along α:
 
-   * **At α = 0.1**, breadth is 0.402, R 0.800 and WF 0.829, all at or above
-     GradDiff's checkpoint, and RA is 0.83.
-   * **Plotted against general knowledge** (figure 19), UNASKED-G's whole path
-     lies above every baseline's. At general knowledge 0.80, GradDiff's path
-     has strict UDS of about 0.25, against UNASKED-G's 0.49.
-   * **The verdicts stay at α = 0**, as pre-registered.
-3. **The depth holds when the answer is reworded.** On the 33 trained facts
-   whose entity occurs verbatim in TOFU's paraphrased answer, the reworded
-   answer is deeper than the original, paired: strict UDS 0.438 against
-   0.353 (UDS 0.482 against 0.355). The same held for UNASKED (§19.6).
-4. **Held-out facts:** strict UDS 0.259 and breadth 0.320, against GradDiff's
-   0.060 and 0.191.
+| α | R | RA | WF | Breadth, trained | Strict UDS, trained |
+|---|---|---|---|---|---|
+| 0 | 0.805 | 0.840 | 0.829 | 0.309 | 0.405 |
+| 0.1 | 0.800 | 0.830 | 0.829 | 0.402 | 0.429 |
+| 0.2 | 0.800 | 0.820 | 0.812 | 0.454 | 0.447 |
+| 0.5 | 0.792 | 0.800 | 0.795 | 0.588 | 0.490 |
+| 1 | 0.755 | 0.730 | 0.786 | 0.649 | 0.531 |
+
+### 20.3 What the anchors do (seed 0)
+
+| | Strict UDS | Breadth | R | RA | WF |
+|---|---|---|---|---|---|
+| UNASKED, λ = 1 | 0.452 | 0.423 | 0.772 | 0.72 | 0.735 |
+| UNASKED, λ = 3 | 0.430 | 0.423 | 0.788 | 0.81 | 0.786 |
+| UNASKED-G (λ = 3, λ_g = 1) | 0.405 | 0.309 | 0.805 | 0.840 | 0.829 |
+
+* **The TOFU anchor bought RA and WF at no cost in breadth.**
+* **The general anchor bought more RA and WF, and cost breadth on this
+  seed.** Its short answers have the format of the RA/WF options, and they
+  hold the model's question-to-short-answer behaviour, which the forget facts'
+  forced-choice items partly share.
+* **The forget target is reached equally either way.** The remaining gap
+  levels off at 0.15 with and without the general anchor.
+
+### 20.4 Robustness checks
+
+* **The depth holds when the answer is reworded.** On seed 0's 33 trained
+  facts whose entity occurs verbatim in TOFU's paraphrased answer, the
+  reworded answer is deeper than the original, paired: strict UDS 0.438
+  against 0.353. The same held for UNASKED (§19.6).
+* **Paraphrased questions:** strict UDS 0.319, 0.355 and 0.333 (seeds 0-2),
+  0.85 of the trained-wording value.
 
 **Still to come:**
 * C4: the R-matched controls of seeds 0-2;
-* seeds 1-2;
-* GradDiff-G, the fairness baseline (GradDiff with the same general anchor);
-* a TOFU anchor of 10 (exploratory, outside the rule);
+* GradDiff-G, GradDiff with the same general anchor (the fairness baseline);
+* a TOFU anchor of 10 (exploratory);
 * relearning dose-responses for UNASKED-G and GradDiff.
 
 Figures 18 (the five measures per seed) and 19 (depth against general
 knowledge) are drawn by `report/make_figures_v2.py`.
+

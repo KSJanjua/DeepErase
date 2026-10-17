@@ -96,42 +96,162 @@
        "strict": 0.3206305026205596
       }
      }
+    },
+    {
+     "run": "study_v2_unaskedg_1B_s1_lr3e-06",
+     "seed": 1,
+     "tag": "",
+     "config": "lr3e-06",
+     "learning_rate": 3e-06,
+     "general_weight": 1.0,
+     "retain_weight": 3.0,
+     "breadth_trained": 0.29670329670329665,
+     "breadth_heldout": 0.422018348623853,
+     "R": 0.7925,
+     "RA": 0.86,
+     "WF": 0.8461538461538461,
+     "strict_trained": 0.3810751118161058,
+     "uds_trained": 0.4674971331504521,
+     "strict_heldout": 0.2915094654917209,
+     "uds_heldout": 0.3351706418565658,
+     "strict_trained_para": 0.3550868553748329,
+     "uds_trained_para": 0.4285214411588858,
+     "strict_trained_ans_ref": 0.3152089802322222,
+     "uds_trained_ans_ref": 0.35289783804363234,
+     "strict_trained_para_ans": 0.44856923729351833,
+     "uds_trained_para_ans": 0.5147033114228614,
+     "control": null,
+     "excess_strict_trained": null,
+     "vs_graddiff_same_seed": {
+      "matched_general": {
+       "breadth": 0.18683210659777777,
+       "n_matched": 8,
+       "strict": 0.19389714734589786
+      },
+      "matched_R": {
+       "breadth": 0.27472527472527464,
+       "n_matched": 6,
+       "strict": 0.25946857072471685
+      }
+     }
+    },
+    {
+     "run": "study_v2_unaskedg_1B_s2_lr3e-06",
+     "seed": 2,
+     "tag": "",
+     "config": "lr3e-06",
+     "learning_rate": 3e-06,
+     "general_weight": 1.0,
+     "retain_weight": 3.0,
+     "breadth_trained": 0.4299065420560748,
+     "breadth_heldout": 0.4086021505376344,
+     "R": 0.785,
+     "RA": 0.87,
+     "WF": 0.8547008547008547,
+     "strict_trained": 0.4019657367436856,
+     "uds_trained": 0.48726461482792227,
+     "strict_heldout": 0.31490036799729004,
+     "uds_heldout": 0.3752529256953496,
+     "strict_trained_para": 0.3333585069193238,
+     "uds_trained_para": 0.40395765422180957,
+     "strict_trained_ans_ref": 0.3574243531977283,
+     "uds_trained_ans_ref": 0.37213119994755023,
+     "strict_trained_para_ans": 0.43502642316393,
+     "uds_trained_para_ans": 0.48475937022322185,
+     "control": null,
+     "excess_strict_trained": null,
+     "vs_graddiff_same_seed": {
+      "matched_general": {
+       "breadth": 0.5324322758971245,
+       "n_matched": 6,
+       "strict": 0.2569191599278657
+      },
+      "matched_R": {
+       "breadth": 0.3856697819314643,
+       "n_matched": 9,
+       "strict": 0.1750405768321179
+      }
+     }
     }
    ],
    "all_seeds": {
     "seeds": [
-     0
+     0,
+     1,
+     2
     ],
     "C1_depth": {
      "per_seed": [
-      0.40494831836179684
+      0.40494831836179684,
+      0.3810751118161058,
+      0.4019657367436856
      ],
-     "mean": 0.40494831836179684,
+     "mean": 0.39599638897386275,
      "met": true
     },
     "C2_breadth": {
      "per_seed": [
-      0.30927835051546415
+      0.30927835051546415,
+      0.29670329670329665,
+      0.4299065420560748
      ],
-     "mean": 0.30927835051546415,
+     "mean": 0.3452960630916119,
      "met": false
     },
     "C3_utility": {
      "means": {
-      "R": 0.805,
-      "RA": 0.84,
-      "WF": 0.8290598290598291
+      "R": 0.7941666666666668,
+      "RA": 0.8566666666666666,
+      "WF": 0.8433048433048432
      },
      "met": false
     },
     "C4_beyond_damage": {
      "per_seed": [
+      null,
+      null,
       null
      ],
      "met": null
     }
    },
-   "confirmation_seeds_1_2": null
+   "confirmation_seeds_1_2": {
+    "seeds": [
+     1,
+     2
+    ],
+    "C1_depth": {
+     "per_seed": [
+      0.3810751118161058,
+      0.4019657367436856
+     ],
+     "mean": 0.3915204242798957,
+     "met": true
+    },
+    "C2_breadth": {
+     "per_seed": [
+      0.29670329670329665,
+      0.4299065420560748
+     ],
+     "mean": 0.36330491937968573,
+     "met": false
+    },
+    "C3_utility": {
+     "means": {
+      "R": 0.7887500000000001,
+      "RA": 0.865,
+      "WF": 0.8504273504273504
+     },
+     "met": true
+    },
+    "C4_beyond_damage": {
+     "per_seed": [
+      null,
+      null
+     ],
+     "met": null
+    }
+   }
   }
  },
  "choice": {
