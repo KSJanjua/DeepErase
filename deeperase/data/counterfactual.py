@@ -265,3 +265,44 @@ def invented_for(names: Dict[str, object], author: int, k: int) -> Tuple[str, Li
         raise ValueError(f"author {author} has {len(entry['names'])} invented names, "
                          f"{k} requested")
     return entry["name"], list(entry["names"][:k])
+
+
+# ---------------------------------------------------------------------------
+# Token-level edits that keep the sequence length (gate 1b, UNASKED)
+# ---------------------------------------------------------------------------
+
+FILLER = (" Please tell me about this, and about what was done, written and said over"
+          " the years, in as much detail as you can, step by step and with care.")
+
+
+def question_tokens(offsets, q_start: int, q_end: int, text: str) -> List[int]:
+    """Indices of the tokens that belong to the question.
+
+    A token counts if it ends inside the question and starts inside it or on
+    the space just before it (byte-level BPE attaches the leading space). A
+    token that runs past the question's end (e.g. "?" merged with the newline)
+    is left alone.
+    """
+    out = []
+    for i, (a, b) in enumerate(offsets):
+        if a == b or b <= q_start or b > q_end:
+            continue
+        if a >= q_start or (a == q_start - 1 and text[a].isspace()):
+            out.append(i)
+    return out
+
+
+def filler_ids(tokenizer, n: int) -> List[int]:
+    """``n`` token ids of neutral filler text (repeated as needed)."""
+    unit = tokenizer(FILLER, add_special_tokens=False)["input_ids"]
+    reps = n // len(unit) + 1
+    return (unit * reps)[:n]
+
+
+def replace_at(ids: Sequence[int], positions: Sequence[int], new: Sequence[int]) -> List[int]:
+    if len(positions) != len(new):
+        raise ValueError("positions and replacement differ in length")
+    out = list(ids)
+    for p, t in zip(positions, new):
+        out[p] = t
+    return out

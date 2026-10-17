@@ -46,7 +46,9 @@ from typing import Dict, List, Optional, Sequence
 import torch
 
 from deeperase.config import TOFU_MODELS
-from deeperase.data.counterfactual import align_row, invented_for, load_names
+from deeperase.data.counterfactual import (
+    FILLER, align_row, filler_ids, invented_for, load_names, question_tokens, replace_at,
+)
 from deeperase.data.tofu import (
     QAS_PER_AUTHOR, PromptFormat, SamplingStrategy, build_prompt, load_tofu, split_by_author,
 )
@@ -66,46 +68,11 @@ log = logging.getLogger("memory_keys")
 CANDIDATES = ("question", "question_name", "other_question", "context")
 SOURCES = ("self", "name") + CANDIDATES
 GO = {"uds": 0.50, "strict": 0.45, "overshoot_share": 0.10}
-FILLER = (" Please tell me about this, and about what was done, written and said over"
-          " the years, in as much detail as you can, step by step and with care.")
 
 
 # ---------------------------------------------------------------------------
-# Token-level edits (pure functions, unit-tested)
+# Sources
 # ---------------------------------------------------------------------------
-
-def question_tokens(offsets, q_start: int, q_end: int, text: str) -> List[int]:
-    """Indices of the tokens that belong to the question.
-
-    A token counts if it ends inside the question and starts inside it or on
-    the space just before it (byte-level BPE attaches the leading space). A
-    token that runs past the question's end (e.g. "?" merged with the newline)
-    is left alone.
-    """
-    out = []
-    for i, (a, b) in enumerate(offsets):
-        if a == b or b <= q_start or b > q_end:
-            continue
-        if a >= q_start or (a == q_start - 1 and text[a].isspace()):
-            out.append(i)
-    return out
-
-
-def filler_ids(tokenizer, n: int) -> List[int]:
-    """``n`` token ids of neutral filler text (repeated as needed)."""
-    unit = tokenizer(FILLER, add_special_tokens=False)["input_ids"]
-    reps = n // len(unit) + 1
-    return (unit * reps)[:n]
-
-
-def replace_at(ids: Sequence[int], positions: Sequence[int], new: Sequence[int]) -> List[int]:
-    if len(positions) != len(new):
-        raise ValueError("positions and replacement differ in length")
-    out = list(ids)
-    for p, t in zip(positions, new):
-        out[p] = t
-    return out
-
 
 def edits_for(tokenizer, example: UDSExample, row, names, *, k_name: int = 4,
               k_qname: int = 2, other_pool: Optional[Dict[int, List[List[int]]]] = None,

@@ -95,3 +95,23 @@ class TestControlProbe:
         r250 = random_direction_like(v, seed=3, scale=250.0)
         for k in v:
             assert torch.allclose(r250[k], 250.0 * r1[k], rtol=1e-6, atol=0)
+
+
+def test_bounded_methods_pick_the_rate_closest_to_its_target():
+    from deeperase.scripts.lr_scan import recommend, summarise
+    from deeperase.unlearn import EpochEval, UnlearnHistory
+
+    def hist(gaps, utils):
+        h = UnlearnHistory(baseline_utility=0.8, baseline_forget_nll=1.0)
+        h.epoch_evals = [EpochEval(epoch=i, utility=u, forget_nll=1.0 + 0.1 * i, acceptable=True,
+                                   rep_gap=g) for i, (g, u) in enumerate(zip(gaps, utils))]
+        return h
+    slow = summarise(1e-6, hist([0.9, 0.8, 0.7, 0.65], [0.8] * 4), 4, 0.95)
+    good = summarise(3e-6, hist([0.6, 0.4, 0.3, 0.25], [0.8, 0.8, 0.79, 0.78]), 4, 0.95)
+    harsh = summarise(1e-5, hist([0.3, 0.2, 0.1, 0.05], [0.8, 0.7, 0.6, 0.5]), 4, 0.95)
+    # the kept epoch runs to the end of the budget, yet a bounded method can be usable
+    assert good["selected_epoch"] == 3 and good["verdict"] == "usable"
+    assert slow["verdict"] == "too slow"            # never got within 0.6 of its target
+    assert harsh["selected_epoch"] == 0 and harsh["verdict"] == "too fast"
+    rates = {"1e-06": slow, "3e-06": good, "1e-05": harsh}
+    assert recommend(rates, 4) == "3e-06"

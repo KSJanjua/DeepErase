@@ -28,6 +28,9 @@ their per-row inputs through ``unlearn(..., stranger=...)``:
     stranger  targets from the starting model on name-swapped rows
               (docs/STRANGER.md; stopped at its gate 1, RESULTS.md §17).
     scramble  STRANGER's control: same distance, random direction.
+    unasked   targets from the starting model on the row with the question
+              blanked and the person unknown, at the answer positions
+              (exploratory successor; ANALYSIS_PLAN H8).
 
 Why not call OpenUnlearning directly
 ------------------------------------
@@ -70,6 +73,7 @@ class UnlearnMethod(str, Enum):
     NPO = "npo"
     STRANGER = "stranger"
     SCRAMBLE = "scramble"
+    UNASKED = "unasked"
 
     @property
     def needs_retain(self) -> bool:
@@ -78,7 +82,7 @@ class UnlearnMethod(str, Enum):
     @property
     def representation_targets(self) -> bool:
         """Trains block outputs toward precomputed targets (deeperase/stranger.py)."""
-        return self in (UnlearnMethod.STRANGER, UnlearnMethod.SCRAMBLE)
+        return self in (UnlearnMethod.STRANGER, UnlearnMethod.SCRAMBLE, UnlearnMethod.UNASKED)
 
     @property
     def needs_reference(self) -> bool:
@@ -487,7 +491,8 @@ def unlearn(
         if len(stranger.rows) != len(forget_data):
             raise ValueError(f"stranger has {len(stranger.rows)} rows for "
                              f"{len(forget_data)} forget examples; they must align")
-        want = "scramble" if config.method is UnlearnMethod.SCRAMBLE else "counterfactual"
+        want = {UnlearnMethod.SCRAMBLE: "scramble",
+                UnlearnMethod.UNASKED: "unasked"}.get(config.method, "counterfactual")
         if stranger.target != want:
             raise ValueError(f"{config.method.value} needs {want!r} targets, "
                              f"got {stranger.target!r}")

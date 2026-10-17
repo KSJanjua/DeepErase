@@ -94,11 +94,27 @@ def verdict(selected: Optional[int], budget: int) -> str:
     return "usable"
 
 
+#: Representation-target methods: a rate is usable when its kept epoch has
+#: closed at least this much of the gap to the target (rep_gap at most 0.6).
+REP_GAP_USABLE = 0.6
+
+
 def recommend(rates: Dict[str, dict], budget: int) -> Optional[str]:
-    """The usable rate whose kept epoch lies nearest the middle of the budget."""
+    """The usable rate whose kept epoch lies nearest the middle of the budget.
+
+    A representation-target method approaches a bounded target, so its forget
+    NLL keeps rising to the last epoch and "middle of the budget" means
+    nothing. For those, the usable rate whose kept epoch is closest to its
+    target (lowest rep_gap) wins; ties go to the lower rate.
+    """
+    rep = [(r["selected_rep_gap"], float(k), k) for k, r in rates.items()
+           if r.get("verdict") == "usable" and r.get("budget") == budget
+           and r.get("selected_rep_gap") is not None]
+    if rep:
+        return min(rep)[2]
     usable = [(abs(r["selected_epoch"] - (budget - 1) / 2), float(k), k)
               for k, r in rates.items() if r.get("verdict") == "usable"
-              and r.get("budget") == budget]
+              and r.get("budget") == budget and r.get("selected_rep_gap") is None]
     return min(usable)[2] if usable else None
 
 
@@ -120,6 +136,10 @@ def summarise(lr: float, history, budget: int, floor: float) -> dict:
         kept = next(e for e in epochs if e["epoch"] == sel)
         rec["selected_utility"] = kept["utility"]
         rec["selected_forget_nll"] = kept["forget_nll"]
+        if kept.get("rep_gap") is not None:
+            rec["selected_rep_gap"] = kept["rep_gap"]
+            rec["verdict"] = ("usable" if sel > 0 and kept["rep_gap"] <= REP_GAP_USABLE
+                              else "too fast" if sel == 0 else "too slow")
     return rec
 
 

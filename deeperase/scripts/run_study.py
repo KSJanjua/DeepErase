@@ -192,6 +192,36 @@ def build_uds_examples(tokenizer, reference_spans, fmt, max_length, n,
     return out
 
 
+def build_paraphrase_examples(tokenizer, reference_spans, fmt, max_length,
+                              examples: Sequence[UDSExample], paraphrases: Dict[int, str]
+                              ) -> List[UDSExample]:
+    """The same depth facts asked with TOFU's paraphrased question.
+
+    Answer and entity span are unchanged (the span is answer-relative), so
+    only the wording that leads to the answer differs. A method that removed
+    the fact scores here as on the original question; one that only stopped
+    responding to the trained wording does not. Evaluation only: the
+    paraphrases are the B1 breadth tier's questions.
+    """
+    import dataclasses
+    kept, _ = load_reference_annotations(reference_spans)
+    by_row = {e.index: e for e in kept}
+    out: List[UDSExample] = []
+    for ex in examples:
+        row = example_row(ex)
+        if row not in by_row or row not in paraphrases:
+            continue
+        para = dataclasses.replace(by_row[row], question=paraphrases[row])
+        tok = tokenise_example(para, tokenizer, fmt=fmt, max_length=max_length)
+        if tok is None:
+            continue
+        ids = torch.tensor([tok.input_ids], dtype=torch.long)
+        out.append(UDSExample(f"para_{row}", ids, tok.to_entity_span(),
+                              attention_mask=torch.ones_like(ids)))
+    log.info("  %d paraphrased-question depth examples", len(out))
+    return out
+
+
 def example_row(example: UDSExample) -> int:
     """Forget-split row of a depth example (ids are ``ref_<row>``)."""
     return int(example.example_id.rsplit("_", 1)[1])
@@ -285,14 +315,24 @@ def add_rep_args(ap: argparse.ArgumentParser) -> None:
                     help="weight of the retain term (GradDiff and the representation methods)")
 
 
+#: UNASKED acts on the answer positions, where the memory is read out, so its
+#: targets cover every layer and every block's attention and MLP trains.
+UNASKED_DEFAULTS = {"rep_layers": ",".join(str(l) for l in range(16)),
+                    "trainable": r"^model\.layers\.\d+\.(self_attn|mlp)\."}
+
+
 def rep_settings(args, method: UnlearnMethod) -> Dict[str, object]:
     """Resolved settings of a representation-target method ({} otherwise)."""
     if not method.representation_targets:
         return {}
+    defaults = dict(REP_DEFAULTS)
+    if method is UnlearnMethod.UNASKED:
+        defaults.update(UNASKED_DEFAULTS)
     out = {k: (getattr(args, k, None) if getattr(args, k, None) is not None else v)
-           for k, v in REP_DEFAULTS.items()}
+           for k, v in defaults.items()}
     out["rep_layers"] = [int(x) for x in str(out["rep_layers"]).split(",") if x.strip()]
-    out["rep_target"] = "scramble" if method is UnlearnMethod.SCRAMBLE else "counterfactual"
+    out["rep_target"] = {UnlearnMethod.SCRAMBLE: "scramble",
+                         UnlearnMethod.UNASKED: "unasked"}.get(method, "counterfactual")
     out["cf_names_sha256"] = sha256_file(str(out["cf_names"]))
     return out
 
@@ -301,7 +341,11 @@ def build_rep_inputs(rows: Sequence, tokenizer, fmt, max_length: int,
                      rep: Dict[str, object], seed: int):
     """Per-row inputs for the forget rows ``rows`` (the same rows, in the same
     order, as :func:`build_forget_batches` turns into training examples)."""
-    from deeperase.stranger import build_stranger_inputs
+    from deeperase.stranger import build_stranger_inputs, build_unasked_inputs
+    if rep["rep_target"] == "unasked":
+        return build_unasked_inputs(rows, tokenizer, rep["cf_names"], k=int(rep["cf_k"]),
+                                    fmt=fmt, max_length=max_length, layers=rep["rep_layers"],
+                                    seed=seed)
     return build_stranger_inputs(rows, tokenizer, rep["cf_names"], k=int(rep["cf_k"]),
                                  fmt=fmt, max_length=max_length, layers=rep["rep_layers"],
                                  target=str(rep["rep_target"]), seed=seed)
@@ -541,6 +585,9 @@ def parse_args(argv: Optional[Sequence[str]] = None):
                          "matches the real run's, then compare the axes. Only "
                          "meaningful with --control random.")
     ap.add_argument("--resume", action="store_true")
+    ap.add_argument("--paraphrase-depth", action="store_true",
+                    help="also score depth on the trained depth facts asked with TOFU's "
+                         "paraphrased question (depth split 'trained_para')")
     add_rep_args(ap)
     args = ap.parse_args(argv)
     if args.control_scale <= 0:
@@ -703,6 +750,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "adaptation": "full_parameter" if not trainable else f"partial:{trainable}",
         "unlearn": unlearn_cfg,
         "n_depth_examples": args.n_examples, "n_heldout_examples": n_heldout,
+        **({"paraphrase_depth": True} if args.paraphrase_depth else {}),
         "n_breadth_per_tier": args.n_breadth,
         "prompt_format": args.prompt_format,
         "seed": args.seed, "sampling": sampling.value,
@@ -749,6 +797,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             tokenizer, args.reference_spans, fmt, args.max_length, n_heldout,
             sampling, args.seed + 1, allowed=set(heldout_list), tag="heldout")
     trained_rows = set(trained_list)
+    if args.paraphrase_depth:
+        para_q = {int(i.source_index): i.question
+                  for i in load_breadth_items_file(str(settings["breadth_items"]))
+                  if i.tier == "B1"}
+        uds_sets["trained_para"] = build_paraphrase_examples(
+            tokenizer, args.reference_spans, fmt, args.max_length, uds_sets["trained"], para_q)
 
     forget_batches = build_forget_batches(
         [forget_rows[i] for i in trained_list], tokenizer, fmt, args.max_length, loss_scope)

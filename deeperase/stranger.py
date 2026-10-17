@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 REP_LAYERS: Tuple[int, ...] = (4, 5, 6, 7, 8)
 TRAINABLE_DEFAULT = r"^model\.layers\.[0-8]\.mlp\.(gate_proj|up_proj|down_proj)\.weight$"
-TARGETS = ("counterfactual", "scramble")
+TARGETS = ("counterfactual", "scramble", "unasked")
 #: Positions whose starting-model state is this many times the layer's median
 #: norm are dropped (Llama's massive activations would dominate an MSE).
 MASSIVE_RATIO = 5.0
@@ -131,6 +131,61 @@ def build_stranger_inputs(examples: Sequence, tokenizer, names_path, *, k: int =
                          target=target, seed=seed, question_only=question_only,
                          names_sha256=sha256_of(names_path))
     logger.info("STRANGER inputs: %s", out.summary())
+    return out
+
+
+def build_unasked_inputs(examples: Sequence, tokenizer, names_path, *, k: int = 4,
+                         fmt=None, max_length: int = 256,
+                         layers: Sequence[int] = tuple(range(16)), seed: int = 0
+                         ) -> StrangerInputs:
+    """Inputs for UNASKED: answer positions, targets from M_full on the row
+    with the question blanked and the person unknown.
+
+    Gate 1b (RESULTS.md §18) found that M_full's memory of a TOFU fact is
+    keyed on the question's wording together with the author's name. Each
+    source here is the row with the question tokens replaced by neutral filler
+    of the same length and the name swapped for one of K invented names, so
+    the answer positions see neither key. Positions: every answer position,
+    from the one predicting the first answer token to the last, except the
+    non-final tokens of an answer-side name mention. Their inputs differ, so
+    they have no aligned target.
+    """
+    from deeperase.data.counterfactual import (
+        align_row, filler_ids, invented_for, load_names, question_tokens, replace_at,
+    )
+    from deeperase.data.tofu import (
+        QAS_PER_AUTHOR, PromptFormat, build_prompt, tokenise_for_training,
+    )
+    fmt = fmt or PromptFormat.PLAIN_QA
+    names = load_names(names_path)
+    rows: List[StrangerRow] = []
+    for ex in examples:
+        train = tokenise_for_training(ex.question, ex.answer, tokenizer, fmt=fmt,
+                                      max_length=max_length)
+        if train is None:
+            continue
+        author = ex.index // QAS_PER_AUTHOR
+        name, invented = invented_for(names, author, k)
+        al = align_row(tokenizer, ex.question, ex.answer, name, invented, fmt=fmt,
+                       max_length=max_length)
+        if al.input_ids != train["input_ids"][0].tolist():
+            raise ValueError(f"row {ex.index}: alignment ids differ from the training ids")
+        text, _ = build_prompt(ex.question, ex.answer, fmt)
+        enc = tokenizer(text, return_offsets_mapping=True, truncation=True,
+                        max_length=max_length, add_special_tokens=True)
+        q0 = text.index(ex.question)
+        q_tok = question_tokens(enc["offset_mapping"], q0, q0 + len(ex.question), text)
+        fill = filler_ids(tokenizer, len(q_tok))
+        sources = [replace_at(c, q_tok, fill) for c in al.cf_input_ids]
+        non_final = {t for m in al.mentions if m.side == "answer"
+                     for t in m.tokens if t != m.last}
+        positions = [p for p in range(al.first_answer - 1, len(al.input_ids))
+                     if p not in non_final]
+        rows.append(StrangerRow(author=author, input_ids=al.input_ids,
+                                cf_input_ids=sources, positions=positions))
+    out = StrangerInputs(rows=rows, layers=tuple(int(l) for l in layers), k=k,
+                         target="unasked", seed=seed, names_sha256=sha256_of(names_path))
+    logger.info("UNASKED inputs: %s", out.summary())
     return out
 
 

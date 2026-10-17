@@ -280,6 +280,61 @@ If none passes, no further method is built and the project proceeds to the
 write-up. Either way the decomposition is reported (RESULTS.md §18).
 Held-out numbers are reported only.
 
+**H8 gate outcome (17 Oct 2026): STOP.** No candidate cleared the bar on
+trained facts:
+
+| Candidate | UDS | strict UDS | Shortfall |
+|---|---|---|---|
+| question + name | 0.559 | 0.425 | strict below 0.45 |
+| other author's question | 0.532 | 0.406 | strict below 0.45 |
+| everything before the entity | 0.985 | 0.236 | almost all overshoot |
+| question | 0.372 | 0.297 | UDS below 0.50 |
+
+See RESULTS.md §18.
+
+### H8-X — UNASKED, an exploratory successor (fixed 17 Oct 2026, before any UNASKED run)
+
+**Deviation, declared.** The H8 rule above said to stop. UNASKED is built
+anyway, as an **exploratory** method. It is never reported as a pre-registered
+success. Reason: the best source (question + name) has a ceiling of strict UDS
+0.425 and first-token UDS 0.621, about twice the 0.21 strict UDS that GA,
+GradDiff and NPO reach at their checkpoint. The GPU may be unavailable after
+18 Oct, so it is tried now rather than never. Every UNASKED number in RESULTS
+is labelled exploratory.
+
+**Method** ([`UNASKED.md`](UNASKED.md)).
+* Targets: M_full's block outputs on the same row with the question replaced
+  by neutral filler of equal length and the author's name swapped for invented
+  names, averaged over K = 4 names.
+* Positions: every answer position, from the one predicting the first answer
+  token to the last, except non-final tokens of an answer-side name mention.
+* Layers: all 16.
+* Trainable: the attention and MLP weights of every block. Embeddings, norms
+  and the head are frozen.
+* Retain anchor: M_full's own states at all 16 layers on the 200 retain rows,
+  λ = 1.
+* Learning rate: from a scan over {1e-6, 3e-6, 1e-5} with the bounded-method
+  rule, i.e. the usable rate closest to its target (`lr_scan.recommend`).
+* Otherwise protocol v2, with the paraphrased-question depth split on.
+
+**Gates.**
+* **X-G2:** the scan finds a usable rate, i.e. rep_gap ≤ 0.6 at a kept epoch
+  with R ≥ 0.765.
+* **X-G3:** in the seed-0 study, at the checkpoint, strict UDS on trained facts
+  is ≥ 0.30 and RA ≥ 0.80. Then seeds 1-2 and matched-damage controls follow;
+  otherwise stop and report.
+
+**Exploratory criteria (all reported, whatever the outcome).**
+* **E1.** Checkpoint strict UDS on trained facts ≥ 0.35 (3-seed mean; GA 0.21).
+* **E2.** Damage-matched excess of strict UDS on trained facts ≥ +0.15 in every
+  seed.
+* **E3.** Strict UDS on the paraphrased-question split ≥ 0.7 × trained strict UDS.
+  This tests that the erasure is not tied to the trained wording. GA and NPO
+  seed 0 are rerun with the same split for comparison.
+* **E4.** RA ≥ 0.77 and WF ≥ 0.80 at the checkpoint.
+* **E5.** Held-out depth is reported with no criterion. The memory is per
+  sequence (RESULTS.md §17-18), so it is expected near the baselines.
+
 ## 5. Units and statistics
 
 * **Seeds are the replicates** for α-level claims: n = 3 per method. Results

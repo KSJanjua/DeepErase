@@ -364,3 +364,43 @@ def test_study_runs_stranger_end_to_end(word_checkpoints, tmp_path):
     assert rec["history"]["rep_stats"]["forget_positions"] > 0
     assert rec["config"]["trainable"] == r"^model\.layers\.0\.mlp\."
     assert (tmp_path / "s" / "plane.json").exists()
+
+
+# ---------------------------------------------------------------------------
+# UNASKED (exploratory successor): inputs and an end-to-end study
+# ---------------------------------------------------------------------------
+
+@needs_data
+def test_unasked_inputs_blank_the_question_and_target_answer_positions(word_checkpoints):
+    from deeperase.data.tofu import load_tofu
+    from deeperase.models import load_tokenizer
+    tok = load_tokenizer(word_checkpoints["full"])
+    rows = load_tofu("forget10", data_dir=str(TOFU))[:20]
+    inp = st.build_unasked_inputs(rows, tok, NAMES, k=2, layers=(0, 1))
+    assert inp.target == "unasked" and len(inp.rows) == 20 and inp.k == 2
+    for r in inp.rows:
+        assert len(r.cf_input_ids) == 2
+        assert all(len(c) == len(r.input_ids) for c in r.cf_input_ids)
+        first = min(r.positions)
+        # every position is in the answer region; the question differs in the sources
+        assert all(p >= first for p in r.positions)
+        assert any(c[:first] != r.input_ids[:first] for c in r.cf_input_ids)
+
+
+@needs_data
+def test_study_runs_unasked_end_to_end(word_checkpoints, tmp_path):
+    from deeperase.scripts.run_study import main
+    argv = ["--method", "unasked", "--model-sources", json.dumps(word_checkpoints),
+            "--tofu-dir", str(TOFU), "--reference-spans", str(REF_SPANS),
+            "--output-dir", str(tmp_path), "--run-id", "u", "--cache-dir", str(tmp_path / "c"),
+            "--device", "cpu", "--alphas", "0,1", "--epochs", "1", "--batch-size", "8",
+            "--learning-rate", "1e-3", "--min-utility-ratio", "0.01", "--n-examples", "6",
+            "--n-breadth", "12", "--rep-layers", "0,1", "--paraphrase-depth"]
+    assert main(argv) == 0
+    cfg = json.loads((tmp_path / "u" / "config.json").read_text())
+    assert cfg["unlearn"]["rep_target"] == "unasked" and cfg["paraphrase_depth"] is True
+    assert cfg["adaptation"] == r"partial:^model\.layers\.\d+\.(self_attn|mlp)\."
+    p = json.loads((tmp_path / "u" / "partial" / "alpha_0.000.json").read_text())
+    assert set(p["depth"]) == {"trained", "heldout", "trained_para"}
+    assert all(e["example_id"].startswith("para_")
+               for e in p["depth"]["trained_para"]["per_example"])
