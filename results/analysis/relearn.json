@@ -39,7 +39,9 @@
      ]
     },
     "index_nll": 0.9954991042449665,
-    "index_knows": 0.7187499999999998
+    "index_nll_before": 0.1438549243971394,
+    "index_knows": 0.7187499999999998,
+    "index_knows_before": 0.8750000000000003
    },
    "heldout": {
     "unlearned": {
@@ -73,7 +75,9 @@
      ]
     },
     "index_nll": 1.0164741818453107,
-    "index_knows": 0.9347826086956526
+    "index_nll_before": 0.2680548478210879,
+    "index_knows": 0.9347826086956526,
+    "index_knows_before": 0.8640776699029126
    }
   },
   {
@@ -115,7 +119,9 @@
      ]
     },
     "index_nll": 0.9244467484897292,
-    "index_knows": 0.9375
+    "index_nll_before": 0.6424472964383204,
+    "index_knows": 0.9375,
+    "index_knows_before": 0.791666666666667
    },
    "heldout": {
     "unlearned": {
@@ -149,7 +155,9 @@
      ]
     },
     "index_nll": 0.9457213617526704,
-    "index_knows": 1.0
+    "index_nll_before": 0.8511282664387065,
+    "index_knows": 1.0,
+    "index_knows_before": 0.8155339805825244
    }
   },
   {
@@ -191,7 +199,9 @@
      ]
     },
     "index_nll": 1.0063820731717992,
-    "index_knows": 0.9062499999999999
+    "index_nll_before": 0.4697297899951747,
+    "index_knows": 0.9062499999999999,
+    "index_knows_before": 0.9583333333333333
    },
    "heldout": {
     "unlearned": {
@@ -225,7 +235,9 @@
      ]
     },
     "index_nll": 1.0316014713115491,
-    "index_knows": 1.0217391304347831
+    "index_nll_before": 0.5534133816842073,
+    "index_knows": 1.0217391304347831,
+    "index_knows_before": 0.8932038834951453
    }
   },
   {
@@ -267,7 +279,9 @@
      ]
     },
     "index_nll": 0.9318578927203908,
-    "index_knows": 0.6562499999999998
+    "index_nll_before": 0.20428510745930822,
+    "index_knows": 0.6562499999999998,
+    "index_knows_before": 0.5833333333333334
    },
    "heldout": {
     "unlearned": {
@@ -301,7 +315,9 @@
      ]
     },
     "index_nll": 0.9642759519389598,
-    "index_knows": 1.0869565217391306
+    "index_nll_before": 0.4370431513307661,
+    "index_knows": 1.0869565217391306,
+    "index_knows_before": 0.5825242718446602
    }
   }
  ]

@@ -39,6 +39,7 @@ def test_single_rate_and_dose_records(tmp_path):
     ga = rows[0]
     assert ga["probe"]["index_nll"] == pytest.approx((1.0 - 2.2) / (0.9 - 2.2))
     assert ga["heldout"]["index_knows"] == pytest.approx((0.7 - 0.55) / (0.75 - 0.55))
+    assert ga["probe"]["index_nll_before"] == pytest.approx((2.0 - 2.4) / (0.4 - 2.4))
     weak = rows[1]
     assert weak["probe"]["index_nll"] == pytest.approx((1.8 - 2.35) / (0.45 - 2.35))
     md = out.with_suffix(".md").read_text()

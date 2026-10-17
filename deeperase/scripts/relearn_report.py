@@ -6,7 +6,9 @@ record (method, seed, tag) and each attack rate it gives:
 * the answer NLL of the unlearned model, M_full and retain90 on the probe and
   held-out facts, before and after the attack;
 * the latent index on both, by NLL and by knows-rate: 0 means the model
-  recovers no more than retain90, 1 means it is back to M_full.
+  recovers no more than retain90, 1 means it is back to M_full. The same
+  index before the attack is given too: unlearned models start closer to
+  M_full than retain90 does, so a weak attack is read as the change from it.
 
 It also lays the dose-response out as a grid: methods by rows, attack rates by
 columns. Exploratory.
@@ -54,6 +56,7 @@ def rows_of(rec: dict, name: str) -> List[dict]:
             if all(w in cell for w in WHO):
                 for metric, key in (("nll", "index_nll"), ("knows", "index_knows")):
                     cell[key] = latent_index(*(cell[w][metric][1] for w in WHO))
+                    cell[key + "_before"] = latent_index(*(cell[w][metric][0] for w in WHO))
             row[probe] = cell
         out.append(row)
     return out
@@ -74,26 +77,31 @@ def _f(x, d=2) -> str:
 
 def to_markdown(rows: List[dict]) -> str:
     lines = ["| record | attack lr | probe NLL: unlearned / full / retain90, before → after "
-             "| index NLL probe / held-out | index knows probe / held-out |",
+             "| index NLL probe / held-out, before → after | index knows probe / held-out |",
              "|---|---|---|---|---|"]
     for r in rows:
         p = r["probe"]
         nll = " / ".join(f"{_f(p[w]['nll'][0])} → {_f(p[w]['nll'][1])}" if w in p else "–"
                          for w in WHO)
-        idx = " / ".join(_f(r[k].get("index_nll")) for k in PROBES)
+        idx = " / ".join(f"{_f(r[k].get('index_nll_before'))} → {_f(r[k].get('index_nll'))}"
+                         for k in PROBES)
         kn = " / ".join(_f(r[k].get("index_knows")) for k in PROBES)
         lines.append(f"| {r['record']} | {r['attack_lr']:g} | {nll} | {idx} | {kn} |")
     # the dose-response grid, for records with more than one rate
     dose = [r for r in rows if sum(1 for x in rows if x["record"] == r["record"]) > 1]
     if dose:
         rates = sorted({r["attack_lr"] for r in dose})
-        lines += ["", "Latent index by NLL, probe (held-out), by attack rate:", "",
-                  "| record | " + " | ".join(f"{lr:g}" for lr in rates) + " |",
-                  "|---|" + "---|" * len(rates)]
+        lines += ["", "Latent index by NLL, probe (held-out), by attack rate; "
+                  "'before' is the index with no attack:", "",
+                  "| record | before | " + " | ".join(f"{lr:g}" for lr in rates) + " |",
+                  "|---|---|" + "---|" * len(rates)]
         for name in sorted({r["record"] for r in dose}):
             by = {r["attack_lr"]: r for r in dose if r["record"] == name}
-            cells = [f"{_f(by[lr]['probe'].get('index_nll'))} ({_f(by[lr]['heldout'].get('index_nll'))})"
-                     if lr in by else "–" for lr in rates]
+            first = next(iter(by.values()))
+            cells = [f"{_f(first['probe'].get('index_nll_before'))} "
+                     f"({_f(first['heldout'].get('index_nll_before'))})"]
+            cells += [f"{_f(by[lr]['probe'].get('index_nll'))} ({_f(by[lr]['heldout'].get('index_nll'))})"
+                      if lr in by else "–" for lr in rates]
             lines.append(f"| {name} | " + " | ".join(cells) + " |")
     return "\n".join(lines)
 

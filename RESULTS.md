@@ -1479,6 +1479,10 @@ The latent index after the attack is (unlearned − retain90) / (full − retain
 | M_full | 0.41 → 0.90 | 0.40 → 0.86 | | |
 | retain90 | 2.44 → 2.23 | 2.42 → 2.18 | | |
 
+Before the attack, the same index on probe facts is GA 0.14, UNASKED 0.20,
+NPO 0.47 and GradDiff 0.64 (`results/analysis/relearn.md`). In other words,
+GA and UNASKED had pushed the probe facts' NLL most of the way to retain90's.
+
 1. **Every method gives its facts back.** After 50 steps on the attack half,
    each unlearned model reaches M_full's post-attack NLL on facts the attack
    never showed it. retain90, which never knew those facts, barely moves
