@@ -235,43 +235,47 @@ def load_paraphrased_answers(tofu_dir: Optional[str]) -> Dict[int, Tuple[str, st
 
 
 def build_paraphrased_answer_examples(tokenizer, reference_spans, fmt, max_length,
-                                      examples: Sequence[UDSExample],
-                                      answers: Dict[int, Tuple[str, str]]) -> List[UDSExample]:
-    """The same depth facts, answered in TOFU's paraphrased wording.
+                                      rows: Sequence[int],
+                                      answers: Dict[int, Tuple[str, str]]
+                                      ) -> Tuple[List[UDSExample], List[UDSExample]]:
+    """The same facts with their original and with TOFU's paraphrased answer.
 
     The question and the entity string are unchanged; the answer around the
     entity is reworded, so the entity is predicted from other tokens at other
     positions. A method that edited only the trained answer sequence scores
-    lower here than on the original answer; one that removed the fact does not.
-    Only facts whose entity occurs verbatim in the paraphrase are kept (about a
-    fifth of TOFU's), and only rows whose original answer matches the
-    annotation. Evaluation only.
+    lower on the paraphrase than on the original; one that removed the fact
+    does not. Every given row is used whose entity occurs verbatim, as whole
+    words, in the paraphrase (75 of TOFU's 367 annotated facts: 'civil
+    engineer' inside 'civil engineering' does not count, since its tokens would
+    score another string) and whose original answer matches the annotation.
+    Returns ``(original, paraphrased)``, paired row by row. Evaluation only.
     """
     import dataclasses
-    from deeperase.data.reference_spans import locate_entity
+    import re
     kept, _ = load_reference_annotations(reference_spans)
     by_row = {e.index: e for e in kept}
-    out: List[UDSExample] = []
-    for ex in examples:
-        row = example_row(ex)
+    original: List[UDSExample] = []
+    paraphrased: List[UDSExample] = []
+    for row in sorted(rows):
         ref = by_row.get(row)
         if ref is None or row not in answers or answers[row][0] != ref.answer:
             continue
-        paraphrase = answers[row][1]
-        loc = locate_entity(paraphrase, ref.entity_text, "")
-        if loc is None:
+        m = re.search(r"(?<!\w)" + re.escape(ref.entity_text) + r"(?!\w)", answers[row][1])
+        if m is None:
             continue
-        para = dataclasses.replace(ref, answer=paraphrase,
-                                   entity_char_span=(loc.start, loc.end))
-        tok = tokenise_example(para, tokenizer, fmt=fmt, max_length=max_length)
-        if tok is None:
+        para = dataclasses.replace(ref, answer=answers[row][1],
+                                   entity_char_span=(m.start(), m.end()))
+        toks = [tokenise_example(x, tokenizer, fmt=fmt, max_length=max_length)
+                for x in (ref, para)]
+        if None in toks:
             continue
-        ids = torch.tensor([tok.input_ids], dtype=torch.long)
-        out.append(UDSExample(f"para_ans_{row}", ids, tok.to_entity_span(),
-                              attention_mask=torch.ones_like(ids)))
-    log.info("  %d of %d depth facts have their entity verbatim in the paraphrased answer",
-             len(out), len(examples))
-    return out
+        for tok, name, out in zip(toks, ("ans_ref", "para_ans"), (original, paraphrased)):
+            ids = torch.tensor([tok.input_ids], dtype=torch.long)
+            out.append(UDSExample(f"{name}_{row}", ids, tok.to_entity_span(),
+                                  attention_mask=torch.ones_like(ids)))
+    log.info("  %d of %d trained facts have their entity verbatim in the paraphrased answer",
+             len(paraphrased), len(rows))
+    return original, paraphrased
 
 
 def example_row(example: UDSExample) -> int:
@@ -641,10 +645,10 @@ def parse_args(argv: Optional[Sequence[str]] = None):
                     help="also score depth on the trained depth facts asked with TOFU's "
                          "paraphrased question (depth split 'trained_para')")
     ap.add_argument("--paraphrase-answer-depth", action="store_true",
-                    help="also score depth on the trained depth facts answered in TOFU's "
-                         "paraphrased wording, where the entity occurs verbatim (depth "
-                         "split 'trained_para_ans'; reads data/tofu/forget10_perturbed.json "
-                         "unless --tofu-dir is given)")
+                    help="also score depth on every trained fact whose entity occurs verbatim "
+                         "in TOFU's paraphrased answer, with that answer (depth split "
+                         "'trained_para_ans') and with the original one ('trained_ans_ref'); "
+                         "reads data/tofu/forget10_perturbed.json unless --tofu-dir is given")
     add_rep_args(ap)
     args = ap.parse_args(argv)
     if args.control_scale <= 0:
@@ -863,13 +867,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         uds_sets["trained_para"] = build_paraphrase_examples(
             tokenizer, args.reference_spans, fmt, args.max_length, uds_sets["trained"], para_q)
     if args.paraphrase_answer_depth:
-        para_ans = build_paraphrased_answer_examples(
-            tokenizer, args.reference_spans, fmt, args.max_length, uds_sets["trained"],
+        ans_ref, para_ans = build_paraphrased_answer_examples(
+            tokenizer, args.reference_spans, fmt, args.max_length, trained_list,
             load_paraphrased_answers(args.tofu_dir))
         if para_ans:
+            uds_sets["trained_ans_ref"] = ans_ref
             uds_sets["trained_para_ans"] = para_ans
         else:
-            log.warning("  no paraphrased-answer depth facts: split 'trained_para_ans' skipped")
+            log.warning("  no paraphrased-answer depth facts: those splits are skipped")
 
     forget_batches = build_forget_batches(
         [forget_rows[i] for i in trained_list], tokenizer, fmt, args.max_length, loss_scope)

@@ -403,22 +403,22 @@ def test_study_runs_unasked_end_to_end(word_checkpoints, tmp_path):
     assert cfg["paraphrase_answer_depth"] is True
     assert cfg["adaptation"] == r"partial:^model\.layers\.\d+\.(self_attn|mlp)\."
     p = json.loads((tmp_path / "u" / "partial" / "alpha_0.000.json").read_text())
-    # the paraphrased-answer split exists only if a sampled fact's entity is verbatim
-    assert {"trained", "heldout", "trained_para"} <= set(p["depth"]) <= {
-        "trained", "heldout", "trained_para", "trained_para_ans"}
+    assert set(p["depth"]) == {"trained", "heldout", "trained_para", "trained_ans_ref",
+                               "trained_para_ans"}
     assert all(e["example_id"].startswith("para_")
                for e in p["depth"]["trained_para"]["per_example"])
-    assert all(e["example_id"].startswith("para_ans_")
-               for e in (p["depth"].get("trained_para_ans") or {}).get("per_example", []))
+    ref = [e["example_id"].split("_")[-1] for e in p["depth"]["trained_ans_ref"]["per_example"]]
+    ans = [e["example_id"].split("_")[-1] for e in p["depth"]["trained_para_ans"]["per_example"]]
+    assert ref == ans and len(ans) >= 10        # every trained row with a verbatim entity
 
 
 @needs_data
 def test_paraphrased_answer_split_moves_the_entity_but_keeps_it():
-    """Rows 0, 2 and 3 of forget10 keep their entity verbatim in TOFU's
-    paraphrased answer ('Hsiao Yun-Hwa', 'civil engineer' inside 'civil
-    engineering'); row 1 rewords it ('LGBTQ+ community' -> 'LGBTQ+ spectrum')."""
+    """Rows 0 and 3 of forget10 keep their entity verbatim in TOFU's paraphrased
+    answer ('Hsiao Yun-Hwa', 'civil engineer'). Row 1 rewords it ('LGBTQ+
+    community' -> 'LGBTQ+ spectrum'), and row 2 has it only inside a longer
+    word ('civil engineering'), which would score another string."""
     from deeperase.data.tofu import PromptFormat, read_tofu_rows
-    from deeperase.eval.uds import UDSExample
     from deeperase.scripts.run_study import (
         build_paraphrased_answer_examples, load_paraphrased_answers)
     from toy_tokenizer import word_level_tokenizer
@@ -428,20 +428,24 @@ def test_paraphrased_answer_split_moves_the_entity_but_keeps_it():
     corpus = [f"Question: {r['question']}\nAnswer: {r['answer']}" for r in rows[:4]]
     corpus += [answers[i][1] for i in range(4)]
     tok = word_level_tokenizer(corpus)
-    from deeperase.eval.patching import EntitySpan
-    stub = [UDSExample(f"ref_{i}", torch.zeros(1, 2, dtype=torch.long), EntitySpan([1]))
-            for i in range(4)]
     fmt = PromptFormat("plain_qa")
-    out = build_paraphrased_answer_examples(tok, str(REF_SPANS), fmt, 512, stub, answers)
-    assert [e.example_id for e in out] == ["para_ans_0", "para_ans_2", "para_ans_3"]
-    first = out[0]
-    ent = [int(first.input_ids.reshape(-1)[j]) for j in first.span.token_indices]
-    assert tok.decode(ent).replace(" ", "") == "HsiaoYun-Hwa"
+    orig, para = build_paraphrased_answer_examples(tok, str(REF_SPANS), fmt, 512,
+                                                   [3, 2, 1, 0], answers)
+    assert [e.example_id for e in para] == ["para_ans_0", "para_ans_3"]
+    assert [e.example_id for e in orig] == ["ans_ref_0", "ans_ref_3"]
+    for o, p in zip(orig, para):
+        ent = lambda ex: tok.decode([int(ex.input_ids.reshape(-1)[j])
+                                     for j in ex.span.token_indices]).replace(" ", "")
+        assert ent(o) == ent(p)                    # the same entity ...
+        assert o.span.token_indices != p.span.token_indices or not torch.equal(
+            o.input_ids, p.input_ids)              # ... in another sequence
+    assert "".join(tok.decode([int(para[0].input_ids.reshape(-1)[j])
+                               for j in para[0].span.token_indices]).split()) == "HsiaoYun-Hwa"
     # a broken alignment drops the row instead of mislabelling it
     bad = dict(answers)
     bad[0] = ("another answer", bad[0][1])
-    assert [e.example_id for e in build_paraphrased_answer_examples(
-        tok, str(REF_SPANS), fmt, 512, stub, bad)] == ["para_ans_2", "para_ans_3"]
+    _, para_bad = build_paraphrased_answer_examples(tok, str(REF_SPANS), fmt, 512, [0, 2, 3], bad)
+    assert [e.example_id for e in para_bad] == ["para_ans_3"]
 
 
 def test_unlearn_can_select_the_epoch_closest_to_the_target():

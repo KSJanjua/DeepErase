@@ -64,7 +64,8 @@ def answer_check(run: Path, alpha: float) -> Optional[dict]:
     if not f.exists():
         return None
     depth = json.loads(f.read_text(encoding="utf-8")).get("depth") or {}
-    if "trained_para_ans" not in depth or "trained" not in depth:
+    ref = "trained_ans_ref" if "trained_ans_ref" in depth else "trained"
+    if "trained_para_ans" not in depth or ref not in depth:
         return None
 
     def per_row(split: str) -> Dict[int, dict]:
@@ -75,7 +76,7 @@ def answer_check(run: Path, alpha: float) -> Optional[dict]:
             if d:
                 out[int(e["example_id"].rsplit("_", 1)[1])] = d
         return out
-    orig, para = per_row("trained"), per_row("trained_para_ans")
+    orig, para = per_row(ref), per_row("trained_para_ans")
     rows = sorted(set(orig) & set(para))
     if not rows:
         return {"n": 0}
