@@ -1,0 +1,55 @@
+06:26:05 INFO    PyTorch version 2.6.0+cu124 available.
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+06:26:05 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+06:26:05 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+06:26:05 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+06:26:05 INFO      reference annotations (trained): 185 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+06:26:05 INFO      depth example sampling (trained): random (seed 2)
+06:26:05 INFO      100 depth examples tokenised (trained)
+06:26:05 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+06:26:05 INFO      reference annotations (heldout): 182 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+06:26:05 INFO      depth example sampling (heldout): random (seed 3)
+06:26:05 INFO      100 depth examples tokenised (heldout)
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+06:26:05 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+06:26:05 WARNING Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+06:26:06 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda)
+06:26:11 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 5.1s
+06:26:15 INFO    Captured hidden states for 100 examples across 16 layers
+06:26:19 INFO    Captured hidden states for 100 examples across 16 layers
+06:26:19 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda)
+06:26:23 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.0s
+06:30:33 INFO    trained self            UDS 0.000 strict 0.000 | first token 0.000
+06:38:34 INFO    trained name            UDS 0.237 strict 0.169 | first token 0.228
+06:40:30 INFO    trained question        UDS 0.364 strict 0.285 | first token 0.395
+06:44:35 INFO    trained question_name   UDS 0.534 strict 0.385 | first token 0.488
+06:46:36 INFO    trained other_question  UDS 0.476 strict 0.347 | first token 0.511
+06:48:26 INFO    trained context         UDS 0.990 strict 0.244 | first token 0.998
+06:52:34 INFO    heldout self            UDS 0.000 strict 0.000 | first token 0.000
+07:00:24 INFO    heldout name            UDS 0.251 strict 0.216 | first token 0.266
+07:02:11 INFO    heldout question        UDS 0.369 strict 0.288 | first token 0.410
+07:06:16 INFO    heldout question_name   UDS 0.583 strict 0.456 | first token 0.591
+07:08:08 INFO    heldout other_question  UDS 0.543 strict 0.448 | first token 0.539
+07:09:54 INFO    heldout context         UDS 0.995 strict 0.207 | first token 0.984
+Gate 1b: what the memory is keyed on (seed 2)
+
+| split | source | n | UDS | strict | overshoot share | first-token UDS | first-token strict |
+|---|---|---|---|---|---|---|---|
+| trained | self | 100 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+| trained | name | 100 | 0.237 | 0.169 | 0.068 | 0.228 | 0.208 |
+| trained | question | 100 | 0.364 | 0.285 | 0.079 | 0.395 | 0.274 |
+| trained | question_name | 100 | 0.534 | 0.385 | 0.149 | 0.488 | 0.337 |
+| trained | other_question | 100 | 0.476 | 0.347 | 0.129 | 0.511 | 0.300 |
+| trained | context | 100 | 0.990 | 0.244 | 0.746 | 0.998 | 0.153 |
+| heldout | self | 100 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 |
+| heldout | name | 100 | 0.251 | 0.216 | 0.035 | 0.266 | 0.263 |
+| heldout | question | 100 | 0.369 | 0.288 | 0.081 | 0.410 | 0.257 |
+| heldout | question_name | 100 | 0.583 | 0.456 | 0.127 | 0.591 | 0.432 |
+| heldout | other_question | 100 | 0.543 | 0.448 | 0.095 | 0.539 | 0.323 |
+| heldout | context | 100 | 0.995 | 0.207 | 0.788 | 0.984 | 0.109 |
+
+DECISION: STOP: no candidate source clears the bar  (a candidate needs, on trained facts, UDS >= 0.5, strict >= 0.45, overshoot <= 0.1)
+
+Saved results/gates/memory_keys_s2.json (2630.5 s)
