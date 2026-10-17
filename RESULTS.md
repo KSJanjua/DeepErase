@@ -1286,3 +1286,44 @@ about one day of code and nine GPU-minutes.
 
 **Caveats.** One seed and K = 4 names. The hybrid replaces layers 4-8 only, but
 the full name swap bounds every name-based variant.
+
+---
+
+## 18. Gate 1b: the memory is keyed on the question together with the name (17 Oct 2026)
+
+§17 showed that the author's name is not the key. `scripts/memory_keys.py` asks
+what is. It runs M_full on copies of each depth example edited to the same
+token length, with the entity tokens left in place, and scores each copy as a
+UDS stage-2 source against the usual retain90 stage 1. Each source is scored on
+the whole entity and on its first token alone: the first token is where the
+fact is retrieved, while later tokens of a memorised string can be completed
+from their own prefix. H100 slice, seed 0, 100 + 100 examples, commit
+`1a5a838`.
+
+| M_full on the row with ... | Trained: UDS / strict / first token | Held-out: UDS / strict / first token |
+|---|---|---|
+| the name swapped (4 invented names) | 0.236 / 0.193 / 0.282 | 0.206 / 0.169 / 0.188 |
+| the question replaced by neutral filler | 0.372 / 0.297 / 0.463 | 0.373 / 0.290 / 0.518 |
+| **both** | **0.559 / 0.425 / 0.621** | **0.524 / 0.379 / 0.617** |
+| a retain author's question of the same length | 0.532 / 0.406 / 0.611 | 0.515 / 0.389 / 0.582 |
+| everything before the entity replaced by filler | 0.985 / 0.236 / 0.986 | 0.989 / 0.246 / 0.999 |
+
+1. **The key is the question's wording together with the name.** Each alone
+   removes a fifth to a third of what separates M_full from retain90. Together
+   they remove a little over half, and about 60% at the first entity token. The
+   remaining 40% at the first token, and more on later tokens, is carried by
+   the answer's own wording: a memorised answer string completes itself.
+2. **Removing all context is destruction, not ignorance.** It reaches UDS 0.985
+   only because three quarters of the weight sits in layers with r > 2. Strict
+   UDS is 0.236. This is the overshoot pattern of §16 in pure form: UDS's clip
+   cannot tell "knows nothing" from "can no longer read anything".
+3. **Decision: STOP, as pre-registered.** No candidate source reached UDS ≥ 0.50
+   with strict UDS ≥ 0.45 and overshoot share ≤ 0.10. The best, question plus
+   name, misses on strict UDS (0.425) and overshoot share (0.134).
+4. **Deviation, declared.** Question plus name is still the strongest
+   oracle-free "never asked about this person" state the model can produce.
+   Its strict depth is about twice what GA, GradDiff and NPO reach at their
+   checkpoint. An **exploratory** method, UNASKED (`docs/UNASKED.md`), is
+   therefore built on it, with criteria fixed before its first run
+   (ANALYSIS_PLAN H8-X). Its results are reported as exploratory, never as a
+   pre-registered success.
