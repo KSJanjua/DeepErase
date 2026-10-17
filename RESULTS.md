@@ -1828,8 +1828,42 @@ its seed 0, and after the λ = 3 runs, had been seen. ANALYSIS_PLAN H9b fixed
 the claim before any further run: C1-C4 on seeds 1-2, plus the R-matched
 controls of seeds 0-2. Those runs are next in the queue.
 
+### 20.8 H9b confirmed on seeds 1-2: deeper, broader and better utility than GradDiff (C1-C3)
+
+H9b fixed its claim before its confirmation seeds ran: C1-C4 on seeds 1-2,
+with seed 0 as the selection seed. Configuration: UNASKED-G, TOFU anchor 10,
+general anchor 1, lr 3e-6, 20 epochs, H100 slice.
+
+| Checkpoint (α = 0) | Strict UDS, trained | UDS, trained | Breadth, trained | Strict UDS, held-out | Breadth, held-out | Strict UDS, paraphrased Q | R | RA | WF |
+|---|---|---|---|---|---|---|---|---|---|
+| seed 0 (selection) | 0.411 | 0.480 | 0.392 | 0.280 | 0.320 | 0.329 | 0.792 | 0.880 | 0.855 |
+| **seed 1** | **0.380** | 0.465 | **0.385** | 0.286 | 0.385 | 0.351 | **0.785** | **0.880** | **0.855** |
+| **seed 2** | **0.372** | 0.443 | **0.364** | 0.256 | 0.290 | 0.312 | **0.792** | **0.880** | **0.855** |
+| **mean, seeds 1-2** | **0.376** | 0.454 | **0.375** | 0.271 | 0.338 | 0.332 | **0.789** | **0.880** | **0.855** |
+| mean, seeds 0-2 | 0.388 | 0.463 | 0.380 | 0.274 | 0.332 | 0.331 | 0.790 | 0.880 | 0.855 |
+| GradDiff, mean of 3 seeds | 0.141 | 0.146 | 0.169 | 0.060 | 0.191 | – | 0.768 | 0.863 | 0.829 |
+| M_full | 0 | 0 | 0 | 0 | 0 | 0 | 0.805 | 0.890 | 0.855 |
+
+**H9b on seeds 1-2:**
+* **C1 depth: met.** Every seed is ≥ 0.26, and the mean of 0.376 is ≥ 0.282.
+* **C2 breadth: met.** Every seed is ≥ 0.32, and the mean of 0.375 is
+  ≥ 0.338.
+* **C3 utility: met.** R 0.789 ≥ 0.768, RA 0.880 ≥ 0.863 and WF 0.855
+  ≥ 0.829. No seed is below a floor.
+* **C4 beyond damage:** the controls of seeds 0-2 are running.
+
+In plain terms, at its checkpoint UNASKED-G (anchor 10), against GradDiff's
+three-seed mean:
+* forgets the trained facts 2.7× deeper by strict UDS (0.376) and 2.2× more
+  broadly (0.375);
+* on held-out facts, 4.5× deeper and 1.8× more broadly;
+* keeps R (+0.021), real authors (+0.017) and world facts (+0.026) better.
+
+The general knowledge is the same in all three seeds: RA 0.880 (M_full 0.890)
+and WF 0.855 (M_full's own value).
+
 **Still to come:**
-* H9b: seeds 1-2 and the controls of seeds 0-2;
+* H9b C4: the R-matched controls of seeds 0-2;
 * C4 for H9 (λ = 3): the R-matched controls of seeds 1-2;
 * a TOFU anchor of 10 (exploratory);
 * relearning dose-responses for UNASKED-G and GradDiff.
