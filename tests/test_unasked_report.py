@@ -35,7 +35,7 @@ def _run(root, name, seed, d2_trained, d2_para, ra=0.85, wf=0.84, control=None):
 
 def test_criteria_from_saved_runs(tmp_path):
     _run(tmp_path, "study_v2_unasked_1B_s0_lr3e-06", 0, 0.5, 0.4)
-    _run(tmp_path, "study_v2_unasked_1B_s0_lr3e-06_ext", 0, 0.9, 0.9)    # tagged: ignored
+    _run(tmp_path, "study_v2_unasked_1B_s0_lr3e-06_lam3", 0, 0.9, 0.9)   # a variant: not in E1-E5
     _run(tmp_path, "control_x10_v2_unasked_1B_s0_lr3e-06", 0, 0.1, 0.1, control=10.0)
     _run(tmp_path, "study_v2_ga_1B_s0_lr1e-08", 0, 0.2, 0.1)
     out = tmp_path / "rep"
@@ -51,6 +51,10 @@ def test_criteria_from_saved_runs(tmp_path):
     assert c["E2_excess_strict_trained"]["per_seed"][0] == pytest.approx(0.5)
     assert c["E4_general_knowledge"]["verdict"] == "met"
     assert "study_v2_ga_1B_s0_lr1e-08" in rep["comparisons"]
+    lam3 = rep["variants"]["study_v2_unasked_1B_s0_lr3e-06_lam3"]
+    assert lam3["checkpoint"]["trained"]["strict"] == pytest.approx(0.9)
+    assert lam3["alpha1"]["alpha"] == 1.0
+    assert "_lam3" in out.with_suffix(".md").read_text()
     assert "E1 checkpoint strict UDS" in out.with_suffix(".md").read_text()
 
 

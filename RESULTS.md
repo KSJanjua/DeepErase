@@ -1472,7 +1472,7 @@ The latent index after the attack is (unlearned − retain90) / (full − retain
 
 | Seed 0 | Probe NLL, before → after | Held-out NLL, before → after | Latent index (NLL): probe / held-out | Latent index (knows-rate): probe / held-out |
 |---|---|---|---|---|
-| GA | 2.15 → 0.91 | 1.88 → 0.84 | 0.99 / 1.02 | 0.72 / 0.93 |
+| GA | 2.15 → 0.91 | 1.88 → 0.84 | 1.00 / 1.02 | 0.72 / 0.93 |
 | GradDiff | 1.14 → 1.00 | 0.70 → 0.93 | 0.92 / 0.95 | 0.94 / 1.00 |
 | NPO | 1.49 → 0.89 | 1.30 → 0.82 | 1.01 / 1.03 | 0.91 / 1.02 |
 | **UNASKED** | **2.03 → 0.99** | **1.54 → 0.91** | **0.93 / 0.96** | **0.66 / 1.09** |

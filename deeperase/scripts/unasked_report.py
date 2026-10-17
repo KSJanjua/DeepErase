@@ -16,8 +16,10 @@ It then states each criterion:
 * **E4.** RA >= 0.77 and WF >= 0.80 at the checkpoint (mean).
 * **E5.** Held-out depth, reported only.
 
-GA and NPO checkpoints (and their ``_para`` reruns) are listed beside it for
-comparison. Everything here is exploratory.
+Tagged UNASKED runs (``--tag``, e.g. ``lam3``, the stronger retain anchor) are
+listed as variants. They never enter E1-E5. GA, NPO and GradDiff checkpoints
+(and the GA and NPO ``_para`` reruns) are listed beside them for comparison.
+Everything here is exploratory.
 
     python -m deeperase.scripts.unasked_report
 """
@@ -83,6 +85,11 @@ def collect(studies: Path) -> dict:
             "excess_strict_heldout": (((ex or {}).get("heldout") or {}).get("strict") or {}).get("mean")
             if controls.get(int(a["seed"])) else None,
         }
+    variants = {}
+    for d in sorted(studies.glob("study_v2_unasked_1B_s*_lr*_*")):
+        a = audit_run(d) if d.is_dir() else None
+        if a:
+            variants[d.name] = {"checkpoint": point(a, d, 0.0), "alpha1": point(a, d, 1.0)}
     comparisons = {}
     for pattern in ("study_v2_ga_1B_s*_lr1e-08", "study_v2_npo_1B_s*_lr1e-08",
                     "study_v2_graddiff_1B_s*_lr5e-08", "study_v2_ga_1B_s0_lr1e-08_para",
@@ -91,7 +98,7 @@ def collect(studies: Path) -> dict:
             a = audit_run(d)
             if a:
                 comparisons[d.name] = point(a, d, 0.0)
-    return {"seeds": seeds, "comparisons": comparisons}
+    return {"seeds": seeds, "variants": variants, "comparisons": comparisons}
 
 
 def criteria(seeds: Dict[int, dict]) -> dict:
@@ -139,6 +146,9 @@ def to_markdown(rep: dict) -> str:
     for seed, s in sorted(rep["seeds"].items()):
         row(s["run"], s["checkpoint"])
         row(s["run"], s["alpha1"])
+    for name, v in rep.get("variants", {}).items():
+        row(name, v["checkpoint"])
+        row(name, v["alpha1"])
     for name, p in rep["comparisons"].items():
         row(name, p)
     c = rep["criteria"]

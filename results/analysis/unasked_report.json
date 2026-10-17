@@ -55,6 +55,7 @@
    "excess_strict_heldout": null
   }
  },
+ "variants": {},
  "comparisons": {
   "study_v2_ga_1B_s0_lr1e-08": {
    "alpha": 0.0,
