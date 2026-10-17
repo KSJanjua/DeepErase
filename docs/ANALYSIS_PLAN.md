@@ -391,7 +391,8 @@ real-world ones.
   contains any RA/WF item's correct answer, or any name or title from an RA/WF
   question. 526 terms are blocked, and none of the 400 kept pairs contains an
   RA/WF answer.
-* **Everything else as UNASKED.** The per-layer scale and the
+* **Everything else as UNASKED**, except the TOFU retain anchor's weight
+  (3; see the amendment below). The per-layer scale and the
   massive-activation guard come from the forget and TOFU retain rows only.
   The rate is 3e-6 (UNASKED's scanned rate; no new scan). The checkpoint is
   the lowest gap with R ≥ 95% of baseline. Protocol v2, with
@@ -400,6 +401,18 @@ real-world ones.
 **Code.** Method `unaskedg` in `deeperase/unlearn.py`, `--general-anchor` and
 `--general-weight` in `scripts/run_study.py` (shared by lr_scan,
 control_probe and relearn_attack).
+
+**Amendment (17 Oct 2026, before any UNASKED-G run): the TOFU retain anchor
+weighs 3, not 1.** The UNASKED λ = 3 run (seed 0, `_lam3`) finished its
+checkpoint point while UNASKED-G was still queued.
+* **What λ = 3 did.** Against λ = 1 it raised RA from 0.72 to 0.81, WF from
+  0.735 to 0.786 and R from 0.772 to 0.788.
+* **What it cost.** Breadth was unchanged (0.423) and trained strict UDS fell
+  only from 0.452 to 0.430.
+* **The decision.** The utility criterion C3 is the binding one, so UNASKED-G
+  starts from λ = 3 (`UNASKED_G_RETAIN_WEIGHT`, the method's default). C1-C4,
+  the λ_g rule and the comparison runs are unchanged. UNASKED's own runs
+  (H8-X) stay at λ = 1.
 
 **Choosing λ_g on seed 0, the development seed.** λ_g = 1 runs first. If it
 meets C1 and C2 but not C3, λ_g = 3 runs on seed 0. Seeds 1 and 2 then run

@@ -383,8 +383,10 @@ UNASKED_DEFAULTS = {"rep_layers": ",".join(str(l) for l in range(16)),
                     "trainable": r"^model\.layers\.\d+\.(self_attn|mlp)\."}
 
 #: UNASKED-G = UNASKED + an anchor on real-world QA pairs that share nothing with
-#: the RA/WF evaluation items (scripts/build_general_anchor.py).
+#: the RA/WF evaluation items (scripts/build_general_anchor.py), with the TOFU
+#: retain anchor at weight 3 (ANALYSIS_PLAN H9, amendment before its first run).
 GENERAL_DEFAULTS = {"general_anchor": "data/general_anchor.json", "general_weight": 1.0}
+UNASKED_G_RETAIN_WEIGHT = 3.0
 
 
 def general_settings(args, method: UnlearnMethod) -> Dict[str, object]:
@@ -418,6 +420,8 @@ def rep_settings(args, method: UnlearnMethod) -> Dict[str, object]:
     defaults = dict(REP_DEFAULTS)
     if method in (UnlearnMethod.UNASKED, UnlearnMethod.UNASKED_G):
         defaults.update(UNASKED_DEFAULTS)
+    if method is UnlearnMethod.UNASKED_G:
+        defaults["retain_weight"] = UNASKED_G_RETAIN_WEIGHT
     out = {k: (getattr(args, k, None) if getattr(args, k, None) is not None else v)
            for k, v in defaults.items()}
     out["rep_layers"] = [int(x) for x in str(out["rep_layers"]).split(",") if x.strip()]

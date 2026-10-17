@@ -112,8 +112,12 @@ real-world questions.
   iterator across epochs, so every pair is used. The per-layer scale and the
   massive-activation guard still come from the forget and TOFU retain rows
   only, so the rest of the objective is UNASKED's exactly.
-* **Everything else** as UNASKED: targets, positions, trainable weights, the
-  TOFU retain anchor (λ = 1), lr 3e-6, checkpoint by the lowest gap.
+* **TOFU retain anchor at λ = 3**, not UNASKED's 1. On seed 0, UNASKED at
+  λ = 3 kept breadth (0.423) and nearly all its depth (strict 0.430), and RA
+  rose from 0.72 to 0.81 and WF from 0.735 to 0.786. This amendment was made
+  before UNASKED-G's first run (ANALYSIS_PLAN H9).
+* **Everything else** as UNASKED: targets, positions, trainable weights,
+  lr 3e-6, checkpoint by the lowest gap.
 * **Code.** Method `unaskedg` (`deeperase/unlearn.py`).
   `stranger.compute_targets(..., general_data=)` builds the anchors and
   `stranger.stranger_loss(..., general_weight=)` adds the term. The flags

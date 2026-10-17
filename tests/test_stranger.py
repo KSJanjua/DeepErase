@@ -650,6 +650,7 @@ def test_study_runs_unaskedg_end_to_end(word_checkpoints, tmp_path):
     cfg = json.loads((tmp_path / "g" / "config.json").read_text())
     u = cfg["unlearn"]
     assert u["rep_target"] == "unasked" and u["general_weight"] == 2.0
+    assert u["retain_weight"] == 3.0                    # UNASKED-G's TOFU anchor default
     assert u["general_anchor"] == str(anchor) and len(u["general_anchor_sha256"]) == 64
     hist = json.loads((tmp_path / "g" / "unlearn.json").read_text())["history"]
     assert hist["rep_stats"]["general_positions"] > 0
