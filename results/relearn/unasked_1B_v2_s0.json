@@ -1,0 +1,122 @@
+{
+ "what": "relearning attack on the method's checkpoint",
+ "method": "unasked",
+ "learning_rate": 3e-06,
+ "seed": 0,
+ "attack_lr": 1e-05,
+ "attack_epochs": 2,
+ "selected_epoch": 18,
+ "sets": {
+  "attack": 100,
+  "probe": 100,
+  "heldout": 200
+ },
+ "results": {
+  "unlearned": {
+   "before": {
+    "probe": {
+     "knows_rate": 0.615,
+     "n_items": 200,
+     "answer_nll": 2.02859375
+    },
+    "heldout": {
+     "knows_rate": 0.6775,
+     "n_items": 400,
+     "answer_nll": 1.5357048940658569
+    }
+   },
+   "after": {
+    "probe": {
+     "knows_rate": 0.625,
+     "n_items": 200,
+     "answer_nll": 0.9918870735168457
+    },
+    "heldout": {
+     "knows_rate": 0.735,
+     "n_items": 400,
+     "answer_nll": 0.9098948872089386
+    }
+   }
+  },
+  "full": {
+   "before": {
+    "probe": {
+     "knows_rate": 0.715,
+     "n_items": 200,
+     "answer_nll": 0.41150368094444273
+    },
+    "heldout": {
+     "knows_rate": 0.785,
+     "n_items": 400,
+     "answer_nll": 0.39582697182893756
+    }
+   },
+   "after": {
+    "probe": {
+     "knows_rate": 0.68,
+     "n_items": 200,
+     "answer_nll": 0.9016752529144287
+    },
+    "heldout": {
+     "knows_rate": 0.725,
+     "n_items": 400,
+     "answer_nll": 0.8628905284404754
+    }
+   }
+  },
+  "retain90": {
+   "before": {
+    "probe": {
+     "knows_rate": 0.475,
+     "n_items": 200,
+     "answer_nll": 2.443751769065857
+    },
+    "heldout": {
+     "knows_rate": 0.5275,
+     "n_items": 400,
+     "answer_nll": 2.4206321144104006
+    }
+   },
+   "after": {
+    "probe": {
+     "knows_rate": 0.52,
+     "n_items": 200,
+     "answer_nll": 2.2255530166625976
+    },
+    "heldout": {
+     "knows_rate": 0.61,
+     "n_items": 400,
+     "answer_nll": 2.17865291595459
+    }
+   }
+  }
+ },
+ "latent_index": {
+  "probe": {
+   "knows_rate": 0.6562499999999998,
+   "answer_nll": 0.9318578927203908
+  },
+  "heldout": {
+   "knows_rate": 1.0869565217391306,
+   "answer_nll": 0.9642759519389598
+  }
+ },
+ "seconds": 1055.9,
+ "git": {
+  "commit": "cc8790bd70b123dd86eb2eac25294a47718c6182",
+  "branch": "rishabh-development",
+  "dirty": false
+ },
+ "environment": {
+  "python": "3.11.17",
+  "platform": "Linux-5.15.0-1053-nvidia-x86_64-with-glibc2.35",
+  "torch": "2.6.0+cu124",
+  "transformers": "4.46.3",
+  "tokenizers": "0.20.3",
+  "datasets": "3.1.0",
+  "numpy": "1.26.4",
+  "cuda": "12.4",
+  "device": "NVIDIA H100 80GB HBM3 MIG 3g.40gb",
+  "tf32_matmul": false
+ }
+}
