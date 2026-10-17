@@ -94,6 +94,9 @@ def parse_args(argv: Optional[Sequence[str]] = None):
     ap.add_argument("--alphas", default="0,1",
                     help="sweep positions to measure; the largest sets the target")
     ap.add_argument("--out-dir", default="results/control_probes")
+    ap.add_argument("--tag", default="",
+                    help="suffix of the output file, for a variant run with extra flags "
+                         "(e.g. 'g3' -> unaskedg_1B_v2_s0_g3.json)")
     lr_scan.add_training_args(ap)       # data, model and training: as the scan and run_study
     return ap.parse_args(argv)
 
@@ -159,7 +162,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "recommended_scale": scale, "why": why,
         "seconds": round(time.time() - t0, 1),
         "git": git_info(), "environment": environment_info()}
-    out = Path(args.out_dir) / f"{args.method}_{args.size}_{args.protocol}_s{args.seed}.json"
+    tag = f"_{args.tag}" if args.tag else ""
+    out = Path(args.out_dir) / f"{args.method}_{args.size}_{args.protocol}_s{args.seed}{tag}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=1), encoding="utf-8")
 
