@@ -369,6 +369,12 @@ def add_rep_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--cf-names", default=None, help="counterfactual names file")
     ap.add_argument("--retain-weight", type=float, default=None,
                     help="weight of the retain term (GradDiff and the representation methods)")
+    ap.add_argument("--general-anchor", default=None,
+                    help=f"UNASKED-G: general-knowledge QA anchor file "
+                         f"(default {GENERAL_DEFAULTS['general_anchor']})")
+    ap.add_argument("--general-weight", type=float, default=None,
+                    help=f"UNASKED-G: weight of the general anchor "
+                         f"(default {GENERAL_DEFAULTS['general_weight']})")
 
 
 #: UNASKED acts on the answer positions, where the memory is read out, so its
@@ -376,19 +382,47 @@ def add_rep_args(ap: argparse.ArgumentParser) -> None:
 UNASKED_DEFAULTS = {"rep_layers": ",".join(str(l) for l in range(16)),
                     "trainable": r"^model\.layers\.\d+\.(self_attn|mlp)\."}
 
+#: UNASKED-G = UNASKED + an anchor on real-world QA pairs that share nothing with
+#: the RA/WF evaluation items (scripts/build_general_anchor.py).
+GENERAL_DEFAULTS = {"general_anchor": "data/general_anchor.json", "general_weight": 1.0}
+
+
+def general_settings(args, method: UnlearnMethod) -> Dict[str, object]:
+    """Resolved general-anchor settings of UNASKED-G ({} for other methods)."""
+    if not method.needs_general:
+        if getattr(args, "general_anchor", None) or getattr(args, "general_weight", None):
+            raise SystemExit("--general-anchor/--general-weight are only for unaskedg")
+        return {}
+    out = {k: (getattr(args, k, None) if getattr(args, k, None) is not None else v)
+           for k, v in GENERAL_DEFAULTS.items()}
+    out["general_weight"] = float(out["general_weight"])
+    out["general_anchor_sha256"] = sha256_file(str(out["general_anchor"]))
+    return out
+
+
+def build_general_batches(path: str, tokenizer, fmt, max_length: int,
+                          loss_scope: LossScope) -> List[Dict[str, torch.Tensor]]:
+    """UNASKED-G's anchor rows, tokenised like every other QA row."""
+    from types import SimpleNamespace
+    rows = json.loads(Path(path).read_text(encoding="utf-8"))["rows"]
+    out = build_forget_batches([SimpleNamespace(question=r["question"], answer=r["answer"])
+                                for r in rows], tokenizer, fmt, max_length, loss_scope)
+    log.info("  general anchor: %d QA rows from %s", len(out), path)
+    return out
+
 
 def rep_settings(args, method: UnlearnMethod) -> Dict[str, object]:
     """Resolved settings of a representation-target method ({} otherwise)."""
     if not method.representation_targets:
         return {}
     defaults = dict(REP_DEFAULTS)
-    if method is UnlearnMethod.UNASKED:
+    if method in (UnlearnMethod.UNASKED, UnlearnMethod.UNASKED_G):
         defaults.update(UNASKED_DEFAULTS)
     out = {k: (getattr(args, k, None) if getattr(args, k, None) is not None else v)
            for k, v in defaults.items()}
     out["rep_layers"] = [int(x) for x in str(out["rep_layers"]).split(",") if x.strip()]
-    out["rep_target"] = {UnlearnMethod.SCRAMBLE: "scramble",
-                         UnlearnMethod.UNASKED: "unasked"}.get(method, "counterfactual")
+    out["rep_target"] = {UnlearnMethod.SCRAMBLE: "scramble", UnlearnMethod.UNASKED: "unasked",
+                         UnlearnMethod.UNASKED_G: "unasked"}.get(method, "counterfactual")
     out["cf_names_sha256"] = sha256_file(str(out["cf_names"]))
     return out
 
@@ -791,6 +825,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     items_path = settings["breadth_items"]
     rep = rep_settings(args, method)
+    gen = general_settings(args, method)
     retain_weight = float(args.retain_weight if args.retain_weight is not None
                           else (rep.get("retain_weight") or 1.0))
     trainable = rep.get("trainable") or args.trainable
@@ -804,6 +839,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                                 "cf_names_sha256", "rep_target")})
         unlearn_cfg["retain_weight"] = retain_weight
         unlearn_cfg["select_by"] = "rep_gap"
+        unlearn_cfg.update(gen)
     elif args.retain_weight is not None:
         unlearn_cfg["retain_weight"] = retain_weight
     config = {
@@ -991,7 +1027,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          beta=args.beta, retain_weight=retain_weight,
                          min_utility_ratio=float(settings["min_utility_ratio"]),
                          seed=args.seed, trainable=trainable,
-                         select_by="rep_gap" if rep else "forget_nll")
+                         select_by="rep_gap" if rep else "forget_nll",
+                         general_weight=float(gen.get("general_weight") or 0.0))
+    general_batches = (build_general_batches(str(gen["general_anchor"]), tokenizer, fmt,
+                                             args.max_length, loss_scope) if gen else None)
 
     r_items = [i for i in breadth_items if i.tier == "R"]
 
@@ -1017,7 +1056,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         history = unlearn(model, forget_batches, ucfg,
                           retain_data=retain_batches,
                           reference_model=reference_model,
-                          eval_fn=utility_of, stranger=rep_inputs)
+                          eval_fn=utility_of, stranger=rep_inputs,
+                          general_data=general_batches)
     except CollapsedError as e:
         raise SystemExit("\n".join([
             "", str(e), "",

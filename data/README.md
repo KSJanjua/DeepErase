@@ -65,3 +65,12 @@ This file is **byte-identical** to the copy vendored at
 `DEFAULT_REFERENCE_PATH`. Verified 29 August 2026. Use `--reference-spans` to
 score against these rather than the `NOVEL_CONTENT` heuristic, which agrees with
 them on only 12% of examples (`results/span_comparison.json`).
+
+## `general_anchor.json` (UNASKED-G)
+
+400 real-world question-answer pairs from Natural Questions, open-domain
+version (`google-research-datasets/nq_open`, validation split; CC BY-SA 3.0;
+Kwiatkowski et al. 2019, Lee et al. 2019). Built by
+`python -m deeperase.scripts.build_general_anchor`. Pairs that share an
+answer, name or title with an RA/WF breadth item are excluded, so the anchor
+cannot leak an evaluated fact.

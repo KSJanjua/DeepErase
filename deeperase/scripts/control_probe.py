@@ -112,11 +112,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                         epochs=args.epochs, batch_size=args.batch_size, beta=args.beta,
                         seed=args.seed, min_utility_ratio=ns.floor,
                         retain_weight=ns.retain_weight, trainable=ns.trainable,
-                        select_by="rep_gap" if ns.rep else "forget_nll")
+                        select_by="rep_gap" if ns.rep else "forget_nll",
+                        general_weight=ns.general_weight)
     try:
         history = unlearn(ns.model, ns.forget_batches, cfg, retain_data=ns.retain_batches,
                           reference_model=ns.reference, eval_fn=ns.utility_of,
-                          stranger=ns.stranger)
+                          stranger=ns.stranger, general_data=ns.general_data)
     except CollapsedError as e:
         raise SystemExit(f"\nTraining collapsed, so there is no update to match:\n{e}")
     ns.reference = None

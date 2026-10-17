@@ -365,6 +365,81 @@ The rule said stop and report. The follow-up runs went ahead anyway, as a
 second declared deviation (§9, 17 Oct). Everything after X-G3 is exploratory,
 past a failed gate.
 
+### H9 — UNASKED-G: deeper and broader than GradDiff, at no extra utility cost (fixed 17 Oct 2026, before any UNASKED-G run)
+
+**Status: exploratory.** It was designed after UNASKED's seed-0 results had
+been seen. The criteria below are fixed before its first run.
+
+**Why.** UNASKED (H8-X) already beats GradDiff by a wide margin on depth and
+breadth at the same R:
+* strict UDS 0.452 against 0.141;
+* breadth 0.423 against 0.169.
+
+But it loses real-author and world-fact knowledge: RA 0.72 and WF 0.735,
+against GradDiff's 0.863 and 0.829. The likely mechanism is spread. UNASKED
+trains answer positions toward the states of a blanked question. Its TOFU
+retain anchor stops that on TOFU-style questions, but nothing stops it on
+real-world ones.
+
+**Method.** UNASKED, unchanged, plus a second anchor:
+* **The anchor term.** M_full's own block outputs at all 16 layers, on 400
+  real-world question-answer pairs, form a separate term with weight λ_g
+  (default 1). The pairs come from Natural Questions (`nq_open`, validation
+  split), built by `scripts/build_general_anchor.py`, file
+  `data/general_anchor.json`.
+* **No leak into the evaluation.** A pair is dropped if its question or answer
+  contains any RA/WF item's correct answer, or any name or title from an RA/WF
+  question. 526 terms are blocked, and none of the 400 kept pairs contains an
+  RA/WF answer.
+* **Everything else as UNASKED.** The per-layer scale and the
+  massive-activation guard come from the forget and TOFU retain rows only.
+  The rate is 3e-6 (UNASKED's scanned rate; no new scan). The checkpoint is
+  the lowest gap with R ≥ 95% of baseline. Protocol v2, with
+  paraphrased-question and paraphrased-answer depth on.
+
+**Code.** Method `unaskedg` in `deeperase/unlearn.py`, `--general-anchor` and
+`--general-weight` in `scripts/run_study.py` (shared by lr_scan,
+control_probe and relearn_attack).
+
+**Choosing λ_g on seed 0, the development seed.** λ_g = 1 runs first. If it
+meets C1 and C2 but not C3, λ_g = 3 runs on seed 0. Seeds 1 and 2 then run
+at the smallest λ_g that meets C1-C3 on seed 0. If neither does, they run at
+the λ_g with the higher general knowledge (mean of RA and WF). The verdicts
+are reported over all three seeds and, separately, over seeds 1-2 alone, which
+are the confirmation seeds.
+
+**Criteria.** All are at the checkpoint (α = 0), against GradDiff's three v2
+seeds (`study_v2_graddiff_1B_s{0,1,2}_lr5e-08`).
+
+* **C1, depth.** In every seed, strict UDS on trained facts ≥ 0.26 (GradDiff's
+  best seed, 0.158, plus 0.10). Over three seeds, the mean ≥ 0.282 (twice
+  GradDiff's mean, 0.141).
+* **C2, breadth.** In every seed, calibrated breadth on trained facts ≥ 0.32
+  (GradDiff's best seed, 0.220, plus 0.10). The three-seed mean ≥ 0.338 (twice
+  GradDiff's 0.169).
+* **C3, utility.** The three-seed means reach GradDiff's means: R ≥ 0.768,
+  RA ≥ 0.863 and WF ≥ 0.829. No seed falls below GradDiff's worst seed (R 0.765,
+  RA 0.85, WF 0.821). RA (100 items) and WF (117 items) each carry a sampling
+  sd of about 0.035, which is reported beside them.
+* **C4, beyond damage.** In every seed with a control, the strict-UDS excess
+  over the R-matched random-direction control is ≥ +0.15 (the E2 rule). The
+  excess matched on general knowledge is reported beside it.
+
+Also reported:
+* held-out depth and breadth;
+* paraphrased-question and paraphrased-answer depth;
+* the relearning attack (seed 0, if GPU time allows);
+* UNASKED (λ_g = 0) beside it, as the ablation without the general anchor.
+
+**What each outcome means (stated now).**
+* **C1-C4 met:** a method that is deeper and broader than GradDiff at
+  GradDiff's utility, and whose depth is not random damage.
+* **C3 fails while C1, C2 and C4 hold:** the anchor narrows the
+  general-knowledge cost but does not close it, and the trade-off is reported.
+* **C4 fails:** the extra depth comes with damage, as in §14.
+* **Relearning:** if the attack still recovers the facts, the method changes
+  what depth measures, not what can be relearned (RESULTS.md §19.3).
+
 ## 5. Units and statistics
 
 * **Seeds are the replicates** for α-level claims: n = 3 per method. Results

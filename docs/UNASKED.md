@@ -90,3 +90,41 @@ GradDiff and NPO reach at their checkpoint.
 | Training | `deeperase/unlearn.py` (method `unasked`) |
 | Defaults (all 16 layers, every block's attention and MLP) | `deeperase/scripts/run_study.py: UNASKED_DEFAULTS` |
 | Gate 1b, the measurement it is built on | `deeperase/scripts/memory_keys.py` |
+
+## UNASKED-G: UNASKED with a general-knowledge anchor (ANALYSIS_PLAN H9)
+
+UNASKED beats GradDiff by a wide margin on depth and breadth, but it loses
+real-author and world-fact knowledge (RA 0.72, WF 0.735, against GradDiff's
+0.86 and 0.83). Its target, the state of a blanked question, can spread into a
+general habit of not reading the question. The TOFU retain anchor prevents
+that on TOFU-style questions only. UNASKED-G adds a second anchor of
+real-world questions.
+
+* **Data.** 400 question-answer pairs from Natural Questions (`nq_open`,
+  validation split), built by `scripts/build_general_anchor.py` into
+  `data/general_anchor.json`.
+  * **Leak filter.** A pair is dropped if its question or answer contains any
+    RA/WF item's correct answer, or any name or title from an RA/WF question.
+    That blocks 526 terms, and none of the 400 kept pairs contains an RA/WF
+    answer.
+* **Anchor.** M_full's own block outputs at all 16 layers on those pairs, in
+  their own term with weight λ_g (default 1). The anchor batches run on one
+  iterator across epochs, so every pair is used. The per-layer scale and the
+  massive-activation guard still come from the forget and TOFU retain rows
+  only, so the rest of the objective is UNASKED's exactly.
+* **Everything else** as UNASKED: targets, positions, trainable weights, the
+  TOFU retain anchor (λ = 1), lr 3e-6, checkpoint by the lowest gap.
+* **Code.** Method `unaskedg` (`deeperase/unlearn.py`).
+  `stranger.compute_targets(..., general_data=)` builds the anchors and
+  `stranger.stranger_loss(..., general_weight=)` adds the term. The flags
+  are `--general-anchor` and `--general-weight`.
+* **Check on a tiny model** (`tests/test_stranger.py`). At λ_g = 1 the anchor
+  cuts the drift on the general rows about tenfold, and the forget target is
+  still reached: remaining gap 0.053, against 0.038 without the anchor.
+* **Criteria** (C1-C4, fixed before the first run): ANALYSIS_PLAN H9.
+
+```bash
+python -m deeperase.scripts.build_general_anchor        # data/general_anchor.json
+python gpu/replicate.py --methods unaskedg --seeds 0 --learning-rate 3e-6 \
+    --extra --paraphrase-depth --paraphrase-answer-depth
+```

@@ -518,3 +518,138 @@ def test_relearn_attack_dose_response_restarts_from_the_checkpoint(word_checkpoi
                 r["before"][probe]["answer_nll"], abs=1e-5)
         # the strong attack started from the checkpoint, not from the zero-rate copy
         assert r["after"] == r["after_0.001"] != r["after_0"]
+
+
+# ---------------------------------------------------------------------------
+# UNASKED-G: the general-knowledge anchor
+# ---------------------------------------------------------------------------
+
+def _general_rows(n=6, length=7, seed=5):
+    g = torch.Generator().manual_seed(seed)
+    return [{"input_ids": torch.randint(3, 50, (1, length), generator=g),
+             "attention_mask": torch.ones(1, length, dtype=torch.long)} for _ in range(n)]
+
+
+def _stack(rows):
+    return {"input_ids": torch.cat([r["input_ids"] for r in rows]),
+            "attention_mask": torch.cat([r["attention_mask"] for r in rows])}
+
+
+def test_general_anchor_is_its_own_term_and_changes_nothing_else():
+    m = _tiny()
+    inp = _inputs(same=False, target="unasked")
+    retain = [_batch([r.input_ids]) for r in inp.rows]
+    general = _general_rows()
+    cpu = torch.device("cpu")
+    plain = st.compute_targets(m, inp, retain, cpu)
+    anchored = st.compute_targets(m, inp, retain, cpu, general_data=general)
+    # the scale, the guard and the forget targets are those of the plain run
+    assert plain.sigma2 == anchored.sigma2 and plain.general == []
+    assert plain.stats["median_norm"] == anchored.stats["median_norm"]
+    assert all(torch.equal(a[1][l], b[1][l]) for a, b in zip(plain.forget, anchored.forget)
+               for l in (0, 1))
+    assert len(anchored.general) == len(general)
+    assert (anchored.stats["general_positions"] + anchored.stats["general_positions_dropped"]
+            == len(general) * 6)
+    fb = _batch([r.input_ids for r in inp.rows])
+    gb, rows = _stack(general[:3]), [0, 1, 2]
+    _, parts = st.stranger_loss(m, fb, [0, 1, 2], None, [], anchored, 1.0,
+                                general_batch=gb, general_rows=rows, general_weight=2.0)
+    assert parts["general"] == pytest.approx(0.0, abs=1e-10)       # theta0: its own states
+    with torch.no_grad():
+        m.model.layers[0].mlp.down_proj.weight.add_(0.05)
+    l1, p1 = st.stranger_loss(m, fb, [0, 1, 2], None, [], anchored, 1.0,
+                              general_batch=gb, general_rows=rows, general_weight=1.0)
+    l3, _ = st.stranger_loss(m, fb, [0, 1, 2], None, [], anchored, 1.0,
+                             general_batch=gb, general_rows=rows, general_weight=3.0)
+    assert p1["general"] > 0
+    assert float(l3 - l1) == pytest.approx(2 * p1["general"], rel=1e-5)
+
+
+def test_unlearn_unaskedg_needs_its_anchor_and_others_refuse_it():
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, unlearn
+    m = _tiny()
+    inp, forget, retain = _train_inputs(target="unasked")
+    general = _general_rows()
+    with pytest.raises(ValueError, match="general_weight > 0"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.UNASKED_G), retain_data=retain,
+                stranger=inp, general_data=general)
+    with pytest.raises(ValueError, match="requires general_data"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.UNASKED_G, general_weight=1.0),
+                retain_data=retain, stranger=inp)
+    with pytest.raises(ValueError, match="does not take general_data"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.UNASKED), retain_data=retain,
+                stranger=inp, general_data=general)
+    with pytest.raises(ValueError, match="only used by unaskedg"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.UNASKED, general_weight=1.0),
+                retain_data=retain, stranger=inp)
+
+
+def test_unaskedg_keeps_the_general_rows_where_unasked_moves_them():
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, unlearn
+    cpu = torch.device("cpu")
+
+    def run(general_weight: float):
+        m = _tiny()
+        inp, forget, retain = _train_inputs(target="unasked")
+        general = _general_rows()
+        anchors = st.compute_targets(m, inp, retain, cpu, general_data=general)
+        method = UnlearnMethod.UNASKED_G if general_weight else UnlearnMethod.UNASKED
+        cfg = UnlearnConfig(method=method, learning_rate=1e-3, epochs=8, batch_size=2,
+                            min_utility_ratio=0.01, general_weight=general_weight,
+                            select_by="rep_gap")
+        hist = unlearn(m, forget, cfg, retain_data=retain, eval_fn=lambda _m: 1.0,
+                       stranger=inp, general_data=general if general_weight else None)
+        fb = _batch([r.input_ids for r in inp.rows])
+        _, parts = st.stranger_loss(m, fb, [0, 1, 2], None, [], anchors, 1.0,
+                                    general_batch=_stack(general),
+                                    general_rows=list(range(len(general))), general_weight=1.0)
+        return parts["general"], hist.epoch_evals[hist.selected_epoch].rep_gap
+
+    (free, gap_free), (held, gap_held) = run(0.0), run(1.0)
+    assert held < 0.2 * free                 # the general rows barely move ...
+    assert gap_held < 0.1 and gap_held < 2 * gap_free     # ... and the target is still reached
+
+
+def test_general_anchor_filter_blocks_every_evaluated_answer_and_name():
+    from deeperase.scripts.build_general_anchor import blocked_terms, leaks, select
+    items = [{"tier": "RA", "question": "Who wrote 'Pride and Prejudice'?",
+              "correct_answer": "Jane Austen"},
+             {"tier": "WF", "question": "Where would you find the Eiffel Tower?",
+              "correct_answer": "Paris"}]
+    blocked = blocked_terms(items)
+    assert {"jane austen", "pride and prejudice", "paris", "eiffel tower"} <= blocked
+    assert leaks("who wrote emma", "Jane Austen", blocked)
+    assert leaks("what river runs through paris", "the Seine", blocked)
+    assert not leaks("who sang i ran all the way home", "The Impalas", blocked)
+    assert not leaks("what is the parisian style called", "Haussmann", blocked)  # whole words
+    rows = [{"question": "who wrote emma", "answer": ["Jane Austen"]},
+            {"question": "who sang i ran all the way home", "answer": ["The Impalas"]},
+            {"question": "when was the first moon landing", "answer": ["20 July 1969"]},
+            {"question": "what is x", "answer": ["a very long answer with far too many words"]}]
+    out = select(rows, blocked, n=10, seed=0)
+    assert [r["nq_index"] for r in out] == [1, 2]
+    assert out[0]["question"] == "Who sang i ran all the way home?"
+    assert select(rows, blocked, n=10, seed=0) == out
+
+
+@needs_data
+def test_study_runs_unaskedg_end_to_end(word_checkpoints, tmp_path):
+    from deeperase.scripts.run_study import main
+    anchor = ROOT / "data" / "general_anchor.json"
+    if not anchor.exists():
+        pytest.skip("needs data/general_anchor.json")
+    argv = ["--method", "unaskedg", "--model-sources", json.dumps(word_checkpoints),
+            "--tofu-dir", str(TOFU), "--reference-spans", str(REF_SPANS),
+            "--output-dir", str(tmp_path), "--run-id", "g", "--cache-dir", str(tmp_path / "c"),
+            "--device", "cpu", "--alphas", "0,1", "--epochs", "1", "--batch-size", "8",
+            "--learning-rate", "1e-3", "--min-utility-ratio", "0.01", "--n-examples", "6",
+            "--n-breadth", "12", "--rep-layers", "0,1", "--general-anchor", str(anchor),
+            "--general-weight", "2"]
+    assert main(argv) == 0
+    cfg = json.loads((tmp_path / "g" / "config.json").read_text())
+    u = cfg["unlearn"]
+    assert u["rep_target"] == "unasked" and u["general_weight"] == 2.0
+    assert u["general_anchor"] == str(anchor) and len(u["general_anchor_sha256"]) == 64
+    hist = json.loads((tmp_path / "g" / "unlearn.json").read_text())["history"]
+    assert hist["rep_stats"]["general_positions"] > 0

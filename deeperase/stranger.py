@@ -272,6 +272,9 @@ class StrangerTargets:
     retain: List[Optional[Tuple[torch.Tensor, Dict[int, torch.Tensor]]]]
     sigma2: Dict[int, float]
     stats: dict = field(default_factory=dict)
+    #: per general-anchor row (UNASKED-G): (positions, {layer: (Q, H) anchor}) or None
+    general: List[Optional[Tuple[torch.Tensor, Dict[int, torch.Tensor]]]] = \
+        field(default_factory=list)
 
 
 @torch.no_grad()
@@ -292,10 +295,13 @@ def row_states(model, row: StrangerRow, layers: Sequence[int], device
 
 @torch.no_grad()
 def compute_targets(model, inputs: StrangerInputs, retain_data: Sequence[dict],
-                    device) -> StrangerTargets:
+                    device, general_data: Sequence[dict] = ()) -> StrangerTargets:
     """Forget targets, retain anchors and the per-layer scale, at theta0.
 
     ``model`` must still be M_full: call before the first optimiser step.
+    ``general_data`` (UNASKED-G) gets anchors exactly like the retain rows.
+    The per-layer scale and the massive-activation threshold still come from
+    the forget and retain rows only, so adding it changes nothing else.
     """
     was_training = model.training
     model.eval()
@@ -314,17 +320,22 @@ def compute_targets(model, inputs: StrangerInputs, retain_data: Sequence[dict],
                 tau[l] = h0[l] + dist * d
         forget_raw.append((torch.as_tensor(row.positions, device=device), h0, tau))
 
-    retain_raw = []
-    for ex in retain_data:
-        ids = ex["input_ids"].to(device)
-        mask = ex.get("attention_mask")
-        n = int(mask.sum()) if mask is not None else ids.shape[1]
-        pos = torch.arange(1, n, device=device)
-        if len(pos) == 0:
-            retain_raw.append(None)
-            continue
-        out = block_outputs(model, ids, layers, stop_after=last)
-        retain_raw.append((pos, {l: out[l][0, pos].float() for l in layers}))
+    def anchor_states(data: Sequence[dict]) -> list:
+        raw = []
+        for ex in data:
+            ids = ex["input_ids"].to(device)
+            mask = ex.get("attention_mask")
+            n = int(mask.sum()) if mask is not None else ids.shape[1]
+            pos = torch.arange(1, n, device=device)
+            if len(pos) == 0:
+                raw.append(None)
+                continue
+            out = block_outputs(model, ids, layers, stop_after=last)
+            raw.append((pos, {l: out[l][0, pos].float() for l in layers}))
+        return raw
+
+    retain_raw = anchor_states(retain_data)
+    general_raw = anchor_states(general_data)
 
     # Massive-activation guard: a position is dropped if, at any target layer,
     # its starting state is far above that layer's median norm.
@@ -350,15 +361,20 @@ def compute_targets(model, inputs: StrangerInputs, retain_data: Sequence[dict],
         ok = keep_mask(h0)
         dropped += int((~ok).sum())
         forget.append((pos[ok], {l: tau[l][ok] for l in layers}) if ok.any() else None)
-    retain, r_dropped = [], 0
-    for x in retain_raw:
-        if x is None:
-            retain.append(None)
-            continue
-        pos, a = x
-        ok = keep_mask(a)
-        r_dropped += int((~ok).sum())
-        retain.append((pos[ok], {l: a[l][ok] for l in layers}) if ok.any() else None)
+    def guarded(raw: list) -> Tuple[list, int]:
+        kept, n_dropped = [], 0
+        for x in raw:
+            if x is None:
+                kept.append(None)
+                continue
+            pos, a = x
+            ok = keep_mask(a)
+            n_dropped += int((~ok).sum())
+            kept.append((pos[ok], {l: a[l][ok] for l in layers}) if ok.any() else None)
+        return kept, n_dropped
+
+    retain, r_dropped = guarded(retain_raw)
+    general, g_dropped = guarded(general_raw)
 
     sigma2 = {}
     for l in layers:
@@ -373,11 +389,14 @@ def compute_targets(model, inputs: StrangerInputs, retain_data: Sequence[dict],
              "forget_positions_dropped": dropped,
              "retain_positions": sum(len(x[0]) for x in retain if x),
              "retain_positions_dropped": r_dropped}
+    if general_data:
+        stats.update({"general_positions": sum(len(x[0]) for x in general if x),
+                      "general_positions_dropped": g_dropped})
     logger.info("STRANGER targets (%s): %s", inputs.target, stats)
     if was_training:
         model.train()
     return StrangerTargets(layers=tuple(layers), forget=forget, retain=retain,
-                           sigma2=sigma2, stats=stats)
+                           sigma2=sigma2, stats=stats, general=general)
 
 
 # ---------------------------------------------------------------------------
@@ -405,17 +424,22 @@ def _term(model, batch: dict, rows: Sequence[int], table, targets: StrangerTarge
 
 def stranger_loss(model, forget_batch: dict, forget_rows: Sequence[int],
                   retain_batch: Optional[dict], retain_rows: Sequence[int],
-                  targets: StrangerTargets, retain_weight: float
-                  ) -> Tuple[torch.Tensor, Dict[str, float]]:
-    """``L_forget + retain_weight * L_retain`` for one step."""
+                  targets: StrangerTargets, retain_weight: float, *,
+                  general_batch: Optional[dict] = None, general_rows: Sequence[int] = (),
+                  general_weight: float = 0.0) -> Tuple[torch.Tensor, Dict[str, float]]:
+    """``L_forget + retain_weight * L_retain + general_weight * L_general``."""
     lf = _term(model, forget_batch, forget_rows, targets.forget, targets)
     lr = (_term(model, retain_batch, retain_rows, targets.retain, targets)
           if retain_batch is not None else None)
+    lg = (_term(model, general_batch, general_rows, targets.general, targets)
+          if general_batch is not None and general_weight else None)
     device = forget_batch["input_ids"].device
     zero = torch.zeros((), device=device)
-    loss = (lf if lf is not None else zero) + retain_weight * (lr if lr is not None else zero)
+    loss = ((lf if lf is not None else zero) + retain_weight * (lr if lr is not None else zero)
+            + general_weight * (lg if lg is not None else zero))
     return loss, {"forget": float(lf) if lf is not None else 0.0,
-                  "retain": float(lr) if lr is not None else 0.0}
+                  "retain": float(lr) if lr is not None else 0.0,
+                  "general": float(lg) if lg is not None else 0.0}
 
 
 @torch.no_grad()

@@ -52,8 +52,9 @@ from deeperase.models import load_model, load_tokenizer
 from deeperase.provenance import environment_info, git_info
 from deeperase.scripts.measure_breadth import PROMPT_PREFIXES, subsample
 from deeperase.scripts.run_study import (
-    FORGET_CONFIG, PROTOCOLS, add_rep_args, build_forget_batches, build_rep_inputs,
-    build_retain_batches, configure_precision, rep_settings,
+    FORGET_CONFIG, PROTOCOLS, add_rep_args, build_forget_batches, build_general_batches,
+    build_rep_inputs, build_retain_batches, configure_precision, general_settings,
+    rep_settings,
 )
 from deeperase.unlearn import (
     CollapsedError, UnlearnConfig, UnlearnMethod, snapshot, unlearn,
@@ -253,6 +254,12 @@ def prepare(args) -> SimpleNamespace:
                                        args.max_length, ns.rep, args.seed)
         if len(ns.stranger.rows) != len(ns.forget_batches):
             raise SystemExit("representation inputs do not align with the forget batches")
+    # UNASKED-G's general-knowledge anchor, as run_study builds it
+    ns.general = general_settings(args, ns.method)
+    ns.general_weight = float(ns.general.get("general_weight") or 0.0)
+    ns.general_data = (build_general_batches(str(ns.general["general_anchor"]), tokenizer, fmt,
+                                             args.max_length, ns.loss_scope)
+                       if ns.general else None)
     items_path = args.breadth_items or proto["breadth_items"]
     all_items = load_breadth_items_file(items_path)
     items = subsample(all_items, args.n_breadth)
@@ -345,12 +352,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                             min_utility_ratio=_KEEP_EVERYTHING,
                             stop_below_utility_ratio=args.stop_ratio,
                             retain_weight=ns.retain_weight, trainable=ns.trainable,
-                            select_by="rep_gap" if ns.rep else "forget_nll")
+                            select_by="rep_gap" if ns.rep else "forget_nll",
+                            general_weight=ns.general_weight)
         t0 = time.time()
         try:
             history = unlearn(model, forget_batches, cfg, retain_data=retain_batches,
                               reference_model=reference, eval_fn=utility_of,
-                              stranger=ns.stranger)
+                              stranger=ns.stranger, general_data=ns.general_data)
         except CollapsedError as e:            # utility exactly 0 in every epoch
             history = e.history
         rec = summarise(lr, history, args.epochs, floor)

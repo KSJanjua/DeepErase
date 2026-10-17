@@ -74,6 +74,9 @@ class UnlearnMethod(str, Enum):
     STRANGER = "stranger"
     SCRAMBLE = "scramble"
     UNASKED = "unasked"
+    UNASKED_G = "unaskedg"
+    """UNASKED plus an anchor on real-world QA pairs (``general_data``), so the
+    model keeps reading ordinary questions as before (docs/UNASKED.md)."""
 
     @property
     def needs_retain(self) -> bool:
@@ -82,7 +85,13 @@ class UnlearnMethod(str, Enum):
     @property
     def representation_targets(self) -> bool:
         """Trains block outputs toward precomputed targets (deeperase/stranger.py)."""
-        return self in (UnlearnMethod.STRANGER, UnlearnMethod.SCRAMBLE, UnlearnMethod.UNASKED)
+        return self in (UnlearnMethod.STRANGER, UnlearnMethod.SCRAMBLE, UnlearnMethod.UNASKED,
+                        UnlearnMethod.UNASKED_G)
+
+    @property
+    def needs_general(self) -> bool:
+        """Anchors M_full's states on general-knowledge QA (``general_data``)."""
+        return self is UnlearnMethod.UNASKED_G
 
     @property
     def needs_reference(self) -> bool:
@@ -142,6 +151,10 @@ class UnlearnConfig:
     stay bit-identical and get no optimiser state). None trains everything,
     the behaviour of GA/GradDiff/NPO."""
 
+    general_weight: float = 0.0
+    """UNASKED-G: weight of the general-knowledge anchor term. Must be positive
+    for UNASKED-G and zero for every other method."""
+
     select_by: str = "forget_nll"
     """Which epoch counts as "most forgetful" among those above the utility
     floor. ``forget_nll``: the highest forget-set NLL (GA/GradDiff/NPO, whose
@@ -165,6 +178,10 @@ class UnlearnConfig:
             problems.append("select_by must be 'forget_nll' or 'rep_gap'")
         if self.select_by == "rep_gap" and not self.method.representation_targets:
             problems.append("select_by='rep_gap' needs a representation-target method")
+        if self.method.needs_general and not self.general_weight > 0:
+            problems.append(f"{self.method.value} needs general_weight > 0")
+        if not self.method.needs_general and self.general_weight:
+            problems.append("general_weight is only used by unaskedg")
         if (self.stop_below_utility_ratio is not None
                 and not 0.0 < self.stop_below_utility_ratio <= 1.0):
             problems.append("stop_below_utility_ratio must be in (0, 1]")
@@ -441,6 +458,7 @@ def unlearn(
     reference_model=None,
     eval_fn=None,
     stranger=None,
+    general_data: Optional[Sequence[Dict[str, torch.Tensor]]] = None,
 ) -> UnlearnHistory:
     """Apply an unlearning method **in place**. Returns the training history.
 
@@ -467,6 +485,8 @@ def unlearn(
         stranger: per-row inputs of a representation-target method
             (:class:`deeperase.stranger.StrangerInputs`), row i aligned with
             ``forget_data[i]``. Required by those methods, refused by others.
+        general_data: UNASKED-G's general-knowledge QA rows, anchored like the
+            retain rows. Required by UNASKED-G, refused by others.
 
     Raises:
         ValueError: on an invalid config, or if a method's required inputs are
@@ -502,13 +522,17 @@ def unlearn(
         if len(stranger.rows) != len(forget_data):
             raise ValueError(f"stranger has {len(stranger.rows)} rows for "
                              f"{len(forget_data)} forget examples; they must align")
-        want = {UnlearnMethod.SCRAMBLE: "scramble",
-                UnlearnMethod.UNASKED: "unasked"}.get(config.method, "counterfactual")
+        want = {UnlearnMethod.SCRAMBLE: "scramble", UnlearnMethod.UNASKED: "unasked",
+                UnlearnMethod.UNASKED_G: "unasked"}.get(config.method, "counterfactual")
         if stranger.target != want:
             raise ValueError(f"{config.method.value} needs {want!r} targets, "
                              f"got {stranger.target!r}")
     elif stranger is not None:
         raise ValueError(f"{config.method.value} does not take stranger= inputs")
+    if config.method.needs_general and not general_data:
+        raise ValueError(f"{config.method.value} requires general_data")
+    if general_data and not config.method.needs_general:
+        raise ValueError(f"{config.method.value} does not take general_data")
 
     torch.manual_seed(config.seed)
     device = next(model.parameters()).device
@@ -552,7 +576,8 @@ def unlearn(
         from deeperase.stranger import compute_targets, forget_term
         # At theta0, before any step: the targets are the starting model's own
         # states, so they must be taken now.
-        targets = compute_targets(model, stranger, retain_data, device)
+        targets = compute_targets(model, stranger, retain_data, device,
+                                  general_data=general_data or ())
         targets.stats["initial_forget_term"] = forget_term(
             model, forget_data, targets, config.batch_size, device)
         history.rep_stats = targets.stats
@@ -588,6 +613,10 @@ def unlearn(
     step = 0
     bs = config.batch_size
     n_retain = len(retain_data or [])
+    # The general anchor (UNASKED-G) is not tied to the forget set's length:
+    # one iterator runs across epochs, so every row is anchored in turn.
+    general_iter = iter(_batches(general_data, bs, device)) if general_data else None
+    g_index = 0
     for epoch in range(config.epochs):
         retain_iter = iter(_batches(retain_data or [], bs, device))
         r_index = 0
@@ -613,8 +642,19 @@ def unlearn(
                 f_rows = list(range(b_index * bs, min((b_index + 1) * bs, len(forget_data))))
                 r_rows = list(range(r_index * bs, min((r_index + 1) * bs, n_retain)))
                 r_index += 1
+                g, g_rows = None, []
+                if general_iter is not None:
+                    try:
+                        g = next(general_iter)
+                    except StopIteration:
+                        general_iter, g_index = iter(_batches(general_data, bs, device)), 0
+                        g = next(general_iter)
+                    g_rows = list(range(g_index * bs, min((g_index + 1) * bs, len(general_data))))
+                    g_index += 1
                 loss, _parts = stranger_loss(model, batch, f_rows, r, r_rows, targets,
-                                             config.retain_weight)
+                                             config.retain_weight, general_batch=g,
+                                             general_rows=g_rows,
+                                             general_weight=config.general_weight)
             else:
                 raise ValueError(f"no training branch for method {config.method.value!r}")
 
