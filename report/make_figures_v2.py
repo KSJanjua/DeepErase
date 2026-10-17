@@ -219,6 +219,25 @@ def fig16_unasked_depth_vs_general():
                 textcoords="offset points", fontsize=7.5, ha="right", color=INK)
     ax.annotate("α = 1", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
                 fontsize=7, va="center", color=INK2)
+    extra = []
+    ctl = sorted(d for d in STUDIES.glob("control_x*_v2_unasked_1B_s*_lr*") if d.is_dir())
+    if ctl:
+        cx, cy = _strict_path(ctl)
+        ax.plot(cx, cy, "--", color=UNASKED_COLOR, lw=1.6, alpha=0.85, zorder=3)
+        ax.annotate("its damage control", (cx[-1], cy[-1]), xytext=(5, 0),
+                    textcoords="offset points", fontsize=7, va="center", color=INK2)
+        extra.append((plt.Line2D([], [], color=UNASKED_COLOR, lw=1.6, ls="--"),
+                      f"UNASKED's matched-damage control ({len(ctl)} seed{'s' if len(ctl) > 1 else ''})"))
+    lam = sorted(STUDIES.glob("study_v2_unasked_1B_s*_lr*_lam3"))
+    if lam:
+        lx, ly = _strict_path(lam)
+        ax.plot(lx[0], ly[0], "D", color="#fcfcfb", ms=6, zorder=5,
+                markeredgecolor=UNASKED_COLOR, markeredgewidth=1.4)
+        ax.annotate("λ = 3", (lx[0], ly[0]), xytext=(6, -8), textcoords="offset points",
+                    fontsize=7, color=INK2)
+        extra.append((plt.Line2D([], [], ls="", marker="D", color="#fcfcfb", ms=5,
+                                 markeredgecolor=UNASKED_COLOR, markeredgewidth=1.4),
+                      f"UNASKED, retain weight λ = 3 ({len(lam)} seed{'s' if len(lam) > 1 else ''})"))
     ax.plot(0.8725, 0.0, "*", color=INK2, ms=8, zorder=5, clip_on=False)
     ax.annotate("M_full", (0.8725, 0.0), xytext=(0, 7), textcoords="offset points",
                 fontsize=7, ha="center", color=INK2)
@@ -227,9 +246,9 @@ def fig16_unasked_depth_vs_general():
     h_base = tuple(plt.Line2D([], [], ls="", marker=marks[m], color=GRAY, ms=5)
                    for m in ("ga", "npo", "graddiff"))
     h_path = plt.Line2D([], [], color=GRAY, lw=1.6)
-    ax.legend([h_un, h_base, h_path],
+    ax.legend([h_un, h_base, h_path] + [h for h, _ in extra],
               ["UNASKED checkpoint (α = 0)", "GA, NPO, GradDiff checkpoints",
-               "baselines, α 0 → 1 (mean of 3 seeds)"],
+               "baselines, α 0 → 1 (mean of 3 seeds)"] + [t for _, t in extra],
               handler_map={tuple: HandlerTuple(ndivide=None, pad=0.6)},
               frameon=False, fontsize=7, loc="lower right")
     ax.set_xlabel("general knowledge (mean of RA and WF knows-rate)")
