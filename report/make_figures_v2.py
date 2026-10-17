@@ -198,7 +198,7 @@ def _strict_path(runs, split="trained"):
 
 
 def _depth_vs_general(method: str, label: str, fname: str, title: str,
-                      label_at=(-6, 9, "right")):
+                      label_at=(-6, 9, "right"), config: str = ""):
     """Strict depth against general knowledge: one of our methods beside the baselines' paths."""
     fig, ax = plt.subplots(figsize=(5.0, 3.3))
     marks = {"ga": "o", "npo": "s", "graddiff": "^"}
@@ -209,8 +209,8 @@ def _depth_vs_general(method: str, label: str, fname: str, title: str,
                 markeredgecolor="#fcfcfb", markeredgewidth=1.0)
         ax.annotate(f"{NAME[m]}", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
                     fontsize=7.5, va="center", color=INK2)
-    runs = sorted(d for d in STUDIES.glob(f"study_v2_{method}_1B_s*_lr*")
-                  if d.is_dir() and not d.name.split("_lr", 1)[1].count("_"))
+    runs = sorted(d for d in STUDIES.glob(f"study_v2_{method}_1B_s*_lr*{config}")
+                  if d.is_dir() and d.name.split("_lr", 1)[1].count("_") == (1 if config else 0))
     x, y = _strict_path(runs)
     ax.plot(x, y, "-", color=UNASKED_COLOR, lw=2, zorder=4)
     ax.plot(x[0], y[0], "D", color=UNASKED_COLOR, ms=6, zorder=5,
@@ -225,7 +225,9 @@ def _depth_vs_general(method: str, label: str, fname: str, title: str,
     # every control run of a seed shares one random direction: one damage path,
     # ordered by distance from M_full (scale x (1 + alpha))
     paths = {}
-    for d in sorted(STUDIES.glob(f"control_x*_v2_{method}_1B_s*_lr*")):
+    for d in sorted(STUDIES.glob(f"control_x*_v2_{method}_1B_s*_lr*{config}")):
+        if d.name.split("_lr", 1)[1].count("_") != (1 if config else 0):
+            continue
         if not d.is_dir():
             continue
         cfg = json.loads((d / "config.json").read_text())
@@ -282,6 +284,12 @@ def _depth_vs_general(method: str, label: str, fname: str, title: str,
 def fig16_unasked_depth_vs_general():
     _depth_vs_general("unasked", "UNASKED", "fig16_unasked_depth_vs_general.png",
                       "Strict depth against general-knowledge cost: checkpoints and α paths")
+
+
+def fig20_unaskedg_lam10_depth_vs_general():
+    _depth_vs_general("unaskedg", "UNASKED-G, anchor 10", "fig20_unaskedg_lam10_depth_vs_general.png",
+                      "UNASKED-G (TOFU anchor 10): above every baseline and its own damage control",
+                      label_at=(8, -11, "left"), config="_lam10")
 
 
 def fig19_unaskedg_depth_vs_general():
@@ -347,10 +355,10 @@ def fig18_h9():
         rows.append(("GradDiff + general anchor", rep["graddiff_g"], GRAY, "o", False))
     main = rep["groups"].get("lr3e-06")
     if main:
-        rows.append(("UNASKED-G", main["runs"], UNASKED_COLOR, "D", True))
-    extra = rep["groups"].get("lr3e-06_lam10")
-    if extra:
-        rows.append(("UNASKED-G, TOFU anchor 10", extra["runs"], UNASKED_COLOR, "D", False))
+        rows.append(("UNASKED-G, TOFU anchor 3 (H9)", main["runs"], UNASKED_COLOR, "D", False))
+    cited = rep["groups"].get("lr3e-06_lam10")
+    if cited:
+        rows.append(("UNASKED-G, TOFU anchor 10 (H9b)", cited["runs"], UNASKED_COLOR, "D", True))
     measures = [("strict_trained", "strict depth (trained)", C1_SEED),
                 ("breadth_trained", "breadth (trained)", C2_SEED),
                 ("R", "R (TOFU retain)", C3_MEAN["R"]),
@@ -396,4 +404,5 @@ if __name__ == "__main__":
     fig17_relearn_dose()
     fig18_h9()
     fig19_unaskedg_depth_vs_general()
+    fig20_unaskedg_lam10_depth_vs_general()
     print("wrote", sorted(p.name for p in OUT.glob("fig1[2-9]*.png")))
