@@ -395,15 +395,53 @@ def test_study_runs_unasked_end_to_end(word_checkpoints, tmp_path):
             "--output-dir", str(tmp_path), "--run-id", "u", "--cache-dir", str(tmp_path / "c"),
             "--device", "cpu", "--alphas", "0,1", "--epochs", "1", "--batch-size", "8",
             "--learning-rate", "1e-3", "--min-utility-ratio", "0.01", "--n-examples", "6",
-            "--n-breadth", "12", "--rep-layers", "0,1", "--paraphrase-depth"]
+            "--n-breadth", "12", "--rep-layers", "0,1", "--paraphrase-depth",
+            "--paraphrase-answer-depth"]
     assert main(argv) == 0
     cfg = json.loads((tmp_path / "u" / "config.json").read_text())
     assert cfg["unlearn"]["rep_target"] == "unasked" and cfg["paraphrase_depth"] is True
+    assert cfg["paraphrase_answer_depth"] is True
     assert cfg["adaptation"] == r"partial:^model\.layers\.\d+\.(self_attn|mlp)\."
     p = json.loads((tmp_path / "u" / "partial" / "alpha_0.000.json").read_text())
-    assert set(p["depth"]) == {"trained", "heldout", "trained_para"}
+    # the paraphrased-answer split exists only if a sampled fact's entity is verbatim
+    assert {"trained", "heldout", "trained_para"} <= set(p["depth"]) <= {
+        "trained", "heldout", "trained_para", "trained_para_ans"}
     assert all(e["example_id"].startswith("para_")
                for e in p["depth"]["trained_para"]["per_example"])
+    assert all(e["example_id"].startswith("para_ans_")
+               for e in (p["depth"].get("trained_para_ans") or {}).get("per_example", []))
+
+
+@needs_data
+def test_paraphrased_answer_split_moves_the_entity_but_keeps_it():
+    """Rows 0, 2 and 3 of forget10 keep their entity verbatim in TOFU's
+    paraphrased answer ('Hsiao Yun-Hwa', 'civil engineer' inside 'civil
+    engineering'); row 1 rewords it ('LGBTQ+ community' -> 'LGBTQ+ spectrum')."""
+    from deeperase.data.tofu import PromptFormat, read_tofu_rows
+    from deeperase.eval.uds import UDSExample
+    from deeperase.scripts.run_study import (
+        build_paraphrased_answer_examples, load_paraphrased_answers)
+    from toy_tokenizer import word_level_tokenizer
+    answers = load_paraphrased_answers(str(TOFU))
+    rows = read_tofu_rows("forget10", str(TOFU))
+    assert all(answers[i][0] == rows[i]["answer"] for i in range(len(rows)))
+    corpus = [f"Question: {r['question']}\nAnswer: {r['answer']}" for r in rows[:4]]
+    corpus += [answers[i][1] for i in range(4)]
+    tok = word_level_tokenizer(corpus)
+    from deeperase.eval.patching import EntitySpan
+    stub = [UDSExample(f"ref_{i}", torch.zeros(1, 2, dtype=torch.long), EntitySpan([1]))
+            for i in range(4)]
+    fmt = PromptFormat("plain_qa")
+    out = build_paraphrased_answer_examples(tok, str(REF_SPANS), fmt, 512, stub, answers)
+    assert [e.example_id for e in out] == ["para_ans_0", "para_ans_2", "para_ans_3"]
+    first = out[0]
+    ent = [int(first.input_ids.reshape(-1)[j]) for j in first.span.token_indices]
+    assert tok.decode(ent).replace(" ", "") == "HsiaoYun-Hwa"
+    # a broken alignment drops the row instead of mislabelling it
+    bad = dict(answers)
+    bad[0] = ("another answer", bad[0][1])
+    assert [e.example_id for e in build_paraphrased_answer_examples(
+        tok, str(REF_SPANS), fmt, 512, stub, bad)] == ["para_ans_2", "para_ans_3"]
 
 
 def test_unlearn_can_select_the_epoch_closest_to_the_target():

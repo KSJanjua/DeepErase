@@ -5,7 +5,10 @@ point and computes:
 
 * UDS and strict UDS on trained, held-out and paraphrased-question facts;
 * R, RA and WF;
-* the damage-matched excess of strict UDS, when the seed has a control.
+* the damage-matched excess of strict UDS, when the seed has a control;
+* for runs with the paraphrased-answer split, the same facts' UDS and strict
+  UDS on the original and on the paraphrased answer (paired: only facts with
+  a KE layer in both).
 
 It then states each criterion:
 
@@ -31,6 +34,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
+from deeperase.eval.uds_diagnostics import example_diagnostics
 from deeperase.scripts.uds_audit import audit_run, strict_excess
 
 E1_MIN, E2_MIN, E3_RATIO, RA_MIN, WF_MIN = 0.35, 0.15, 0.7, 0.77, 0.80
@@ -52,6 +56,33 @@ def point(audit: dict, run: Path, alpha: float) -> dict:
         if r:
             out[split] = {k: r[k] for k in ("uds", "strict", "tent", "overshoot_share")}
     return out
+
+
+def answer_check(run: Path, alpha: float) -> Optional[dict]:
+    """The same facts on the original and the paraphrased answer, paired."""
+    f = run / "partial" / f"alpha_{alpha:.3f}.json"
+    if not f.exists():
+        return None
+    depth = json.loads(f.read_text(encoding="utf-8")).get("depth") or {}
+    if "trained_para_ans" not in depth or "trained" not in depth:
+        return None
+
+    def per_row(split: str) -> Dict[int, dict]:
+        out = {}
+        for e in depth[split]["per_example"]:
+            d = example_diagnostics(e["delta_s1"], e["delta_s2"],
+                                    tau=depth[split].get("tau", 0.05))
+            if d:
+                out[int(e["example_id"].rsplit("_", 1)[1])] = d
+        return out
+    orig, para = per_row("trained"), per_row("trained_para_ans")
+    rows = sorted(set(orig) & set(para))
+    if not rows:
+        return {"n": 0}
+    return {"n": len(rows), "rows": rows,
+            "original": {k: sum(orig[r][k] for r in rows) / len(rows) for k in ("uds", "strict")},
+            "paraphrased": {k: sum(para[r][k] for r in rows) / len(rows)
+                            for k in ("uds", "strict")}}
 
 
 def _mean(xs: List[Optional[float]]) -> Optional[float]:
@@ -79,6 +110,7 @@ def collect(studies: Path) -> dict:
         ex = strict_excess(a, controls)
         seeds[int(a["seed"])] = {
             "run": d.name, "checkpoint": point(a, d, 0.0), "alpha1": point(a, d, 1.0),
+            "answer_check": {"0": answer_check(d, 0.0), "1": answer_check(d, 1.0)},
             "control": (ex or {}).get("control") if controls.get(int(a["seed"])) else None,
             "excess_strict_trained": (((ex or {}).get("trained") or {}).get("strict") or {}).get("mean")
             if controls.get(int(a["seed"])) else None,
@@ -89,7 +121,9 @@ def collect(studies: Path) -> dict:
     for d in sorted(studies.glob("study_v2_unasked_1B_s*_lr*_*")):
         a = audit_run(d) if d.is_dir() else None
         if a:
-            variants[d.name] = {"checkpoint": point(a, d, 0.0), "alpha1": point(a, d, 1.0)}
+            variants[d.name] = {"checkpoint": point(a, d, 0.0), "alpha1": point(a, d, 1.0),
+                                "answer_check": {"0": answer_check(d, 0.0),
+                                                 "1": answer_check(d, 1.0)}}
     comparisons = {}
     for pattern in ("study_v2_ga_1B_s*_lr1e-08", "study_v2_npo_1B_s*_lr1e-08",
                     "study_v2_graddiff_1B_s*_lr5e-08", "study_v2_ga_1B_s0_lr1e-08_para",
@@ -98,6 +132,9 @@ def collect(studies: Path) -> dict:
             a = audit_run(d)
             if a:
                 comparisons[d.name] = point(a, d, 0.0)
+                check = answer_check(d, 0.0)
+                if check:
+                    comparisons[d.name]["answer_check"] = check
     return {"seeds": seeds, "variants": variants, "comparisons": comparisons}
 
 
@@ -151,6 +188,18 @@ def to_markdown(rep: dict) -> str:
         row(name, v["alpha1"])
     for name, p in rep["comparisons"].items():
         row(name, p)
+    checks = [(s["run"], s.get("answer_check", {}).get("0")) for s in rep["seeds"].values()]
+    checks += [(n, v.get("answer_check", {}).get("0")) for n, v in rep.get("variants", {}).items()]
+    checks += [(n, p.get("answer_check")) for n, p in rep["comparisons"].items()]
+    checks = [(n, c) for n, c in checks if c and c.get("n")]
+    if checks:
+        lines += ["", "Paraphrased answers at the checkpoint, the same facts (paired):", "",
+                  "| run | facts | original answer: UDS / strict | paraphrased answer: UDS / strict |",
+                  "|---|---|---|---|"]
+        for n, c in checks:
+            lines.append(f"| {n} | {c['n']} | {_f(c['original']['uds'])} / "
+                         f"{_f(c['original']['strict'])} | {_f(c['paraphrased']['uds'])} / "
+                         f"{_f(c['paraphrased']['strict'])} |")
     c = rep["criteria"]
     lines += ["", f"E1 checkpoint strict UDS (trained, mean): {_f(c['E1_checkpoint_strict_trained']['value'])}"
               f" (>= {E1_MIN}): {c['E1_checkpoint_strict_trained']['verdict']}",
