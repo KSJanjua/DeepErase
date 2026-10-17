@@ -7,9 +7,11 @@ For every UNASKED-G run and every GradDiff v2 seed it reads the checkpoint
 * calibrated breadth on trained and held-out facts;
 * R, RA, WF.
 
-Runs are grouped by their general-anchor weight (lambda_g, from the run's
-config). For each group it states C1-C4 over all its seeds and over seeds 1-2
-alone (the confirmation seeds), and it applies the lambda_g rule to seed 0:
+Runs are grouped by configuration: the part of the run name after the seed
+(``lr3e-06``, ``lr3e-06_g3``, ...). For each group it states C1-C4 over all
+its seeds and over seeds 1-2 alone (the confirmation seeds). The lambda_g rule
+is applied to seed 0 of the pre-registered family only (lr 3e-6, TOFU anchor
+3, lambda_g 1 or 3):
 
 * **C1.** strict UDS (trained) >= 0.26 in every seed, mean >= 0.282;
 * **C2.** breadth (trained) >= 0.32 in every seed, mean >= 0.338;
@@ -58,7 +60,10 @@ def checkpoint(run: Path) -> Optional[dict]:
     p = json.loads(f.read_text(encoding="utf-8"))
     cfg = json.loads((run / "config.json").read_text(encoding="utf-8"))
     u = cfg.get("unlearn") or {}
-    out = {"run": run.name, "seed": int(cfg["seed"]), "tag": _tag(run.name),
+    seed = int(cfg["seed"])
+    out = {"run": run.name, "seed": seed, "tag": _tag(run.name),
+           "config": run.name.split(f"_s{seed}_", 1)[-1],
+           "learning_rate": u.get("learning_rate"),
            "general_weight": u.get("general_weight"), "retain_weight": u.get("retain_weight")}
     for pt in p.get("points") or [p.get("point") or {}]:
         split = str(pt.get("benchmark", "")).split(":")[-1]
@@ -116,10 +121,21 @@ def _general(c: dict) -> float:
     return ((c.get("RA") or 0.0) + (c.get("WF") or 0.0)) / 2
 
 
-def choose(groups: Dict[float, Dict[int, dict]]) -> Optional[dict]:
+PREREGISTERED = {"learning_rate": 3e-6, "retain_weight": 3.0, "general_weights": (1.0, 3.0)}
+
+
+def choose(groups: Dict[str, Dict[int, dict]]) -> Optional[dict]:
     """The lambda_g rule on seed 0: the smallest weight that meets C1-C3, else
-    the one with the higher general knowledge (mean of RA and WF)."""
-    seed0 = {w: by[0] for w, by in groups.items() if 0 in by}
+    the one with the higher general knowledge (mean of RA and WF). Only the
+    pre-registered family competes; other configurations are exploratory."""
+    seed0 = {}
+    for by in groups.values():
+        c = by.get(0)
+        if c and c.get("learning_rate") and abs(float(c["learning_rate"])
+                                               - PREREGISTERED["learning_rate"]) < 1e-12 \
+                and float(c.get("retain_weight") or 0) == PREREGISTERED["retain_weight"] \
+                and float(c["general_weight"]) in PREREGISTERED["general_weights"]:
+            seed0[float(c["general_weight"])] = c
     if not seed0:
         return None
     ok = [w for w in sorted(seed0) if all(single_seed_ok(seed0[w]).values())]
@@ -130,11 +146,11 @@ def choose(groups: Dict[float, Dict[int, dict]]) -> Optional[dict]:
 
 
 def collect(studies: Path) -> dict:
-    groups: Dict[float, Dict[int, dict]] = {}
+    groups: Dict[str, Dict[int, dict]] = {}
     for d in sorted(studies.glob("study_v2_unaskedg_1B_s*_lr*")):
         c = checkpoint(d) if d.is_dir() else None
         if c and c.get("general_weight"):
-            groups.setdefault(float(c["general_weight"]), {})[c["seed"]] = c
+            groups.setdefault(c["config"], {})[c["seed"]] = c
     controls: Dict[tuple, dict] = {}
     for d in sorted(studies.glob("control_x*_v2_unaskedg_1B_s*_lr*")):
         a = audit_run(d) if d.is_dir() else None
@@ -158,7 +174,7 @@ def collect(studies: Path) -> dict:
             c["excess_strict_trained"] = excess[seed]
         cps = [by[s] for s in sorted(by)]
         conf = [by[s] for s in sorted(by) if s in (1, 2)]
-        report["groups"][f"{w:g}"] = {
+        report["groups"][w] = {
             "runs": [{k: v for k, v in c.items() if k != "_audit"} for c in cps],
             "all_seeds": criteria(cps, excess),
             "confirmation_seeds_1_2": criteria(conf, excess) if conf else None}
@@ -182,7 +198,7 @@ def to_markdown(rep: dict) -> str:
              "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for w, g in rep["groups"].items():
         for c in g["runs"]:
-            lines.append(f"| {c['run']} | {w} | {c['seed']} | "
+            lines.append(f"| {c['run']} | {c['general_weight']:g} | {c['seed']} | "
                          + " | ".join(_f(c.get(k)) for k in cols)
                          + f" | {_f(c.get('excess_strict_trained'))} |")
     for c in rep["graddiff"] + rep.get("graddiff_g", []):
@@ -194,7 +210,8 @@ def to_markdown(rep: dict) -> str:
             if not crit:
                 continue
             m = crit["C3_utility"]["means"]
-            lines += ["", f"**λ_g = {w}, {label} ({crit['seeds']}):** "
+            gw = g["runs"][0]["general_weight"]
+            lines += ["", f"**{w} (λ_g = {gw:g}), {label} ({crit['seeds']}):** "
                       f"C1 depth {_verdict(crit['C1_depth']['met'])} (mean "
                       f"{_f(crit['C1_depth']['mean'])}); "
                       f"C2 breadth {_verdict(crit['C2_breadth']['met'])} (mean "

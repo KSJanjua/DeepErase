@@ -450,6 +450,18 @@ Also reported:
   the only method given general-knowledge data. It is reported beside C1-C3,
   and no criterion depends on it.
 
+**λ_g rule, seed 0 (17 Oct 2026).** At λ_g = 1 (commit `db84af9`), the
+checkpoint (epoch 19) scored:
+* strict UDS 0.405 (C1 ≥ 0.26: met);
+* breadth 0.309 (C2 ≥ 0.32: missed by 0.011);
+* R 0.805, RA 0.840, WF 0.829 (C3: missed on RA by 0.023).
+
+Since C2 is not met, the rule does not run λ_g = 3: a stronger general anchor
+would lower breadth further. Seeds 1-2 run at λ_g = 1, followed by the
+R-matched controls of seeds 0-2. The calibrated breadth of a single seed
+carries a sampling sd of about 0.09 (400 items over a 0.25 calibration gap),
+and RA about 0.035.
+
 **What each outcome means (stated now).**
 * **C1-C4 met:** a method that is deeper and broader than GradDiff at
   GradDiff's utility, and whose depth is not random damage.

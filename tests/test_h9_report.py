@@ -20,7 +20,8 @@ def _run(root, name, seed, *, strict, breadth, r=0.78, ra=0.87, wf=0.84, gw=None
     (d / "partial").mkdir(parents=True)
     method = name.split("_")[2]
     cfg = {"method": method, "seed": seed, "protocol": "v2", "dtype": "float32",
-           "unlearn": {"loss_scope": "answer", "general_weight": gw, "retain_weight": 3.0},
+           "unlearn": {"loss_scope": "answer", "general_weight": gw, "retain_weight": 3.0,
+                       "learning_rate": 1e-5 if "_lr1e-05" in name else 3e-6},
            "control": "random" if control else "none", "control_scale": control}
     (d / "config.json").write_text(json.dumps(cfg))
     for a, scale in ((0.0, 1.0), (1.0, 1.5)):
@@ -57,8 +58,8 @@ def test_rule_criteria_and_controls(tmp_path):
     assert h9.main(["--dir", str(tmp_path), "--out", str(out)]) == 0
     rep = json.loads(out.with_suffix(".json").read_text())
     assert len(rep["graddiff"]) == 3 and len(rep["graddiff_g"]) == 1
-    assert "1" in rep["groups"] and "graddiffg" not in json.dumps(rep["groups"])
-    g1, g3 = rep["groups"]["1"], rep["groups"]["3"]
+    assert "graddiffg" not in json.dumps(rep["groups"])
+    g1, g3 = rep["groups"]["lr3e-06"], rep["groups"]["lr3e-06_g3"]
     assert g1["all_seeds"]["C1_depth"]["met"] and g1["all_seeds"]["C2_breadth"]["met"]
     assert g1["all_seeds"]["C3_utility"]["met"] is False
     # the R-matched control of the same tag: excess 0.30 at alpha 0, 0.45 at alpha 1
@@ -74,6 +75,24 @@ def test_rule_criteria_and_controls(tmp_path):
     assert capsys_out == 0
     md = out.with_suffix(".md").read_text()
     assert "λ_g rule on seed 0: 3" in md and "study_v2_graddiff_1B_s2_lr5e-08" in md
+    assert "lr3e-06_g3 (λ_g = 3), all seeds" in md
+
+
+def test_an_exploratory_configuration_is_its_own_group_and_not_in_the_rule(tmp_path, capsys):
+    _graddiff(tmp_path)
+    _run(tmp_path, "study_v2_unaskedg_1B_s0_lr3e-06", 0, strict=0.40, breadth=0.30,
+         ra=0.84, gw=1.0)
+    # same seed and lambda_g, other learning rate: must not overwrite the run above
+    _run(tmp_path, "study_v2_unaskedg_1B_s0_lr1e-05", 0, strict=0.50, breadth=0.45,
+         ra=0.90, wf=0.90, gw=1.0)
+    out = tmp_path / "rep"
+    assert h9.main(["--dir", str(tmp_path), "--out", str(out)]) == 0
+    rep = json.loads(out.with_suffix(".json").read_text())
+    assert set(rep["groups"]) == {"lr3e-06", "lr1e-05"}
+    assert rep["groups"]["lr3e-06"]["runs"][0]["strict_trained"] == pytest.approx(0.40)
+    # the exploratory configuration meets everything but does not compete in the rule
+    assert rep["choice"]["general_weight"] == 1.0
+    assert "higher general knowledge" in rep["choice"]["reason"]
 
 
 def test_without_a_passing_weight_the_rule_takes_more_general_knowledge(tmp_path, capsys):
