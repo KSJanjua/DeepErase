@@ -1729,7 +1729,8 @@ knowledge. Seed 0 along α:
 `control_probe.py` found the R-matched random-direction scale for UNASKED-G
 seed 0: 10× the update's norm, per tensor. At α = 1 that control has R 0.757,
 against UNASKED-G's 0.755. At 30× the norm, R falls to 0.305. The probe and
-the control study recorded commit `01cd510` or earlier, on the H100 slice.
+the control study both recorded commit `9a5438e` (clean tree), with the same
+anchors as the run (λ = 3, λ_g = 1), on the H100 slice.
 
 | α | UNASKED-G: R / general / breadth / strict UDS | Random direction at 10×: R / general / breadth / strict UDS |
 |---|---|---|
