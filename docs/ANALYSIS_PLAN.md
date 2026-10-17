@@ -353,8 +353,13 @@ re-derived from its saved epochs (`lr_scan --recompute`); nothing is retrained.
 * **X-G3 failed.** Trained strict UDS at the checkpoint was 0.452, above 0.30.
   RA was 0.72, below 0.80.
 * **E1 met** on seed 0 (0.452 ≥ 0.35). **E3 met** (paraphrase / trained strict
-  0.81). **E4 not met** (RA 0.72, WF 0.735). **E2:** the control had not run yet.
-  **E5:** held-out UDS 0.397, strict 0.333.
+  0.81). **E4 not met** (RA 0.72, WF 0.735). **E5:** held-out UDS 0.397, strict
+  0.333.
+* **E2 met on seed 0:** +0.285 strict-UDS excess on trained facts over the
+  R-matched control (scale 10). Seeds 1-2 are pending. At equal R, that
+  control keeps 0.235 more general knowledge than UNASKED (RESULTS.md §19.5),
+  so a general-knowledge-matched comparison was added as an exploratory
+  analysis (§9).
 
 The rule said stop and report. The follow-up runs went ahead anyway, as a
 second declared deviation (§9, 17 Oct). Everything after X-G3 is exploratory,
@@ -456,6 +461,20 @@ had been seen at the time.
   E1-E5 and their thresholds are unchanged. Every result is labelled
   exploratory and reported with the failed gate. λ = 3 is reported beside
   λ = 1, never in its place.
+* **17 Oct 2026: a control matched on general knowledge added (exploratory).**
+  *E2 for seed 0 had been seen.*
+  * **Why.** At equal R, UNASKED's own control keeps 0.235 more general
+    knowledge (mean of RA and WF) than UNASKED does. For the baselines this gap
+    is +0.145 (GA), +0.116 (NPO) and about 0 (GradDiff). So matching on R is
+    the lenient comparison for UNASKED.
+  * **The run.** A control at 15× the update's norm, with the same seed and
+    direction as the R-matched one at 10× (tag `genmatch`), extends the damage
+    path past UNASKED's general-knowledge cost.
+  * **The comparison.** `unasked_report.general_matched` interpolates the
+    controls' strict UDS at UNASKED's general knowledge, along the combined
+    path.
+  * **What stays fixed.** E2 keeps its pre-registered R match, and its verdict
+    is unchanged. The new number is reported beside it, never in its place.
 * **17 Oct 2026: depth on paraphrased answers added (exploratory).** *UNASKED
   seed 0 had been seen.* UNASKED trains the states at every answer position,
   and those include the positions UDS patches. The paraphrased-question split
