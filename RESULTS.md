@@ -1595,3 +1595,37 @@ recorded commit `cbe6e41` (clean tree), H100 slice.
      cost. If that excess is near zero, UNASKED's extra depth is what random
      damage of the same general-knowledge cost would give.
 
+
+### 19.6 A stronger TOFU anchor (λ = 3), and depth on paraphrased answers
+
+Same as §19.2, but with the TOFU retain anchor at weight 3. Seed 0, commit
+`54e7efe`, H100 slice.
+
+| Checkpoint (α = 0), seed 0 | Trained: UDS / strict | Held-out: UDS / strict | Paraphrased question: UDS / strict | Breadth, trained | R | RA | WF |
+|---|---|---|---|---|---|---|---|
+| UNASKED, λ = 1 | 0.532 / 0.452 | 0.397 / 0.333 | 0.410 / 0.366 | 0.423 | 0.772 | 0.72 | 0.735 |
+| **UNASKED, λ = 3** | **0.503 / 0.430** | **0.371 / 0.314** | **0.381 / 0.337** | **0.423** | **0.788** | **0.81** | **0.786** |
+| GradDiff, mean of 3 seeds | 0.146 / 0.141 | 0.062 / 0.060 | – | 0.169 | 0.768 | 0.863 | 0.829 |
+
+1. **Most of the general-knowledge cost was avoidable.** Tripling the anchor's
+   weight left breadth exactly where it was (0.423). Trained strict UDS fell
+   only from 0.452 to 0.430. RA rose from 0.72 to 0.81, WF from 0.735 to 0.786
+   and R from 0.772 to 0.788. R is now above GradDiff's (0.768). RA and WF are
+   still below it.
+2. **The depth is not tied to the trained answer.** The run also scores the 33
+   trained facts whose entity occurs verbatim in TOFU's paraphrased answer,
+   with the original answer and with the paraphrase. These are paired, the
+   same facts (`trained_ans_ref` and `trained_para_ans`).
+   * At the checkpoint, the paraphrase is deeper: UDS 0.510 against 0.393,
+     strict 0.448 against 0.390.
+   * UNASKED trained the original answer's positions, not the paraphrase's. If
+     its depth were a trigger on the trained sequence, the paraphrase would be
+     shallower.
+   * This fits §18. With the answer reworded, M_full must retrieve the entity
+     through the question and the name, which is the route UNASKED targets,
+     and cannot fall back on the memorised answer string.
+3. **Doubling the update is still damage.** At α = 1, RA falls to 0.36 and WF
+   to 0.40, as at λ = 1.
+
+This run was the reason for the amendment to H9 before any UNASKED-G run:
+UNASKED-G uses λ = 3 (ANALYSIS_PLAN H9).
