@@ -454,3 +454,25 @@ def test_relearn_attack_runs_end_to_end(word_checkpoints, tmp_path, method, lr):
         for when in ("before", "after"):
             assert set(rec["results"][who][when]) == {"probe", "heldout"}
     assert set(rec["latent_index"]) == {"probe", "heldout"}
+    assert rec["latent_index_by_lr"] == {"1e-05": rec["latent_index"]}
+
+
+@needs_data
+def test_relearn_attack_dose_response_restarts_from_the_checkpoint(word_checkpoints, tmp_path):
+    from deeperase.scripts import relearn_attack
+    argv = ["--method", "ga", "--learning-rate", "1e-5", "--model-sources",
+            json.dumps(word_checkpoints), "--tofu-dir", str(TOFU), "--cache-dir",
+            str(tmp_path / "c"), "--device", "cpu", "--epochs", "1", "--floor", "0.01",
+            "--n-breadth", "12", "--attack-epochs", "1", "--out-dir", str(tmp_path),
+            "--attack-lrs", "0,1e-3", "--tag", "dose"]
+    assert relearn_attack.main(argv) == 0
+    rec = json.loads((tmp_path / "ga_1B_v2_s0_dose.json").read_text())
+    assert rec["attack_lrs"] == [0.0, 1e-3] and set(rec["latent_index_by_lr"]) == {"0", "0.001"}
+    for who in ("unlearned", "full", "retain90"):
+        r = rec["results"][who]
+        # a zero-rate attack leaves the weights as they were
+        for probe in ("probe", "heldout"):
+            assert r["after_0"][probe]["answer_nll"] == pytest.approx(
+                r["before"][probe]["answer_nll"], abs=1e-5)
+        # the strong attack started from the checkpoint, not from the zero-rate copy
+        assert r["after"] == r["after_0.001"] != r["after_0"]

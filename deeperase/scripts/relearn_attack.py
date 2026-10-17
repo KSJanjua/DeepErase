@@ -31,7 +31,14 @@ Latent-knowledge index on a probe set, after the attack::
 It is 0 when the unlearned model recovers no more than an ignorant model, and
 1 when it is back to full knowledge. Exploratory.
 
+``--attack-lrs`` gives a dose-response: each listed rate attacks a fresh copy
+of the same checkpoint (and of each reference), and the index is reported per
+rate. A strong attack also moves the full model, so a weak one can separate
+methods that a strong one makes look alike.
+
     python -m deeperase.scripts.relearn_attack --method unasked --learning-rate 3e-6 --seed 0
+    python -m deeperase.scripts.relearn_attack --method ga --learning-rate 1e-8 --seed 0 \
+        --attack-lrs 1e-7,3e-7,1e-6,3e-6,1e-5 --tag dose
 """
 
 from __future__ import annotations
@@ -134,10 +141,15 @@ def parse_args(argv: Optional[Sequence[str]] = None):
     ap.add_argument("--learning-rate", type=float, required=True,
                     help="the method's study learning rate")
     ap.add_argument("--attack-lr", type=float, default=1e-5)
+    ap.add_argument("--attack-lrs", default=None,
+                    help="comma-separated attack rates, each applied to a fresh copy of the "
+                         "same checkpoint (a dose-response); overrides --attack-lr")
     ap.add_argument("--attack-epochs", type=int, default=2)
     ap.add_argument("--no-references", action="store_true",
                     help="skip attacking full and retain90 (reuse earlier reference numbers)")
     ap.add_argument("--out-dir", default="results/relearn")
+    ap.add_argument("--tag", default="",
+                    help="suffix for the output file, e.g. 'dose' -> ga_1B_v2_s0_dose.json")
     lr_scan.add_training_args(ap)
     return ap.parse_args(argv)
 
@@ -183,13 +195,24 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     except CollapsedError as e:
         raise SystemExit(f"Training collapsed: {e}")
     ns.reference = None
-    results = {"unlearned": {"before": measure(ns.model, tokenizer, items_by_set,
-                                                batches_by_set, prefix, args.max_length,
-                                                args.batch_size, device)}}
-    attack(ns.model, batches_by_set["attack"], lr=args.attack_lr, epochs=args.attack_epochs,
-           batch_size=args.batch_size, device=device, seed=args.seed)
-    results["unlearned"]["after"] = measure(ns.model, tokenizer, items_by_set, batches_by_set,
-                                            prefix, args.max_length, args.batch_size, device)
+    rates = ([float(x) for x in args.attack_lrs.split(",") if x.strip()]
+             if args.attack_lrs else [args.attack_lr])
+
+    def run_attacks(model) -> Dict[str, dict]:
+        """before, then after an attack at each rate, each from the same weights."""
+        start = snapshot(model)
+        out = {"before": measure(model, tokenizer, items_by_set, batches_by_set, prefix,
+                                 args.max_length, args.batch_size, device)}
+        for lr in rates:
+            model.load_state_dict(start)
+            attack(model, batches_by_set["attack"], lr=lr, epochs=args.attack_epochs,
+                   batch_size=args.batch_size, device=device, seed=args.seed)
+            out[f"after_{lr:g}"] = measure(model, tokenizer, items_by_set, batches_by_set,
+                                           prefix, args.max_length, args.batch_size, device)
+        out["after"] = out[f"after_{rates[-1]:g}"]
+        return out
+
+    results = {"unlearned": run_attacks(ns.model)}
     del ns.model
     if device.type == "cuda":
         torch.cuda.empty_cache()
@@ -199,50 +222,53 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         for name in ("full", "retain90"):
             m = load_model(repo[name], device=device, dtype=ns.torch_dtype,
                            cache_dir=args.cache_dir)
-            results[name] = {"before": measure(m, tokenizer, items_by_set, batches_by_set,
-                                               prefix, args.max_length, args.batch_size, device)}
-            attack(m, batches_by_set["attack"], lr=args.attack_lr, epochs=args.attack_epochs,
-                   batch_size=args.batch_size, device=device, seed=args.seed)
-            results[name]["after"] = measure(m, tokenizer, items_by_set, batches_by_set, prefix,
-                                             args.max_length, args.batch_size, device)
+            results[name] = run_attacks(m)
             del m
             if device.type == "cuda":
                 torch.cuda.empty_cache()
 
-    index = {}
+    by_lr: Dict[str, dict] = {}
     if "full" in results:
-        for probe in items_by_set:
-            u = results["unlearned"]["after"][probe]["knows_rate"]
-            f = results["full"]["after"][probe]["knows_rate"]
-            r = results["retain90"]["after"][probe]["knows_rate"]
-            index[probe] = {"knows_rate": latent_index(u, f, r)}
-            u, f, r = (results[k]["after"][probe]["answer_nll"]
-                       for k in ("unlearned", "full", "retain90"))
-            index[probe]["answer_nll"] = latent_index(u, f, r)
+        for lr in rates:
+            key = f"after_{lr:g}"
+            for probe in items_by_set:
+                cell = by_lr.setdefault(f"{lr:g}", {}).setdefault(probe, {})
+                for metric in ("knows_rate", "answer_nll"):
+                    u, f, r = (results[k][key][probe][metric]
+                               for k in ("unlearned", "full", "retain90"))
+                    cell[metric] = latent_index(u, f, r)
+    # the last listed rate, as in the single-rate record
+    index = by_lr.get(f"{rates[-1]:g}", {})
     record = {"what": "relearning attack on the method's checkpoint", "method": args.method,
               "learning_rate": args.learning_rate, "seed": args.seed,
-              "attack_lr": args.attack_lr, "attack_epochs": args.attack_epochs,
+              "attack_lr": rates[-1], "attack_lrs": rates, "attack_epochs": args.attack_epochs,
               "selected_epoch": history.selected_epoch, "sets": {k: len(v) for k, v in sets.items()},
-              "results": results, "latent_index": index,
+              "results": results, "latent_index": index, "latent_index_by_lr": by_lr,
               "seconds": round(time.time() - t0, 1),
               "git": git_info(), "environment": environment_info()}
-    out = Path(args.out_dir) / f"{args.method}_{args.size}_{args.protocol}_s{args.seed}.json"
+    tag = f"_{args.tag}" if args.tag else ""
+    out = Path(args.out_dir) / f"{args.method}_{args.size}_{args.protocol}_s{args.seed}{tag}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(record, indent=1), encoding="utf-8")
 
     print("\n" + "=" * 72)
-    print(f"RELEARNING ATTACK  {args.method}  seed {args.seed}  (attack lr {args.attack_lr:g}, "
-          f"{args.attack_epochs} epochs on {len(sets['attack'])} facts)")
+    print(f"RELEARNING ATTACK  {args.method}  seed {args.seed}  ({args.attack_epochs} epochs "
+          f"on {len(sets['attack'])} facts)")
     print("=" * 72)
-    for probe in items_by_set:
-        line = [f"{probe:8s}"]
-        for k in ("unlearned", "full", "retain90"):
-            if k in results:
-                b, a = results[k]["before"][probe], results[k]["after"][probe]
-                line.append(f"{k} {b['knows_rate']:.3f}->{a['knows_rate']:.3f}")
-        if probe in index:
-            line.append(f"latent index {index[probe]['knows_rate']}")
-        print("  ".join(line))
+    for lr in rates:
+        key = f"after_{lr:g}"
+        for probe in items_by_set:
+            line = [f"lr {lr:<7g} {probe:8s}"]
+            for k in ("unlearned", "full", "retain90"):
+                if k in results:
+                    b, a = results[k]["before"][probe], results[k][key][probe]
+                    line.append(f"{k} {b['knows_rate']:.3f}->{a['knows_rate']:.3f}")
+            cell = by_lr.get(f"{lr:g}", {}).get(probe)
+            if cell:
+                line.append("index knows {}  nll {}".format(
+                    *("–" if cell[m] is None else f"{cell[m]:.2f}"
+                      for m in ("knows_rate", "answer_nll"))))
+            print("  ".join(line))
     print(f"Saved {out}")
     return 0
 
