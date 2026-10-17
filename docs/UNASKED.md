@@ -4,6 +4,16 @@ UNASKED is an **exploratory** successor to STRANGER. It was built after both
 pre-registered gates said stop, and its own criteria were written before its
 first run (ANALYSIS_PLAN.md, H8-X).
 
+> **Status, 17 Oct 2026 (seed 0; RESULTS.md §19).** Trained strict UDS at the
+> checkpoint is 0.452, about twice GA's mean. Only 8% of its UDS comes from
+> overshoot, and it holds on paraphrased questions (0.81 of the trained-wording
+> value). It costs RA and WF about what GA costs (0.72 / 0.735), so gate X-G3
+> (RA ≥ 0.80) failed. Its follow-up runs went ahead as a second declared
+> deviation. A relearning attack recovers its facts as fully as GA's, so its
+> extra depth on UDS does not make the facts harder to relearn. Matched-damage
+> controls, seeds 1-2, a λ = 3 variant and a relearning dose-response are
+> queued.
+
 ## Why
 
 STRANGER's gate 1 showed that the fine-tuned model's memory of a TOFU fact is

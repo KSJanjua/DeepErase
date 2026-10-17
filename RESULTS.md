@@ -23,6 +23,11 @@ Sections 6–7: the shared NVIDIA A100-SXM4-80GB `dgxanode02` (29 Aug – 3 Sep 
 > matched-damage controls (14) and the sharpening runs (15). The current
 > conclusions are §14.5 as amended by §15.5 and §16. §16 also introduces strict
 > UDS, which our own method (STRANGER, docs/STRANGER.md) is judged by.
+> **17 Oct:** §17-18 are STRANGER's gates. Both said stop (NO-GO, then STOP) in
+> all three seeds: a TOFU fact is keyed on its question together with the
+> name, not on the name alone. §19 is the exploratory successor UNASKED (twice
+> the baselines' strict depth, past a failed utility gate) and a relearning
+> attack, which recovers the facts of every method, UNASKED included.
 
 ---
 
@@ -1284,8 +1289,17 @@ about one day of code and nine GPU-minutes.
    a method has no direct handle on held-out facts, because they are separate
    memorised sequences.
 
-**Caveats.** One seed and K = 4 names. The hybrid replaces layers 4-8 only, but
-the full name swap bounds every name-based variant.
+**Seeds 1 and 2 (run later on 17 Oct, same commit family, light queue).** Each
+seed draws its own trained/held-out split. The NO-GO holds in every seed:
+
+| Seed | STRANGER's optimum, trained / held-out (UDS) | Name swapped everywhere, trained / held-out (UDS) |
+|---|---|---|
+| 0 | 0.087 / 0.067 | 0.236 / 0.206 |
+| 1 | 0.066 / 0.089 | 0.194 / 0.227 |
+| 2 | 0.082 / 0.094 | 0.237 / 0.251 |
+
+**Caveats.** K = 4 names. The hybrid replaces layers 4-8 only, but the full
+name swap bounds every name-based variant.
 
 ---
 
@@ -1308,6 +1322,20 @@ from their own prefix. H100 slice, seed 0, 100 + 100 examples, commit
 | a retain author's question of the same length | 0.532 / 0.406 / 0.611 | 0.515 / 0.389 / 0.582 |
 | everything before the entity replaced by filler | 0.985 / 0.236 / 0.986 | 0.989 / 0.246 / 0.999 |
 
+**Seeds 1 and 2** (each with its own split) reproduce the order, at 3-seed
+means:
+
+| M_full on the row with ... | Trained: UDS (range) / strict (range) | Held-out: UDS (range) / strict (range) |
+|---|---|---|
+| the name swapped | 0.222 (0.194-0.237) / 0.171 (0.150-0.193) | 0.228 (0.206-0.251) / 0.192 (0.169-0.216) |
+| the question blanked | 0.368 (0.364-0.372) / 0.291 (0.285-0.297) | 0.357 (0.328-0.373) / 0.279 (0.258-0.290) |
+| **both** | **0.540 (0.528-0.559) / 0.403 (0.385-0.425)** | **0.538 (0.507-0.583) / 0.413 (0.379-0.456)** |
+| a retain author's question | 0.505 (0.476-0.532) / 0.383 (0.347-0.406) | 0.491 (0.417-0.543) / 0.392 (0.340-0.448) |
+| everything before the entity | 0.990 (0.985-0.994) / 0.242 (0.236-0.246) | 0.988 (0.981-0.995) / 0.234 (0.207-0.248) |
+
+No source clears the bar in any seed. The closest is "both" in seed 2, held
+out: strict UDS 0.456, but with an overshoot share of 0.127.
+
 1. **The key is the question's wording together with the name.** Each alone
    removes a fifth to a third of what separates M_full from retain90. Together
    they remove a little over half, and about 60% at the first entity token. The
@@ -1327,3 +1355,151 @@ from their own prefix. H100 slice, seed 0, 100 + 100 examples, commit
    therefore built on it, with criteria fixed before its first run
    (ANALYSIS_PLAN H8-X). Its results are reported as exploratory, never as a
    pre-registered success.
+
+---
+
+## 19. UNASKED, exploratory: twice the strict depth at the checkpoint, and just as relearnable (17 Oct 2026)
+
+UNASKED (`docs/UNASKED.md`, ANALYSIS_PLAN H8-X) trains the attention and MLP
+weights of every block. The goal: at every answer position of a trained forget
+row, the model's states should match M_full's states on the same row with the
+question blanked and the author's name replaced by invented names. That is the
+state of a model never asked about this person (§18). The method is
+**exploratory**: gate 1b had said stop, and UNASKED's criteria were fixed
+before its first run. Everything ran on the H100 slice. The seed-0 study used
+commit `57acd4d` (clean tree).
+
+### 19.1 Learning rate
+
+| Rate | Kept epoch | Remaining gap to the target | R at the kept epoch | Verdict |
+|---|---|---|---|---|
+| 1e-5 | 19 | 0.123 | 0.778 | usable |
+| **3e-6** | **18** | **0.112** | **0.773** | **usable, recommended** |
+| 1e-6 | not run | | | |
+
+* **The gap** is the forget term at that epoch divided by its value at θ0:
+  1 means no progress, 0 means at the target.
+* **X-G2 is met.**
+* **Selection:** 3e-6 has the lowest gap under the amended rule (H8-X: the
+  lowest gap among epochs with R ≥ 95% of baseline).
+* **1e-6 was not run** (ANALYSIS_PLAN §9). At 3e-6 the gap was still closing
+  slowly, so a three-times-smaller rate could not have won within 20 epochs.
+
+At 3e-6, R never fell below the floor: it stayed between 0.770 and 0.810 over
+all 20 epochs (baseline 0.805, floor 0.765). The gap fell from 0.37 after the
+first epoch to 0.11 at epoch 18. Forget NLL rose from 0.39 to 1.3 in the first
+epoch and then hovered between 1.5 and 2.1.
+
+### 19.2 Seed 0, against the baselines' checkpoints
+
+| Checkpoint (α = 0) | Trained: UDS / strict | Held-out: UDS / strict | Paraphrased questions: UDS / strict | Breadth, trained / held-out | R | RA | WF |
+|---|---|---|---|---|---|---|---|
+| **UNASKED, seed 0** | **0.532 / 0.452** | **0.397 / 0.333** | **0.410 / 0.366** | **0.423 / 0.417** | 0.772 | 0.72 | 0.735 |
+| GA, mean of 3 seeds | 0.220 / 0.208 | 0.190 / 0.174 | queued | 0.110 / 0.163 | 0.768 | 0.72 | 0.755 |
+| NPO, mean of 3 seeds | 0.172 / 0.166 | 0.146 / 0.137 | queued | 0.077 / 0.147 | 0.767 | 0.76 | 0.778 |
+| GradDiff, mean of 3 seeds | 0.146 / 0.141 | 0.062 / 0.060 | – | 0.169 / 0.191 | 0.768 | 0.86 | 0.829 |
+| UNASKED's target state (§18, seed 0) | 0.559 / 0.425 | 0.524 / 0.379 | | | | | |
+| M_full | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0.805 | 0.89 | 0.855 |
+
+Per-seed baseline strict UDS on trained facts: GA 0.108-0.271, NPO
+0.115-0.231, GradDiff 0.120-0.158. At α = 1 (the update doubled), UNASKED
+reaches:
+* trained 0.654 / 0.524, held-out 0.583 / 0.482, paraphrased 0.584 / 0.507;
+* R 0.720, RA 0.35, WF 0.31.
+
+1. **Deeper at the checkpoint, and not by overshoot.** Trained strict UDS,
+   which gives no credit for overshoot, is 0.452, at the same R as the
+   baselines. That is about twice GA's mean and three times NPO's and
+   GradDiff's.
+   * Overshoot cells carry 8% of UNASKED's UDS, against about 1% for the
+     baselines at their checkpoints. Plain UDS therefore flatters UNASKED a
+     little more than it flatters them. Strict UDS takes that out.
+   * The method reaches the depth of its own target state (UDS 0.559, strict
+     0.425) and closes 89% of the gap to it.
+
+   **E1 is met on seed 0** (≥ 0.35).
+2. **It holds on reworded questions.** The same trained facts, asked with
+   TOFU's paraphrased question, score strict UDS 0.366: 0.81 of the
+   trained-wording value. **E3 is met** (≥ 0.7). The erasure is not tied to the
+   exact trained wording. The baselines' paraphrase runs are queued (jobs
+   030/031), so whether they lose more is still open.
+3. **Breadth moves with depth.** Calibrated breadth on trained facts is 0.42,
+   against 0.08-0.17 for the baselines' means. By either measure, UNASKED
+   forgets more at the same R.
+4. **Held-out facts move too, which needs the control.** Held-out strict UDS
+   is 0.333 and breadth 0.417, two to three times GA's. Yet UNASKED never trains
+   on those rows, and §17-18 found that the memory is per QA sequence.
+   Two carriers are possible:
+   * the name-swap part of the target, which reaches other facts of the same
+     author (about 0.2 UDS, §17);
+   * collateral damage.
+
+   The matched-damage control separates them (E2, job 024, running).
+5. **General knowledge costs about what GA costs.** RA 0.72 and WF 0.735
+   (M_full 0.89 and 0.855). That is GA's level (mean 0.72 / 0.755) and below
+   GradDiff's (0.86 / 0.83). **E4 is not met** (RA ≥ 0.77 and WF ≥ 0.80). The
+   checkpoint rule holds only R at its floor. RA and WF are in neither the loss
+   nor the rule.
+6. **Doubling the update buys depth with damage.** At α = 1, trained strict UDS
+   rises to 0.524, while RA falls to 0.35 and WF to 0.31.
+
+**Gate X-G3 failed.** It required trained strict UDS ≥ 0.30 at the seed-0
+checkpoint, which was met (0.452), and RA ≥ 0.80, which was not (0.72). The rule
+said to stop and report.
+
+**Deviation #2, declared after seeing seed 0** (ANALYSIS_PLAN §9). The follow-up
+runs went ahead anyway: the matched-damage control, seeds 1-2 and their
+controls, and a λ = 3 retain-anchor variant aimed at the RA failure.
+* **The RA bar is stricter than the main study.** GA and NPO average RA 0.72
+  and 0.76, and three of their six runs are below 0.70, yet the main study
+  keeps them.
+* **The control tests the gate's real concern.** The gate guards against depth
+  that is only damage, and the matched-damage control measures exactly that.
+
+All of it stays exploratory and is reported with the failed gate.
+
+### 19.3 Relearning attack: deeper on UDS is not harder to relearn
+
+`scripts/relearn_attack.py` first retrains each method's seed-0 checkpoint
+exactly as its study does. It then fine-tunes the checkpoint on half of each
+author's trained facts: 100 facts, lr 1e-5, 2 epochs, answer-only NLL. It
+scores the other half (the probe set) and the held-out facts before and after.
+M_full and retain90 are attacked in the same way.
+
+The latent index after the attack is (unlearned − retain90) / (full − retain90):
+* 0 means the model recovers no more than one that never saw the facts;
+* 1 means it is back to full knowledge.
+
+| Seed 0 | Probe NLL, before → after | Held-out NLL, before → after | Latent index (NLL): probe / held-out | Latent index (knows-rate): probe / held-out |
+|---|---|---|---|---|
+| GA | 2.15 → 0.91 | 1.88 → 0.84 | 0.99 / 1.02 | 0.72 / 0.93 |
+| GradDiff | 1.14 → 1.00 | 0.70 → 0.93 | 0.92 / 0.95 | 0.94 / 1.00 |
+| NPO | 1.49 → 0.89 | 1.30 → 0.82 | 1.01 / 1.03 | 0.91 / 1.02 |
+| **UNASKED** | **2.03 → 0.99** | **1.54 → 0.91** | **0.93 / 0.96** | **0.66 / 1.09** |
+| M_full | 0.41 → 0.90 | 0.40 → 0.86 | | |
+| retain90 | 2.44 → 2.23 | 2.42 → 2.18 | | |
+
+1. **Every method gives its facts back.** After 50 steps on the attack half,
+   each unlearned model reaches M_full's post-attack NLL on facts the attack
+   never showed it. retain90, which never knew those facts, barely moves
+   (2.44 → 2.23). So the knowledge was still in the weights for every method,
+   UNASKED included: the NLL index is 0.92-1.03 everywhere. The knows-rate
+   index is noisier (100 facts, and M_full itself drops) but tells the same
+   story.
+2. **At this strength the attack also moves M_full.** M_full's probe NLL rises
+   from 0.41 to 0.90, and its knows-rate falls from 0.715 to 0.680. At lr 1e-5
+   the attack pulls every model toward one common state, which can hide
+   differences between methods. A dose-response tests whether UNASKED holds out
+   longer than GA when the attack is weak: five strengths from 1e-7 to 1e-5,
+   each applied to a fresh copy of the same checkpoint (jobs 025a/025b,
+   queued).
+3. **UDS depth is not relearning robustness.** UNASKED's trained strict UDS is
+   twice GA's, yet the attack recovers its facts just as fully. UDS reads how
+   far the forward pass at the entity position has moved from M_full's. A
+   relearning attack reads how close the weights still are to a model that
+   knows. These results are consistent with UNASKED, like GA, masking the
+   per-sequence memory of §17-18 rather than removing it. The depth it adds is
+   real on UDS's own terms (not overshoot, not wording-bound), but it is not
+   protection against fine-tuning.
+
+**Caveats.** One seed, one attack set of 100 facts, one strength so far.

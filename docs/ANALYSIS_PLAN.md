@@ -347,6 +347,19 @@ re-derived from its saved epochs (`lr_scan --recompute`); nothing is retrained.
 * **E5.** Held-out depth is reported with no criterion. The memory is per
   sequence (RESULTS.md §17-18), so it is expected near the baselines.
 
+**Outcome so far (17 Oct 2026, seed 0; RESULTS.md §19).**
+* **X-G2 met.** 3e-6 was recommended (kept epoch 18, remaining gap 0.112,
+  R 0.773). 1e-5 was also usable (gap 0.123). 1e-6 was not run (§9).
+* **X-G3 failed.** Trained strict UDS at the checkpoint was 0.452, above 0.30.
+  RA was 0.72, below 0.80.
+* **E1 met** on seed 0 (0.452 ≥ 0.35). **E3 met** (paraphrase / trained strict
+  0.81). **E4 not met** (RA 0.72, WF 0.735). **E2:** the control had not run yet.
+  **E5:** held-out UDS 0.397, strict 0.333.
+
+The rule said stop and report. The follow-up runs went ahead anyway, as a
+second declared deviation (§9, 17 Oct). Everything after X-G3 is exploratory,
+past a failed gate.
+
 ## 5. Units and statistics
 
 * **Seeds are the replicates** for α-level claims: n = 3 per method. Results
@@ -422,6 +435,42 @@ need only steps 1–3 for one method.
 
 Each entry needs: the date, the change, the reason, and whether any v2 result
 had been seen at the time.
+
+* **17 Oct 2026: UNASKED continues past its failed gate X-G3 (deviation #2).**
+  *UNASKED seed 0 had been seen.* X-G3 asked for trained strict UDS ≥ 0.30 and
+  RA ≥ 0.80 at the seed-0 checkpoint. It got 0.452 and 0.72. The rule says
+  stop. These runs were queued anyway:
+  * the matched-damage control (E2);
+  * seeds 1 and 2, and their controls;
+  * a λ = 3 retain-anchor variant (`--tag lam3`);
+  * a relearning dose-response (next entry).
+
+  Reasons:
+  1. The RA bar is above what the baselines reach, and the main study keeps
+     them anyway. GA averages RA 0.72 and NPO 0.76; three of their six runs are
+     below 0.70.
+  2. The gate guards against depth that is only damage. The matched-damage
+     control tests exactly that.
+  3. The GPU may be unavailable after 18 Oct.
+
+  E1-E5 and their thresholds are unchanged. Every result is labelled
+  exploratory and reported with the failed gate. λ = 3 is reported beside
+  λ = 1, never in its place.
+* **17 Oct 2026: relearning attack and dose-response added (exploratory).**
+  `scripts/relearn_attack.py` fine-tunes each method's seed-0 checkpoint on
+  half of each author's trained facts. It scores the other half and the
+  held-out facts against M_full and retain90 attacked in the same way. First
+  at lr 1e-5 for 2 epochs, the script's default, chosen before any attack ran.
+  Then, after those results were seen, at five rates from 1e-7 to 1e-5, each
+  applied to a fresh copy of the same checkpoint (`--attack-lrs`). Reason: at 1e-5 the attack also moves
+  M_full (probe NLL 0.41 → 0.90), so it can hide differences between methods.
+  Nothing pre-registered depends on it.
+* **17 Oct 2026: UNASKED scan stopped after two of its three rates.** 1e-5
+  and 3e-6 ran. 1e-6 did not. *The two scanned rates had been seen.* Reason: at
+  3e-6 the gap to the target was still closing slowly at epochs 16-19 (0.122,
+  0.123, 0.112, 0.118), so a rate three times smaller would very likely end
+  further from the target in the same 20 epochs. It could not have been
+  recommended under the lowest-gap rule. Its GPU hour went to the seed-0 study.
 
 * **17 Oct 2026: overshoot diagnostics added (exploratory), and H7 (STRANGER)
   pre-registered.** `eval/uds_diagnostics.py` and `scripts/uds_audit.py` report
