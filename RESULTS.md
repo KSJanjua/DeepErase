@@ -1233,3 +1233,56 @@ Measured strictly, no existing method beats matched damage by more than about
 is the bar any new method has to clear. Our own method, STRANGER, is
 pre-registered against strict UDS for this reason (ANALYSIS_PLAN H7; GA and NPO
 seeds 1-2 are compared with seed 0's control here).
+
+---
+
+## 17. STRANGER gate 1: the facts are not stored behind the author's name (17 Oct 2026)
+
+STRANGER (`docs/STRANGER.md`, pre-registered as H7) trains the MLPs of layers
+0-8 so that a forget author's name is processed like a never-seen name. Gate 1
+measures, before any training, the depth it could reach if training succeeded
+exactly. `scripts/virtual_source.py` replaces M_full's block outputs at the
+training positions (layers 4-8) with the targets, and scores that "hybrid" as a
+UDS source against the usual retain90 stage 1. Run on the H100 slice at commit
+`1fd4e84` (clean tree), seed 0, 100 trained + 100 held-out depth examples,
+8.5 min.
+
+| Source (seed 0) | Trained: UDS / strict | Held-out: UDS / strict |
+|---|---|---|
+| M_full itself (sanity) | 0.000 / 0.000 | 0.000 / 0.000 |
+| **STRANGER's optimum** (hybrid) | **0.087 / 0.087** | **0.067 / 0.065** |
+| Question positions only | 0.059 / 0.059 | 0.057 / 0.054 |
+| SCRAMBLE's optimum | 0.030 / 0.030 | 0.035 / 0.035 |
+| **Name swapped everywhere** (M_full on the swapped row) | **0.236 / 0.193** | **0.206 / 0.169** |
+| Same, excluding entities that contain the name | 0.197 / 0.192 | 0.147 / 0.147 |
+
+**Decision: NO-GO.** The rule fixed in advance was GO at UDS ≥ 0.50, WEAK GO at
+≥ 0.35 and NO-GO below 0.35. STRANGER stops here, as H7 specified, at a cost of
+about one day of code and nine GPU-minutes.
+
+1. **The name is not the key.** Swapping the name everywhere in the row is the
+   strongest possible name-based change, and an upper bound for STRANGER and
+   for any method keyed on the entity. It still leaves about 80-85% of the
+   knowledge in place: UDS 0.20 on trained and 0.15 on held-out facts once
+   entities that contain the name are set aside. Only 12-13 of 95 facts reach
+   0.5, and about half of those are entities that contain the name itself.
+2. **The knowledge is memorised per question-and-answer sequence.** With an
+   unknown name, M_full still predicts the entity from the question and answer
+   wording ("18 to 24 months", "speaking engagements", "local bookstores,
+   libraries, or online platforms" all score 0). This fits three earlier
+   results:
+   * the existing methods' erasure is not organised by author. At α = 1 the
+     author explains η² = 0.14-0.37 of the per-fact UDS variance, against 0.20
+     for randomly shuffled authors (95th percentile about 0.30, 500
+     permutations). 16 of the 18 run-splits lie within chance;
+   * GA's and NPO's held-out depth behaves like damage (§14.2);
+   * GradDiff's training sequences do not carry over to held-out facts (§15.1).
+3. **Consequence for method design.** On TOFU, entity-keyed unlearning is capped
+   at roughly UDS 0.2. That covers subject-keyed edits (ROME/MEMIT-style),
+   "unknown entity" steering and STRANGER. Any method aiming higher has to act
+   on the sequence-level memory of each QA pair. Without collateral damage, such
+   a method has no direct handle on held-out facts, because they are separate
+   memorised sequences.
+
+**Caveats.** One seed and K = 4 names. The hybrid replaces layers 4-8 only, but
+the full name swap bounds every name-based variant.

@@ -243,12 +243,42 @@ every scanned rate: λ = 3.
   of each author's trained facts), the latent-knowledge index on held-out facts
   is no higher than GA's and NPO's.
 
+**Outcome (17 Oct 2026): G1 NO-GO.** Hybrid UDS on trained facts was 0.087
+(strict 0.087), below the 0.35 stop line. Even the full name swap reached only
+0.236. STRANGER stops as specified; the ceiling is reported as a finding
+(RESULTS.md §17). G2, G3 and S1-S6 were not run.
+
 **What each outcome means (stated now).** S1-S3 met: a method whose depth is
 not damage and not overshoot, which generalises to untrained facts. S1 met but
 S2 not: deeper than the baselines but not beyond damage, so no mechanism claim.
 G1 NO-GO: facts are not retrieved through the name alone, a finding about where
 TOFU knowledge lives. S5 failing: the gain comes from disturbing the name, not
 from making it unknown. Every outcome is reported.
+
+### H8 gate — what the memory is keyed on (pre-registered 17 Oct 2026, before running it)
+
+Written after STRANGER's gate 1 (NO-GO, RESULTS.md §17) and before gate 1b
+runs. `scripts/memory_keys.py` (seed 0, inference only) scores M_full on
+equal-length edited copies of each depth example as UDS stage-2 sources:
+
+* the name swapped everywhere;
+* the question replaced by neutral filler;
+* both of those;
+* the question replaced by a same-length question about a retain author
+  (R-tier authors excluded);
+* everything before the entity replaced by filler.
+
+Each source is scored on the whole entity and on its first token.
+
+**Decision rule.** A successor method (H8) is designed only if at least one
+candidate source reaches, on the TRAINED split, UDS ≥ 0.50, strict UDS ≥ 0.45
+and overshoot share ≤ 0.10. The candidates are the neutral question, question
+plus name, the other author's question, and everything-before-the-entity. If
+several pass, H8 is built around the one with the highest strict UDS, and its
+own hypotheses and success criteria are pre-registered before any training.
+If none passes, no further method is built and the project proceeds to the
+write-up. Either way the decomposition is reported (RESULTS.md §18).
+Held-out numbers are reported only.
 
 ## 5. Units and statistics
 
@@ -282,6 +312,7 @@ from making it unknown. Every outcome is reported.
 | H1's matched-damage scale | `python -m deeperase.scripts.control_probe` (via `gpu/matched_controls.sh`) | `results/control_probes/*.json` |
 | **Every verdict, seed by seed** | `python -m deeperase.scripts.hypothesis_report` | `results/analysis/hypotheses_v2.{json,md}` |
 | Overshoot audit: strict/tent UDS, band UDS (exploratory; co-primary for H7) | `python -m deeperase.scripts.uds_audit` | `results/analysis/uds_audit_v2.{json,md}` |
+| H8 gate (1b), what the memory is keyed on | `python -m deeperase.scripts.memory_keys --seed 0` | `results/gates/memory_keys_s0.{json,md}` |
 | H7 gate 1, virtual-source ceiling | `python -m deeperase.scripts.virtual_source --seed 0` | `results/gates/stranger_g1_s0.{json,md}` |
 | Controls and tagged runs, fact level (exploratory) | `python -m deeperase.scripts.fact_level_analysis --run <dir> ...` | `results/analysis/fact_level_v2_exploratory.{json,md}` |
 

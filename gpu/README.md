@@ -241,7 +241,15 @@ cat results/gates/stranger_g1_s0.md
 ```
 
 The last line prints the pre-registered decision: GO, WEAK GO or NO-GO.
-Training steps (5b onwards) follow once gate 1 is in.
+*Done 17 Oct: NO-GO (RESULTS.md §17).* STRANGER stops there.
+
+*5b. Gate 1b, what the memory is keyed on (~15 min, inference only).* It decides
+whether a successor method is worth building (ANALYSIS_PLAN, H8 gate).
+
+```bash
+python -m deeperase.scripts.memory_keys --seed 0 > results/logs/memory_keys_s0.log 2>&1
+cat results/gates/memory_keys_s0.md
+```
 
 **3b. Loss-scope ablation, GA seed 0 (~1 h)** *(included in step 4)*: v1's full-sequence loss under
 v2's design. The tag gives it its own directory and keeps it out of the main

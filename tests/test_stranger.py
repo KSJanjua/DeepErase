@@ -215,3 +215,73 @@ def test_gate1_runs_end_to_end(word_checkpoints, tmp_path):
         assert self_uds is None or self_uds == pytest.approx(0.0, abs=1e-6)
         assert res["positions_per_row"] > 0
     assert (tmp_path / "stranger_g1_s0.md").exists()
+
+
+# ---------------------------------------------------------------------------
+# Gate 1b: what the memory is keyed on (scripts/memory_keys.py)
+# ---------------------------------------------------------------------------
+
+def test_question_tokens_take_the_leading_space_but_not_a_merged_newline():
+    from deeperase.scripts.memory_keys import question_tokens
+    text = "Question: Who is X?\nAnswer: Y"
+    q0, q1 = text.index("Who"), text.index("?") + 1
+    offs = [(0, 0), (0, 8), (8, 9), (9, 13), (13, 16), (16, 18), (18, 20), (20, 26),
+            (26, 27), (27, 29)]          # " Who"(9-13) " is" " X" "?\n"(18-20) ...
+    assert question_tokens(offs, q0, q1, text) == [3, 4, 5]
+
+
+def test_filler_and_replace_keep_lengths():
+    from deeperase.scripts.memory_keys import filler_ids, replace_at
+    from toy_tokenizer import byte_level_tokenizer
+    tok = byte_level_tokenizer()
+    assert len(filler_ids(tok, 3)) == 3 and len(filler_ids(tok, 200)) == 200
+    assert replace_at([1, 2, 3, 4], [1, 3], [9, 8]) == [1, 9, 3, 8]
+    with pytest.raises(ValueError):
+        replace_at([1, 2], [0], [5, 6])
+
+
+@needs_data
+def test_memory_key_edits_keep_length_and_entity(word_checkpoints):
+    import random
+    from deeperase.data.counterfactual import load_names
+    from deeperase.data.tofu import PromptFormat, SamplingStrategy, load_tofu
+    from deeperase.models import load_tokenizer
+    from deeperase.scripts.memory_keys import edits_for, retain_question_pool
+    from deeperase.scripts.run_study import build_uds_examples, example_row
+    tok = load_tokenizer(word_checkpoints["full"])
+    rows = load_tofu("forget10", data_dir=str(TOFU))
+    pool = retain_question_pool(tok, load_tofu("retain90", data_dir=str(TOFU))[:200])
+    exs = build_uds_examples(tok, str(REF_SPANS), PromptFormat.PLAIN_QA, 256, 8,
+                             SamplingStrategy.RANDOM, 0, tag="t")
+    names = load_names(NAMES)
+    for e in exs:
+        ids = e.input_ids[0].tolist()
+        ed = edits_for(tok, e, rows[example_row(e)], names, other_pool=pool,
+                       rng=random.Random(0))
+        assert ed["self"] == [ids]
+        assert len(ed["name"]) == 4 and len(ed["question_name"]) == 2
+        for src, seqs in ed.items():
+            for s in seqs:
+                assert len(s) == len(ids), src
+                if src != "name" and src != "question_name":
+                    assert [s[t] for t in e.span.token_indices] == \
+                        [ids[t] for t in e.span.token_indices], src
+        assert ed["question"][0] != ids and ed["context"][0] != ids
+
+
+@needs_data
+def test_gate1b_runs_end_to_end(word_checkpoints, tmp_path):
+    from deeperase.scripts import memory_keys
+    argv = ["--model-sources", json.dumps(word_checkpoints), "--tofu-dir", str(TOFU),
+            "--reference-spans", str(REF_SPANS), "--cf-names", str(NAMES),
+            "--cache-dir", str(tmp_path / "cache"), "--device", "cpu",
+            "--n-examples", "6", "--out-dir", str(tmp_path)]
+    assert memory_keys.main(argv) == 0
+    rep = json.loads((tmp_path / "memory_keys_s0.json").read_text())
+    assert rep["decision"].startswith(("STOP", "DESIGN"))
+    for split in ("trained", "heldout"):
+        res = rep["splits"][split]
+        assert set(res) == set(memory_keys.SOURCES)
+        u = res["self"]["whole"]["uds"]
+        assert u is None or u == pytest.approx(0.0, abs=1e-6)
+        assert "first_token" in res["question"]

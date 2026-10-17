@@ -1,5 +1,10 @@
 # STRANGER: unlearning an author by making their name unknown
 
+> **Status (17 Oct 2026): stopped at gate 1 (NO-GO).** Even swapping the name
+> everywhere leaves about 80% of the knowledge in place: TOFU facts are
+> memorised per QA sequence, not behind the name (RESULTS.md §17). The design
+> below is kept as the pre-registered record.
+
 STRANGER is this project's own unlearning method, designed after the v2 study
 showed how existing methods fall short (RESULTS.md §13-16). It is
 pre-registered as H7 in [`ANALYSIS_PLAN.md`](ANALYSIS_PLAN.md).
