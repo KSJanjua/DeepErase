@@ -1,0 +1,260 @@
+{
+  "config": {
+    "method": "unaskedg",
+    "learning_rate": 3e-06,
+    "epochs": 20,
+    "batch_size": 4,
+    "max_grad_norm": 1.0,
+    "beta": 0.1,
+    "retain_weight": 10.0,
+    "seed": 1,
+    "log_every": 20,
+    "min_utility_ratio": 0.95,
+    "stop_below_utility_ratio": null,
+    "trainable": "^model\\.layers\\.\\d+\\.(self_attn|mlp)\\.",
+    "general_weight": 1.0,
+    "select_by": "rep_gap"
+  },
+  "history": {
+    "n_steps": 1000,
+    "seconds": 869.6,
+    "first_loss": 0.34173110127449036,
+    "last_loss": 0.20107589662075043,
+    "baseline_forget_nll": 0.38038594216108323,
+    "final_forget_nll": 1.7487061500549317,
+    "forget_nll_change": 1.3683202078938486,
+    "baseline_utility": 0.805,
+    "selected_epoch": 19,
+    "stopped_early": false,
+    "rep_stats": {
+      "median_norm": {
+        "0": 1.671515941619873,
+        "1": 2.241607427597046,
+        "2": 2.829835891723633,
+        "3": 3.3802592754364014,
+        "4": 3.6428802013397217,
+        "5": 3.9673008918762207,
+        "6": 4.184169292449951,
+        "7": 4.4771037101745605,
+        "8": 5.016016006469727,
+        "9": 6.035592555999756,
+        "10": 6.783695697784424,
+        "11": 8.224052429199219,
+        "12": 9.839681625366211,
+        "13": 12.082923889160156,
+        "14": 14.889547348022461,
+        "15": 16.94359588623047
+      },
+      "sigma2": {
+        "0": 2.697695255279541,
+        "1": 5.051722526550293,
+        "2": 8.280908584594727,
+        "3": 11.772220611572266,
+        "4": 13.976225852966309,
+        "5": 16.440126419067383,
+        "6": 18.333980560302734,
+        "7": 21.270078659057617,
+        "8": 26.230464935302734,
+        "9": 37.46127700805664,
+        "10": 47.65316390991211,
+        "11": 69.79283905029297,
+        "12": 99.12393188476562,
+        "13": 146.29067993164062,
+        "14": 222.72059631347656,
+        "15": 357.11676025390625
+      },
+      "gap_over_sigma2": {
+        "0": 0.04029923309895913,
+        "1": 0.05443252482719367,
+        "2": 0.07865651360644889,
+        "3": 0.11577917425600702,
+        "4": 0.1439983323251543,
+        "5": 0.20689333872893825,
+        "6": 0.2613010838420746,
+        "7": 0.2865875551835527,
+        "8": 0.3040739931988193,
+        "9": 0.29363102198325114,
+        "10": 0.31555093979814747,
+        "11": 0.3222670710733528,
+        "12": 0.34633552672291096,
+        "13": 0.3672043272635712,
+        "14": 0.3855294149162074,
+        "15": 0.4520556397101966
+      },
+      "forget_positions": 6714,
+      "forget_positions_dropped": 0,
+      "retain_positions": 10891,
+      "retain_positions_dropped": 0,
+      "general_positions": 7545,
+      "general_positions_dropped": 0,
+      "initial_forget_term": 0.27101349174976347
+    },
+    "epoch_evals": [
+      {
+        "epoch": 0,
+        "utility": 0.805,
+        "forget_nll": 0.5688,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.7353
+      },
+      {
+        "epoch": 1,
+        "utility": 0.805,
+        "forget_nll": 0.7208,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.6149
+      },
+      {
+        "epoch": 2,
+        "utility": 0.7925,
+        "forget_nll": 0.7927,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.5646
+      },
+      {
+        "epoch": 3,
+        "utility": 0.7975,
+        "forget_nll": 0.8572,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.5305
+      },
+      {
+        "epoch": 4,
+        "utility": 0.785,
+        "forget_nll": 1.1129,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.453
+      },
+      {
+        "epoch": 5,
+        "utility": 0.805,
+        "forget_nll": 1.0379,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.464
+      },
+      {
+        "epoch": 6,
+        "utility": 0.8,
+        "forget_nll": 1.1138,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.4208
+      },
+      {
+        "epoch": 7,
+        "utility": 0.7775,
+        "forget_nll": 1.409,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3704
+      },
+      {
+        "epoch": 8,
+        "utility": 0.8075,
+        "forget_nll": 1.3642,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3648
+      },
+      {
+        "epoch": 9,
+        "utility": 0.795,
+        "forget_nll": 1.272,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.356
+      },
+      {
+        "epoch": 10,
+        "utility": 0.7925,
+        "forget_nll": 1.4189,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3291
+      },
+      {
+        "epoch": 11,
+        "utility": 0.7975,
+        "forget_nll": 1.5441,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3102
+      },
+      {
+        "epoch": 12,
+        "utility": 0.795,
+        "forget_nll": 1.5057,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2942
+      },
+      {
+        "epoch": 13,
+        "utility": 0.8025,
+        "forget_nll": 1.3676,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3123
+      },
+      {
+        "epoch": 14,
+        "utility": 0.805,
+        "forget_nll": 1.4818,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2933
+      },
+      {
+        "epoch": 15,
+        "utility": 0.7925,
+        "forget_nll": 1.5555,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2683
+      },
+      {
+        "epoch": 16,
+        "utility": 0.795,
+        "forget_nll": 1.7151,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2544
+      },
+      {
+        "epoch": 17,
+        "utility": 0.79,
+        "forget_nll": 1.5926,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2545
+      },
+      {
+        "epoch": 18,
+        "utility": 0.79,
+        "forget_nll": 1.5112,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2597
+      },
+      {
+        "epoch": 19,
+        "utility": 0.785,
+        "forget_nll": 1.7487,
+        "acceptable": true,
+        "selected": true,
+        "rep_gap": 0.2344
+      }
+    ]
+  },
+  "verdict": {
+    "passed": true,
+    "reason": "weights moved and forget-set NLL rose, as expected",
+    "update_norm": 2.4003459257138746
+  }
+}
