@@ -1,0 +1,260 @@
+{
+  "config": {
+    "method": "unaskedg",
+    "learning_rate": 3e-06,
+    "epochs": 20,
+    "batch_size": 4,
+    "max_grad_norm": 1.0,
+    "beta": 0.1,
+    "retain_weight": 3.0,
+    "seed": 0,
+    "log_every": 20,
+    "min_utility_ratio": 0.95,
+    "stop_below_utility_ratio": null,
+    "trainable": "^model\\.layers\\.\\d+\\.(self_attn|mlp)\\.",
+    "general_weight": 1.0,
+    "select_by": "rep_gap"
+  },
+  "history": {
+    "n_steps": 1000,
+    "seconds": 857.5,
+    "first_loss": 0.313160240650177,
+    "last_loss": 0.07965868711471558,
+    "baseline_forget_nll": 0.39127609610557557,
+    "final_forget_nll": 1.7580465030670167,
+    "forget_nll_change": 1.3667704069614413,
+    "baseline_utility": 0.805,
+    "selected_epoch": 19,
+    "stopped_early": false,
+    "rep_stats": {
+      "median_norm": {
+        "0": 1.6744577884674072,
+        "1": 2.2481071949005127,
+        "2": 2.8235647678375244,
+        "3": 3.377227306365967,
+        "4": 3.6461236476898193,
+        "5": 3.9631989002227783,
+        "6": 4.187160968780518,
+        "7": 4.488363265991211,
+        "8": 5.022017478942871,
+        "9": 6.042734146118164,
+        "10": 6.7858357429504395,
+        "11": 8.22322940826416,
+        "12": 9.829329490661621,
+        "13": 12.087358474731445,
+        "14": 14.894736289978027,
+        "15": 16.964418411254883
+      },
+      "sigma2": {
+        "0": 2.7056753635406494,
+        "1": 5.082034587860107,
+        "2": 8.271672248840332,
+        "3": 11.784282684326172,
+        "4": 14.0264310836792,
+        "5": 16.46450424194336,
+        "6": 18.391145706176758,
+        "7": 21.374937057495117,
+        "8": 26.306188583374023,
+        "9": 37.56561279296875,
+        "10": 47.96046447753906,
+        "11": 70.09575653076172,
+        "12": 99.2421646118164,
+        "13": 146.56265258789062,
+        "14": 223.026611328125,
+        "15": 359.37469482421875
+      },
+      "gap_over_sigma2": {
+        "0": 0.04302105523453695,
+        "1": 0.05713282123260159,
+        "2": 0.08083100641184614,
+        "3": 0.11755824727217166,
+        "4": 0.14532467818560504,
+        "5": 0.20707309668909524,
+        "6": 0.261334275782112,
+        "7": 0.28650593492794396,
+        "8": 0.30428460111605127,
+        "9": 0.29437131890003654,
+        "10": 0.3144497241132028,
+        "11": 0.3216409230667756,
+        "12": 0.3468747648058264,
+        "13": 0.36704781715604057,
+        "14": 0.3861989910970458,
+        "15": 0.45264877942321624
+      },
+      "forget_positions": 6366,
+      "forget_positions_dropped": 0,
+      "retain_positions": 10519,
+      "retain_positions_dropped": 0,
+      "general_positions": 7545,
+      "general_positions_dropped": 0,
+      "initial_forget_term": 0.2736892431974411
+    },
+    "epoch_evals": [
+      {
+        "epoch": 0,
+        "utility": 0.805,
+        "forget_nll": 0.8392,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.5625
+      },
+      {
+        "epoch": 1,
+        "utility": 0.7875,
+        "forget_nll": 1.1421,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.4242
+      },
+      {
+        "epoch": 2,
+        "utility": 0.7875,
+        "forget_nll": 1.3634,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3573
+      },
+      {
+        "epoch": 3,
+        "utility": 0.7875,
+        "forget_nll": 1.5052,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.314
+      },
+      {
+        "epoch": 4,
+        "utility": 0.805,
+        "forget_nll": 1.3008,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.3225
+      },
+      {
+        "epoch": 5,
+        "utility": 0.795,
+        "forget_nll": 1.5697,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.272
+      },
+      {
+        "epoch": 6,
+        "utility": 0.805,
+        "forget_nll": 1.6531,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2455
+      },
+      {
+        "epoch": 7,
+        "utility": 0.795,
+        "forget_nll": 1.7023,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.235
+      },
+      {
+        "epoch": 8,
+        "utility": 0.8,
+        "forget_nll": 1.7837,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2141
+      },
+      {
+        "epoch": 9,
+        "utility": 0.815,
+        "forget_nll": 1.5854,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2204
+      },
+      {
+        "epoch": 10,
+        "utility": 0.8125,
+        "forget_nll": 1.6345,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.2064
+      },
+      {
+        "epoch": 11,
+        "utility": 0.795,
+        "forget_nll": 1.841,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1883
+      },
+      {
+        "epoch": 12,
+        "utility": 0.795,
+        "forget_nll": 1.7962,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1807
+      },
+      {
+        "epoch": 13,
+        "utility": 0.7975,
+        "forget_nll": 1.8939,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1727
+      },
+      {
+        "epoch": 14,
+        "utility": 0.7975,
+        "forget_nll": 1.8187,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1705
+      },
+      {
+        "epoch": 15,
+        "utility": 0.7975,
+        "forget_nll": 1.7567,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1671
+      },
+      {
+        "epoch": 16,
+        "utility": 0.795,
+        "forget_nll": 1.9704,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1599
+      },
+      {
+        "epoch": 17,
+        "utility": 0.795,
+        "forget_nll": 1.8964,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1534
+      },
+      {
+        "epoch": 18,
+        "utility": 0.795,
+        "forget_nll": 1.8983,
+        "acceptable": true,
+        "selected": false,
+        "rep_gap": 0.1528
+      },
+      {
+        "epoch": 19,
+        "utility": 0.805,
+        "forget_nll": 1.758,
+        "acceptable": true,
+        "selected": true,
+        "rep_gap": 0.1524
+      }
+    ]
+  },
+  "verdict": {
+    "passed": true,
+    "reason": "weights moved and forget-set NLL rose, as expected",
+    "update_norm": 2.832713751538279
+  }
+}
