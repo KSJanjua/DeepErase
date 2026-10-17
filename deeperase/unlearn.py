@@ -142,6 +142,13 @@ class UnlearnConfig:
     stay bit-identical and get no optimiser state). None trains everything,
     the behaviour of GA/GradDiff/NPO."""
 
+    select_by: str = "forget_nll"
+    """Which epoch counts as "most forgetful" among those above the utility
+    floor. ``forget_nll``: the highest forget-set NLL (GA/GradDiff/NPO, whose
+    NLL keeps rising). ``rep_gap``: the lowest remaining gap to the
+    representation target (representation-target methods). Their NLL
+    plateaus at the target's level within an epoch, so its maximum is noise."""
+
     def validate(self) -> List[str]:
         problems: List[str] = []
         if self.learning_rate <= 0:
@@ -154,6 +161,10 @@ class UnlearnConfig:
             problems.append("NPO requires beta > 0")
         if not 0.0 < self.min_utility_ratio <= 1.0:
             problems.append("min_utility_ratio must be in (0, 1]")
+        if self.select_by not in ("forget_nll", "rep_gap"):
+            problems.append("select_by must be 'forget_nll' or 'rep_gap'")
+        if self.select_by == "rep_gap" and not self.method.representation_targets:
+            problems.append("select_by='rep_gap' needs a representation-target method")
         if (self.stop_below_utility_ratio is not None
                 and not 0.0 < self.stop_below_utility_ratio <= 1.0):
             problems.append("stop_below_utility_ratio must be in (0, 1]")
@@ -571,6 +582,7 @@ def unlearn(
 
     best_snapshot: Optional[Dict[str, torch.Tensor]] = None
     best_forget_nll = float("-inf")
+    best_gap = float("inf")
 
     t0 = time.time()
     step = 0
@@ -653,8 +665,13 @@ def unlearn(
                         "" if rep_gap is None else f" rep_gap={rep_gap:.3f}",
                         "keep" if acceptable else "REJECTED -- utility too low")
 
-            if acceptable and epoch_nll > best_forget_nll:
+            if config.select_by == "rep_gap":
+                better = (acceptable and rep_gap is not None and rep_gap < best_gap)
+            else:
+                better = acceptable and epoch_nll > best_forget_nll
+            if better:
                 best_forget_nll = epoch_nll
+                best_gap = rep_gap if rep_gap is not None else best_gap
                 best_snapshot = snapshot(model)
                 history.selected_epoch = epoch
             model.train()

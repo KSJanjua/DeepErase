@@ -115,3 +115,26 @@ def test_bounded_methods_pick_the_rate_closest_to_its_target():
     assert harsh["selected_epoch"] == 0 and harsh["verdict"] == "too fast"
     rates = {"1e-06": slow, "3e-06": good, "1e-05": harsh}
     assert recommend(rates, 4) == "3e-06"
+
+
+def test_a_plateaued_nll_does_not_pick_the_checkpoint_of_a_bounded_method(tmp_path):
+    # UNASKED's scan on the H100 (17 Oct): forget NLL reaches its plateau within an
+    # epoch and then only fluctuates, while the gap to the target keeps closing.
+    import json
+    from deeperase.scripts.lr_scan import recompute, select_epoch
+    epochs = [{"epoch": i, "utility": u, "forget_nll": n, "rep_gap": g}
+              for i, (u, n, g) in enumerate([(0.7675, 2.0047, 0.388), (0.735, 1.8476, 0.302),
+                                             (0.76, 1.9812, 0.278), (0.7775, 1.6851, 0.281),
+                                             (0.7425, 2.0829, 0.221), (0.7925, 1.9896, 0.211),
+                                             (0.755, 1.9993, 0.198)])]
+    assert select_epoch(epochs, 0.805, 0.95) == 0                      # by NLL: epoch 0
+    assert select_epoch(epochs, 0.805, 0.95, by="rep_gap") == 5        # by the gap
+    path = tmp_path / "scan.json"
+    path.write_text(json.dumps({"rates": {"1e-05": {
+        "lr": 1e-5, "budget": 7, "floor": 0.95, "baseline_utility": 0.805, "epochs": epochs,
+        "selected_epoch": 0, "verdict": "too fast"}}}))
+    rec = recompute(path)
+    r = rec["rates"]["1e-05"]
+    assert r["select_by"] == "rep_gap" and r["selected_epoch"] == 5
+    assert r["verdict"] == "usable" and rec["recommended_lr"] == "1e-05"
+    assert json.loads(path.read_text())["recommended_lr"] == "1e-05"

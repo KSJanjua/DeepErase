@@ -742,6 +742,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         unlearn_cfg.update({k: rep[k] for k in ("rep_layers", "trainable", "cf_k", "cf_names",
                                                 "cf_names_sha256", "rep_target")})
         unlearn_cfg["retain_weight"] = retain_weight
+        unlearn_cfg["select_by"] = "rep_gap"
     elif args.retain_weight is not None:
         unlearn_cfg["retain_weight"] = retain_weight
     config = {
@@ -918,7 +919,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                          epochs=args.epochs, batch_size=args.batch_size,
                          beta=args.beta, retain_weight=retain_weight,
                          min_utility_ratio=float(settings["min_utility_ratio"]),
-                         seed=args.seed, trainable=trainable)
+                         seed=args.seed, trainable=trainable,
+                         select_by="rep_gap" if rep else "forget_nll")
 
     r_items = [i for i in breadth_items if i.tier == "R"]
 

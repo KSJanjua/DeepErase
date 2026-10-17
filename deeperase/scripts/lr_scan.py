@@ -75,14 +75,23 @@ _KEEP_EVERYTHING = 1e-9
 # Reading a curve
 # ---------------------------------------------------------------------------
 
-def select_epoch(epochs: Sequence[dict], baseline: float, floor: float) -> Optional[int]:
-    """The epoch the study keeps: the highest forget NLL among epochs whose
-    utility is at least ``floor`` x the starting utility (the earliest on a tie),
-    exactly as :func:`deeperase.unlearn.unlearn` selects. None if none qualifies."""
-    best, best_nll = None, float("-inf")
+def select_epoch(epochs: Sequence[dict], baseline: float, floor: float,
+                 by: str = "forget_nll") -> Optional[int]:
+    """The epoch the study keeps, among epochs whose utility is at least
+    ``floor`` x the starting utility, exactly as :func:`deeperase.unlearn.unlearn`
+    selects: the highest forget NLL, or with ``by="rep_gap"`` (representation-
+    target methods) the lowest gap to the target. The earliest wins a tie.
+    None if no epoch qualifies."""
+    best, best_val = None, None
     for e in epochs:
-        if e["utility"] >= floor * baseline and e["forget_nll"] > best_nll:
-            best, best_nll = e["epoch"], e["forget_nll"]
+        if e["utility"] < floor * baseline:
+            continue
+        if by == "rep_gap":
+            v = e.get("rep_gap")
+            if v is not None and (best_val is None or v < best_val):
+                best, best_val = e["epoch"], v
+        elif best_val is None or e["forget_nll"] > best_val:
+            best, best_val = e["epoch"], e["forget_nll"]
     return best
 
 
@@ -125,13 +134,23 @@ def summarise(lr: float, history, budget: int, floor: float) -> dict:
                "forget_nll": round(e.forget_nll, 4),
                **({"rep_gap": round(e.rep_gap, 4)} if e.rep_gap is not None else {})}
               for e in history.epoch_evals]
-    sel = select_epoch(epochs, base, floor)
     rec = {"lr": lr, "budget": budget, "floor": floor,
            "baseline_utility": base, "baseline_forget_nll": history.baseline_forget_nll,
            "epochs": epochs, "n_epochs_run": len(epochs),
            "stopped_early": bool(getattr(history, "stopped_early", False)),
-           "selected_epoch": sel, "verdict": verdict(sel, budget),
            "train_seconds": round(history.seconds, 1)}
+    return resummarise(rec)
+
+
+def resummarise(rec: dict) -> dict:
+    """Selection and verdict of one scanned rate, from its stored epochs."""
+    epochs, base = rec["epochs"], rec.get("baseline_utility") or 0.0
+    by = "rep_gap" if any(e.get("rep_gap") is not None for e in epochs) else "forget_nll"
+    sel = select_epoch(epochs, base, rec["floor"], by=by)
+    rec.update({"select_by": by, "selected_epoch": sel,
+                "verdict": verdict(sel, rec["budget"])})
+    for k in ("selected_utility", "selected_forget_nll", "selected_rep_gap"):
+        rec.pop(k, None)
     if sel is not None:
         kept = next(e for e in epochs if e["epoch"] == sel)
         rec["selected_utility"] = kept["utility"]
@@ -149,8 +168,11 @@ def summarise(lr: float, history, budget: int, floor: float) -> dict:
 
 def parse_args(argv: Optional[Sequence[str]] = None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--method", required=True, choices=[m.value for m in UnlearnMethod])
-    ap.add_argument("--lrs", required=True, help="comma-separated, e.g. 1e-7,3e-8,1e-8")
+    ap.add_argument("--method", choices=[m.value for m in UnlearnMethod])
+    ap.add_argument("--lrs", help="comma-separated, e.g. 1e-7,3e-8,1e-8")
+    ap.add_argument("--recompute", default=None, metavar="SCAN_JSON",
+                    help="re-derive selections, verdicts and the recommendation of a "
+                         "saved scan under the current rules; no training")
     add_training_args(ap)
     ap.add_argument("--out-dir", default="results/lr_scans")
     return ap.parse_args(argv)
@@ -267,8 +289,30 @@ def prepare(args) -> SimpleNamespace:
     return ns
 
 
+def recompute(path) -> dict:
+    """Apply the current selection rules to a saved scan, in place."""
+    record = json.loads(Path(path).read_text(encoding="utf-8"))
+    for rec in record.get("rates", {}).values():
+        resummarise(rec)
+    budgets = {r.get("budget") for r in record.get("rates", {}).values()}
+    record["recommended_lr"] = (recommend(record["rates"], budgets.pop())
+                                if len(budgets) == 1 else None)
+    Path(path).write_text(json.dumps(record, indent=1), encoding="utf-8")
+    return record
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
+    if args.recompute:
+        record = recompute(args.recompute)
+        for k, r in sorted(record["rates"].items(), key=lambda kv: float(kv[0]), reverse=True):
+            print(f"{k:>9}  kept epoch {r['selected_epoch']}  by {r['select_by']}  "
+                  f"gap {r.get('selected_rep_gap')}  utility {r.get('selected_utility')}  "
+                  f"{r['verdict']}")
+        print(f"Recommended: {record.get('recommended_lr')}")
+        return 0
+    if not args.method or not args.lrs:
+        raise SystemExit("--method and --lrs are required (or use --recompute)")
     lrs = [float(x) for x in args.lrs.split(",") if x.strip()]
     ns = prepare(args)
     method, loss_scope, floor, device = ns.method, ns.loss_scope, ns.floor, ns.device
@@ -300,7 +344,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                             batch_size=args.batch_size, beta=args.beta, seed=args.seed,
                             min_utility_ratio=_KEEP_EVERYTHING,
                             stop_below_utility_ratio=args.stop_ratio,
-                            retain_weight=ns.retain_weight, trainable=ns.trainable)
+                            retain_weight=ns.retain_weight, trainable=ns.trainable,
+                            select_by="rep_gap" if ns.rep else "forget_nll")
         t0 = time.time()
         try:
             history = unlearn(model, forget_batches, cfg, retain_data=retain_batches,

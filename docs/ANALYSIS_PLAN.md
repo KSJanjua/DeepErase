@@ -324,6 +324,18 @@ is labelled exploratory.
   is ≥ 0.30 and RA ≥ 0.80. Then seeds 1-2 and matched-damage controls follow;
   otherwise stop and report.
 
+**Amendment (17 Oct 2026, after the first scanned rate and before any UNASKED
+study): checkpoint selection by the gap to the target.** For the
+representation-target methods, the checkpoint is the epoch with the lowest
+remaining gap to the target (`rep_gap`) among epochs with R ≥ 0.95 × baseline.
+It is no longer the epoch with the highest forget NLL. Reason: in the scan at
+lr 1e-5, forget NLL reached its plateau within the first epoch and then only
+fluctuated (2.00, 1.85, 1.98, 1.69, 2.08, 1.99, 2.00), while the gap kept
+closing (0.39 to 0.20). The maximum of a plateau picks an epoch by noise. The
+utility floor is unchanged. The lowest gap is these methods' own measure of
+"most forgotten", as the highest NLL is GA's. The scan's selections are
+re-derived from its saved epochs (`lr_scan --recompute`); nothing is retrained.
+
 **Exploratory criteria (all reported, whatever the outcome).**
 * **E1.** Checkpoint strict UDS on trained facts ≥ 0.35 (3-seed mean; GA 0.21).
 * **E2.** Damage-matched excess of strict UDS on trained facts ≥ +0.15 in every

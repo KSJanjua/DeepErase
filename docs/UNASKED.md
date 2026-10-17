@@ -44,8 +44,11 @@ GradDiff and NPO reach at their checkpoint.
   norms and the head stay frozen.
 * **Learning rate.** From `lr_scan.py`, using the rule for bounded methods: the
   usable rate whose kept epoch is closest to its target.
-* **Everything else** is protocol v2, including the checkpoint rule, the UIPE
-  sweep and the matched-damage controls.
+* **Checkpoint.** The epoch with the lowest gap to the target among those with
+  R ≥ 95% of baseline. The forget NLL of a bounded method plateaus within an
+  epoch, so its maximum is noise (ANALYSIS_PLAN H8-X, amendment).
+* **Everything else** is protocol v2, including the UIPE sweep and the
+  matched-damage controls.
 
 ## Checks specific to UNASKED
 

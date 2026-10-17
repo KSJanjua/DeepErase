@@ -404,3 +404,17 @@ def test_study_runs_unasked_end_to_end(word_checkpoints, tmp_path):
     assert set(p["depth"]) == {"trained", "heldout", "trained_para"}
     assert all(e["example_id"].startswith("para_")
                for e in p["depth"]["trained_para"]["per_example"])
+
+
+def test_unlearn_can_select_the_epoch_closest_to_the_target():
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, unlearn
+    m = _tiny()
+    inp, forget, retain = _train_inputs()
+    cfg = UnlearnConfig(method=UnlearnMethod.STRANGER, learning_rate=1e-2, epochs=4, batch_size=2,
+                        trainable=r"^model\.layers\.0\.mlp\.", min_utility_ratio=0.01,
+                        select_by="rep_gap")
+    hist = unlearn(m, forget, cfg, retain_data=retain, eval_fn=lambda _m: 1.0, stranger=inp)
+    gaps = {e.epoch: e.rep_gap for e in hist.epoch_evals}
+    assert hist.selected_epoch == min(gaps, key=gaps.get)
+    with pytest.raises(ValueError, match="representation-target"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.GA, select_by="rep_gap"))
