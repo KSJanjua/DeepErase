@@ -12,8 +12,9 @@ pasted verbatim. Captured: 2026-08-09 21:29
 >
 > **Section 0 (the A100) is history.** The GPU box is now an H100 with a 40 GB
 > MIG slice. Its first suite run is section 0.3 (670 passed, 16 tokenizer
-> skips, 13 Oct 2026). The latest run of the current suite (759 collected) is in
-> section 0.2, on macOS CPU: 757 passed, 2 GPU-only skips.
+> skips, 13 Oct 2026). The latest run of the current suite (775 collected) is in
+> section 0.2, on macOS CPU: 772 passed, 3 skips (2 GPU-only, 1 needing the
+> cached Llama tokenizer).
 
 ---
 
@@ -167,7 +168,7 @@ tokenizer fixtures now reporting their real error): **699 passed, 2 skipped**
 **707 passed, 2 skipped** (709 collected from 679 functions). After the
 GradDiff retain-pool fix and offline mode (13 Oct, evening): **710 passed, 2
 skipped** (712 collected from 682 functions). With the matched-damage probe
-(14 Oct): **715 passed, 2 skipped** (717 collected from 687 functions). With the hypothesis report and tagged-run status (15 Oct): **726 passed, 2 skipped** (728 collected from 698 functions). With controls and tagged runs kept in their own arm by the aggregators, the per-seed control check and the fully-erased share (16 Oct): **731 passed, 2 skipped** (733 collected from 703 functions). With STRANGER's foundations (name swapping, targets and loss, gate 1, overshoot diagnostics; 17 Oct): **753 passed, 2 skipped** (755 collected from 725 functions), with the real-tokenizer alignment test enabled via `DEEPERASE_CACHE_DIR`. With gate 1b (`scripts/memory_keys.py`, 17 Oct): **757 passed, 2 skipped** (759 collected from 729 functions).
+(14 Oct): **715 passed, 2 skipped** (717 collected from 687 functions). With the hypothesis report and tagged-run status (15 Oct): **726 passed, 2 skipped** (728 collected from 698 functions). With controls and tagged runs kept in their own arm by the aggregators, the per-seed control check and the fully-erased share (16 Oct): **731 passed, 2 skipped** (733 collected from 703 functions). With STRANGER's foundations (name swapping, targets and loss, gate 1, overshoot diagnostics; 17 Oct): **753 passed, 2 skipped** (755 collected from 725 functions), with the real-tokenizer alignment test enabled via `DEEPERASE_CACHE_DIR`. With gate 1b (`scripts/memory_keys.py`, 17 Oct): **757 passed, 2 skipped** (759 collected from 729 functions). With UNASKED, the paraphrased-question depth split, the relearning attack (with its dose-response) and the UNASKED and relearning reports (17 Oct): **772 passed, 3 skipped** (775 collected from 744 functions). The third skip is the real-tokenizer alignment test, which runs only when `DEEPERASE_CACHE_DIR` points at the cached Llama tokenizer.
 `gpu/setup_env.sh` steps 1–5 were also run on the Mac against a stand-in
 `nvidia-smi` (CPU torch). They built Python 3.11.17 with the exact pins and
 left nothing outside the project folder. Step 6 stopped as intended, since the
