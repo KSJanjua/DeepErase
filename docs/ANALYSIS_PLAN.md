@@ -480,6 +480,38 @@ had lifted RA and WF at no cost in breadth (RESULTS.md §19.6).
 * **Relearning:** if the attack still recovers the facts, the method changes
   what depth measures, not what can be relearned (RESULTS.md §19.3).
 
+### H9b — UNASKED-G with the TOFU anchor at 10 (fixed 17 Oct 2026, ~17:00 UTC, after its seed 0 and before its seeds 1-2)
+
+**Status: exploratory, with a confirmation step.** H9 declared one
+configuration outside its rule: UNASKED-G with the TOFU retain anchor at 10
+(tag `lam10`), seed 0. It met C1-C3 on that seed:
+* strict UDS 0.411 and breadth 0.392;
+* R 0.7925, RA 0.880 and WF 0.855 (GradDiff's means: 0.768, 0.863, 0.829).
+
+It was chosen after its seed 0, and after the λ = 3 runs, had been seen, so
+seed 0 is its selection seed. Any claim rests on seeds 1-2.
+
+**Configuration, fixed.** Method `unaskedg`, λ = 10 (`--retain-weight 10`),
+λ_g = 1, lr 3e-6, protocol v2 with paraphrased-question and paraphrased-answer
+depth. Everything else is as in H9.
+
+**Runs.**
+* seeds 1 and 2;
+* the R-matched random-direction control of seeds 0, 1 and 2
+  (`TAG=lam10 EXTRA="--retain-weight 10" gpu/matched_controls.sh`);
+* a relearning dose-response on seed 0.
+
+**Criteria.** H9's C1-C4, unchanged. They are judged on seeds 1-2 alone, the
+primary verdict for this configuration, and reported over all three seeds.
+`h9_report` lists it as configuration `lr3e-06_lam10`.
+
+**What each outcome means (stated now).**
+* **C1-C4 met on seeds 1-2:** a configuration, chosen on one seed and
+  confirmed on two more, that is deeper and broader than GradDiff, at least
+  as good on R, RA and WF, and beyond random damage.
+* **C1-C3 met but C4 failing:** the gain comes with damage.
+* **C3 failing on seeds 1-2:** seed 0's utility was luck of the seed.
+
 ## 5. Units and statistics
 
 * **Seeds are the replicates** for α-level claims: n = 3 per method. Results
