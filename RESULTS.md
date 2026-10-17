@@ -28,6 +28,13 @@ Sections 6–7: the shared NVIDIA A100-SXM4-80GB `dgxanode02` (29 Aug – 3 Sep 
 > name, not on the name alone. §19 is the exploratory successor UNASKED (twice
 > the baselines' strict depth, past a failed utility gate) and a relearning
 > attack, which recovers the facts of every method, UNASKED included.
+> **18 Oct:** §20 is **UNASKED-G**. It adds a leak-free general-knowledge
+> anchor and a stronger retain anchor. With the retain anchor at 10 (H9b,
+> confirmed on two seeds after a selection seed), it beats GradDiff at the
+> checkpoint on every measure:
+> * 2.7× the strict depth and 2.2× the breadth;
+> * higher R, RA and WF;
+> * beyond R-matched random damage in every seed with a control (§20.8).
 
 ---
 
