@@ -345,9 +345,9 @@
      "uds_trained_ans_ref": 0.33697930880557025,
      "strict_trained_para_ans": 0.3918824116104517,
      "uds_trained_para_ans": 0.4885821111890336,
-     "control": null,
-     "excess_strict_trained": null,
-     "excess_strict_general_matched": null,
+     "control": "control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10",
+     "excess_strict_trained": 0.28513886542744205,
+     "excess_strict_general_matched": 0.2750016124363857,
      "vs_graddiff_same_seed": {
       "matched_general": {
        "breadth": 0.4083216332696496,
@@ -436,7 +436,7 @@
     "C4_beyond_damage": {
      "per_seed": [
       0.3235633025547795,
-      null,
+      0.28513886542744205,
       null
      ],
      "met": null
@@ -473,7 +473,7 @@
     },
     "C4_beyond_damage": {
      "per_seed": [
-      null,
+      0.28513886542744205,
       null
      ],
      "met": null

@@ -1850,7 +1850,7 @@ general anchor 1, lr 3e-6, 20 epochs, H100 slice.
   ≥ 0.338.
 * **C3 utility: met.** R 0.789 ≥ 0.768, RA 0.880 ≥ 0.863 and WF 0.855
   ≥ 0.829. No seed is below a floor.
-* **C4 beyond damage:** seed 0 is in (below); seeds 1-2 are running.
+* **C4 beyond damage:** seeds 0 and 1 are in (below); seed 2 is running.
 
 **C4, seed 0.** The R-matched random direction sits at 11× the update's norm,
 with the same anchors (λ = 10, λ_g = 1), commit `4513b58` (clean tree). Along
@@ -1862,6 +1862,12 @@ exceeds it:
 * matched on general knowledge: by +0.33 to +0.37 at 5 α, mean **+0.347**.
 
 Both clear the ≥ 0.15 bar.
+
+**C4, seed 1** (control at 11×, commit `6cb1969`, clean). The random direction
+reaches breadth 0.02-0.08 and strict UDS 0.07-0.18. UNASKED-G exceeds it:
+* matched on R: by +0.26 to +0.30 at 5 α, mean **+0.285**, and +0.251 on
+  held-out facts;
+* matched on general knowledge: mean **+0.275** at 7 α.
 
 In plain terms, at its checkpoint UNASKED-G (anchor 10), against GradDiff's
 three-seed mean:
