@@ -220,14 +220,30 @@ def fig16_unasked_depth_vs_general():
     ax.annotate("α = 1", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
                 fontsize=7, va="center", color=INK2)
     extra = []
-    ctl = sorted(d for d in STUDIES.glob("control_x*_v2_unasked_1B_s*_lr*") if d.is_dir())
-    if ctl:
-        cx, cy = _strict_path(ctl)
-        ax.plot(cx, cy, "--", color=UNASKED_COLOR, lw=1.6, alpha=0.85, zorder=3)
-        ax.annotate("its damage control", (cx[-1], cy[-1]), xytext=(5, 0),
-                    textcoords="offset points", fontsize=7, va="center", color=INK2)
+    # every control run of a seed shares one random direction: one damage path,
+    # ordered by distance from M_full (scale x (1 + alpha))
+    paths = {}
+    for d in sorted(STUDIES.glob("control_x*_v2_unasked_1B_s*_lr*")):
+        if not d.is_dir():
+            continue
+        cfg = json.loads((d / "config.json").read_text())
+        t = load_run(d)["trajectories"]["trained"]
+        for r in audit_run(d)["splits"]["trained"]:
+            if r["alpha"] in t["alpha"]:
+                i = t["alpha"].index(r["alpha"])
+                paths.setdefault(cfg["seed"], []).append(
+                    (cfg["control_scale"] * (1 + r["alpha"]), t["general_utility"][i], r["strict"]))
+    for seed, pts in sorted(paths.items()):
+        pts.sort()
+        ax.plot([p[1] for p in pts], [p[2] for p in pts], "--", color=UNASKED_COLOR, lw=1.6,
+                alpha=0.85, zorder=3)
+    if paths:
+        far = max((p for pts in paths.values() for p in pts), key=lambda p: p[0])
+        ax.annotate("random direction", (far[1], far[2]), xytext=(-6, 6),
+                    textcoords="offset points", fontsize=7, ha="right", color=INK2)
+        n = len(paths)
         extra.append((plt.Line2D([], [], color=UNASKED_COLOR, lw=1.6, ls="--"),
-                      f"UNASKED's matched-damage control ({len(ctl)} seed{'s' if len(ctl) > 1 else ''})"))
+                      f"random direction, UNASKED's controls ({n} seed{'s' if n > 1 else ''})"))
     lam = sorted(STUDIES.glob("study_v2_unasked_1B_s*_lr*_lam3"))
     if lam:
         lx, ly = _strict_path(lam)
@@ -256,7 +272,7 @@ def fig16_unasked_depth_vs_general():
     ax.invert_xaxis()
     ax.set_ylim(0, 0.62)
     _grid(ax)
-    ax.set_title("At equal general-knowledge cost, UNASKED's checkpoint is the deepest",
+    ax.set_title("Strict depth against general-knowledge cost: checkpoints and α paths",
                  fontsize=9.5, color=INK)
     fig.savefig(OUT / "fig16_unasked_depth_vs_general.png")
     plt.close(fig)

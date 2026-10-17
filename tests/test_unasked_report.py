@@ -14,7 +14,8 @@ def _ex(d2: float):
             "delta_s2": {"0": d2, "1": d2}, "ke_layers": [0, 1], "uds": min(d2, 1.0)}
 
 
-def _run(root, name, seed, d2_trained, d2_para, ra=0.85, wf=0.84, control=None, d2_ans=None):
+def _run(root, name, seed, d2_trained, d2_para, ra=0.85, wf=0.84, control=None, d2_ans=None,
+         ra1=None):
     d = root / name
     (d / "partial").mkdir(parents=True)
     cfg = {"method": name.split("_")[2] if name.startswith("study") else "unasked",
@@ -30,7 +31,8 @@ def _run(root, name, seed, d2_trained, d2_para, ra=0.85, wf=0.84, control=None, 
         if d2_ans is not None:
             depth["trained_para_ans"] = {"tau": 0.05, "per_example": [
                 {**_ex(d2_ans * scale), "example_id": "para_ans_1"}]}
-        groups = {"R": {"rate": 0.8 - 0.05 * a}, "RA": {"rate": ra}, "WF": {"rate": wf}}
+        groups = {"R": {"rate": 0.8 - 0.05 * a},
+                  "RA": {"rate": ra if a == 0 or ra1 is None else ra1}, "WF": {"rate": wf}}
         (d / "partial" / f"alpha_{a:.3f}.json").write_text(json.dumps(
             {"points": pts, "point": pts[0], "depth": depth, "groups": groups}))
     return d
@@ -40,6 +42,10 @@ def test_criteria_from_saved_runs(tmp_path):
     _run(tmp_path, "study_v2_unasked_1B_s0_lr3e-06", 0, 0.5, 0.4, d2_ans=0.3)
     _run(tmp_path, "study_v2_unasked_1B_s0_lr3e-06_lam3", 0, 0.9, 0.9)   # a variant: not in E1-E5
     _run(tmp_path, "control_x10_v2_unasked_1B_s0_lr3e-06", 0, 0.1, 0.1, control=10.0)
+    # a larger-scale control along the same direction: general knowledge 0.84 -> 0.64,
+    # strict 0.6 -> 0.9; it must not replace the pre-registered control in E2
+    _run(tmp_path, "control_x15_v2_unasked_1B_s0_lr3e-06_genmatch", 0, 0.6, 0.6,
+         control=15.0, ra=0.84, wf=0.84, ra1=0.44)
     _run(tmp_path, "study_v2_ga_1B_s0_lr1e-08", 0, 0.2, 0.1)
     out = tmp_path / "rep"
     assert ur.main(["--dir", str(tmp_path), "--out", str(out)]) == 0
@@ -52,6 +58,13 @@ def test_criteria_from_saved_runs(tmp_path):
     assert c["E3_paraphrase_ratio"]["verdict"] == "met"
     # matched at R 0.80 (0.5 - 0.1) and 0.75 (0.75 - 0.15): mean +0.5
     assert c["E2_excess_strict_trained"]["per_seed"][0] == pytest.approx(0.5)
+    gm = rep["seeds"]["0"]["general_matched"]
+    assert gm["controls"] == ["control_x10_v2_unasked_1B_s0_lr3e-06",
+                              "control_x15_v2_unasked_1B_s0_lr3e-06_genmatch"]
+    # the run's checkpoint has general knowledge 0.845: between 0.84 (strict 0.6)
+    # and the x10 control's 0.845 (strict 0.1) -> interpolated 0.1, excess 0.4
+    assert gm["at_checkpoint"] == pytest.approx(0.4)
+    assert "same general-knowledge cost" in out.with_suffix(".md").read_text()
     assert c["E4_general_knowledge"]["verdict"] == "met"
     assert "study_v2_ga_1B_s0_lr1e-08" in rep["comparisons"]
     check = rep["seeds"]["0"]["answer_check"]["0"]

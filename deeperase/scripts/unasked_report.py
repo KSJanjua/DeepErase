@@ -5,7 +5,13 @@ point and computes:
 
 * UDS and strict UDS on trained, held-out and paraphrased-question facts;
 * R, RA and WF;
-* the damage-matched excess of strict UDS, when the seed has a control;
+* the damage-matched excess of strict UDS, when the seed has a control (the
+  pre-registered control, matched on R: the untagged ``control_x*`` run);
+* the same excess matched on general knowledge (mean of RA and WF) instead,
+  exploratory. UNASKED costs far more general knowledge than R, so R-matched
+  damage is the lenient comparison for it. All control runs of a seed (e.g. a
+  ``_genmatch`` run at a larger scale) share one random direction, so together
+  they form one damage path;
 * for runs with the paraphrased-answer split, the same facts' UDS and strict
   UDS on the original and on the paraphrased answer (paired: only facts with
   a KE layer in both).
@@ -58,6 +64,50 @@ def point(audit: dict, run: Path, alpha: float) -> dict:
     return out
 
 
+def _general(run: Path, alpha: float) -> Optional[float]:
+    g = _groups(run, alpha)
+    return (g["RA"] + g["WF"]) / 2 if g.get("RA") is not None and g.get("WF") is not None else None
+
+
+def _interp(x: float, pts: List[tuple]) -> Optional[float]:
+    pts = sorted(pts)
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        if x0 <= x <= x1:
+            return y0 if x1 == x0 else y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+    return None
+
+
+def general_matched(run: Path, audit: dict, controls: Sequence[Path],
+                    split: str = "trained") -> Optional[dict]:
+    """Strict-UDS excess over random damage of the same general-knowledge cost.
+
+    For each alpha of the run, the controls' strict UDS is interpolated at the
+    run's general knowledge (mean of RA and WF) along the controls' points.
+    Alphas outside the controls' range are left out.
+    """
+    pts = []
+    for c in controls:
+        ac = audit_run(c)
+        for r in (ac or {}).get("splits", {}).get(split, []):
+            g = _general(c, r["alpha"])
+            if g is not None:
+                pts.append((g, r["strict"]))
+    if not pts:
+        return None
+    rows = []
+    for r in audit["splits"].get(split, []):
+        g = _general(run, r["alpha"])
+        c = None if g is None else _interp(g, pts)
+        rows.append({"alpha": r["alpha"], "general": g, "strict": r["strict"],
+                     "control_strict": c, "excess": None if c is None else r["strict"] - c})
+    ex = [x["excess"] for x in rows if x["excess"] is not None]
+    at0 = next((x for x in rows if abs(x["alpha"]) < 1e-9), None)
+    return {"by_alpha": rows, "mean": sum(ex) / len(ex) if ex else None, "n_matched": len(ex),
+            "at_checkpoint": at0["excess"] if at0 else None,
+            "controls": [c.name for c in controls],
+            "control_general_range": [min(g for g, _ in pts), max(g for g, _ in pts)]}
+
+
 def answer_check(run: Path, alpha: float) -> Optional[dict]:
     """The same facts on the original and the paraphrased answer, paired."""
     f = run / "partial" / f"alpha_{alpha:.3f}.json"
@@ -98,10 +148,14 @@ def _get(p: dict, split: str, key: str) -> Optional[float]:
 def collect(studies: Path) -> dict:
     runs = sorted(d for d in studies.glob("study_v2_unasked_1B_s*_lr*") if d.is_dir()
                   and not d.name.split("_lr", 1)[1].count("_"))
-    controls: Dict[int, dict] = {}
-    for d in sorted(studies.glob("control_x*_v2_unasked_1B_s*")):
-        a = audit_run(d)
-        if a:
+    controls: Dict[int, dict] = {}            # the pre-registered (untagged) control
+    damage_paths: Dict[int, List[Path]] = {}  # every control run of the seed
+    for d in sorted(studies.glob("control_x*_v2_unasked_1B_s*_lr*")):
+        a = audit_run(d) if d.is_dir() else None
+        if not a:
+            continue
+        damage_paths.setdefault(int(a["seed"]), []).append(d)
+        if not d.name.split("_lr", 1)[1].count("_"):
             controls[int(a["seed"])] = a
     seeds = {}
     for d in runs:
@@ -117,6 +171,7 @@ def collect(studies: Path) -> dict:
             if controls.get(int(a["seed"])) else None,
             "excess_strict_heldout": (((ex or {}).get("heldout") or {}).get("strict") or {}).get("mean")
             if controls.get(int(a["seed"])) else None,
+            "general_matched": general_matched(d, a, damage_paths.get(int(a["seed"]), [])),
         }
     variants = {}
     for d in sorted(studies.glob("study_v2_unasked_1B_s*_lr*_*")):
@@ -201,6 +256,16 @@ def to_markdown(rep: dict) -> str:
             lines.append(f"| {n} | {c['n']} | {_f(c['original']['uds'])} / "
                          f"{_f(c['original']['strict'])} | {_f(c['paraphrased']['uds'])} / "
                          f"{_f(c['paraphrased']['strict'])} |")
+    gm = [(s["run"], s.get("general_matched")) for s in rep["seeds"].values()]
+    gm = [(n, g) for n, g in gm if g]
+    if gm:
+        lines += ["", "Strict-UDS excess over random damage of the same general-knowledge cost "
+                  "(exploratory; E2 is matched on R):", ""]
+        for n, g in gm:
+            lo, hi = g["control_general_range"]
+            lines.append(f"* {n}: at the checkpoint {_f(g['at_checkpoint'])}; mean over "
+                         f"{g['n_matched']} matched alphas {_f(g['mean'])} (controls "
+                         f"{', '.join(g['controls'])}; general knowledge {lo:.3f}-{hi:.3f})")
     c = rep["criteria"]
     lines += ["", f"E1 checkpoint strict UDS (trained, mean): {_f(c['E1_checkpoint_strict_trained']['value'])}"
               f" (>= {E1_MIN}): {c['E1_checkpoint_strict_trained']['verdict']}",

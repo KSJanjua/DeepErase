@@ -12,8 +12,12 @@
 | study_v2_graddiff_1B_s1_lr5e-08 | 0 | 0.121 / 0.120 | 0.057 / 0.056 | – / – | 0.765 | 0.86 | 0.829 |
 | study_v2_graddiff_1B_s2_lr5e-08 | 0 | 0.174 / 0.158 | 0.076 / 0.071 | – / – | 0.765 | 0.85 | 0.838 |
 
+Strict-UDS excess over random damage of the same general-knowledge cost (exploratory; E2 is matched on R):
+
+* study_v2_unasked_1B_s0_lr3e-06: at the checkpoint –; mean over 0 matched alphas – (controls control_x10_v2_unasked_1B_s0_lr3e-06; general knowledge 0.758-0.862)
+
 E1 checkpoint strict UDS (trained, mean): 0.452 (>= 0.35): met
-E2 damage-matched strict excess (trained, per seed): [None] (>= 0.15 each): no data
+E2 damage-matched strict excess (trained, per seed): [0.285] (>= 0.15 each): met
 E3 paraphrase / trained strict: 0.81 (>= 0.7): met
 E4 RA 0.72, WF 0.735 (>= 0.77, 0.8): not met
 E5 held-out UDS 0.397, strict 0.333 (reported)

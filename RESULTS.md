@@ -1434,7 +1434,7 @@ reaches:
      author (about 0.2 UDS, §17);
    * collateral damage.
 
-   The matched-damage control separates them (E2, job 024, running).
+   The matched-damage control separates them (§19.5).
 5. **General knowledge costs about what GA costs.** RA 0.72 and WF 0.735
    (M_full 0.89 and 0.855). That is GA's level (mean 0.72 / 0.755) and below
    GradDiff's (0.86 / 0.83). **E4 is not met** (RA ≥ 0.77 and WF ≥ 0.80). The
@@ -1556,3 +1556,42 @@ out a trigger tied to the question wording, but not one tied to the measured
 positions. The forced-choice items (other prompt formats) and the relearning
 attack (§19.3) are therefore the independent checks. Both say most of the
 knowledge is still there.
+
+### 19.5 Matched-damage control (E2): beyond damage in R, not yet in general knowledge
+
+`control_probe.py` found the random-direction scale whose damage to R matches
+UNASKED's: 10× the update's norm, per tensor. At α = 1 that control has R
+0.738, against UNASKED's 0.720. At 30× the norm, R falls to 0.285. UNASKED's
+update is already large, which is why the matched displacement is only 10×
+its norm (the baselines needed 320-540×). The probe and the control study
+recorded commit `cbe6e41` (clean tree), H100 slice.
+
+| α | UNASKED: R / general knowledge / strict UDS (trained) | Random direction at 10×: R / general knowledge / strict UDS |
+|---|---|---|
+| 0 | 0.772 / 0.728 / **0.452** | 0.800 / 0.862 / 0.092 |
+| 0.5 | 0.743 / 0.452 / 0.506 | 0.757 / 0.835 / 0.194 |
+| 1 | 0.720 / 0.329 / 0.524 | 0.738 / 0.758 / 0.354 |
+
+1. **E2 is met on seed 0, as specified.** Matched on R (the pre-registered
+   utility), UNASKED's strict UDS exceeds the control's by 0.20-0.32 at
+   α = 0-0.5, a mean of **+0.285** on trained facts. The bar is ≥ 0.15. On
+   held-out facts the excess is +0.19. Beyond α = 0.5, UNASKED's R falls below
+   anything the control reached (0.738), so those points have no match.
+2. **The R match is lenient for UNASKED.** At equal R, the control keeps far
+   more general knowledge. At UNASKED's checkpoint the control's general
+   knowledge (mean of RA and WF) is 0.849, against UNASKED's 0.728. Over the
+   matched alphas the mean gap is +0.235. The same gap for the baselines'
+   controls is +0.145 (GA), +0.116 (NPO) and about 0 (GradDiff). UNASKED's
+   retain anchor protects R, so its damage lands on RA and WF instead.
+3. **Along the same random direction, depth rises steeply as general
+   knowledge falls.** Strict UDS goes from 0.09 at general knowledge 0.862 to
+   0.35 at 0.758 (figure 16, dashed). That is steeper than GA's or NPO's own
+   path. UNASKED's checkpoint, at 0.728 and 0.452, lies just beyond the end of
+   the control's path.
+   * **To match general knowledge**, a control at 15× the norm is queued: the
+     same seed and direction, continued to 30×.
+   * **The comparison** (exploratory, `unasked_report.general_matched`) is
+     UNASKED's strict UDS against the control's at UNASKED's general-knowledge
+     cost. If that excess is near zero, UNASKED's extra depth is what random
+     damage of the same general-knowledge cost would give.
+
