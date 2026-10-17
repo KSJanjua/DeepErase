@@ -355,7 +355,7 @@ re-derived from its saved epochs (`lr_scan --recompute`); nothing is retrained.
 * **E1 met** on seed 0 (0.452 ≥ 0.35). **E3 met** (paraphrase / trained strict
   0.81). **E4 not met** (RA 0.72, WF 0.735). **E5:** held-out UDS 0.397, strict
   0.333.
-* **E2 met on seed 0:** +0.285 strict-UDS excess on trained facts over the
+* **E2 met on seed 0:** +0.284 strict-UDS excess on trained facts over the
   R-matched control (scale 10). Seeds 1-2 are pending. At equal R, that
   control keeps 0.235 more general knowledge than UNASKED (RESULTS.md §19.5),
   so a general-knowledge-matched comparison was added as an exploratory

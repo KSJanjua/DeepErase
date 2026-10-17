@@ -96,3 +96,16 @@ def test_own_control_cell_names_the_failing_seeds():
     assert hr._own_control_cell({0: True, 1: False, 2: True}) == "2 of 3 seeds (fails seed 1)"
     assert hr.mean_excess([None, 0.1, 0.3]) == pytest.approx(0.2)
     assert hr.mean_excess([None]) is None
+
+
+def test_excess_over_control_is_defined_at_tied_control_utilities():
+    """A control whose utility repeats along its path (R 0.80 at two alphas)
+    gives the same excess whatever order a sort leaves the tied points in."""
+    from deeperase.scripts.hypothesis_report import excess_over_control
+    real = {"utility": [0.80, 0.79], "depth": [0.50, 0.55]}
+    a = {"utility": [0.81, 0.80, 0.80, 0.78], "depth": [0.05, 0.10, 0.20, 0.30]}
+    b = {"utility": [0.81, 0.80, 0.80, 0.78], "depth": [0.05, 0.20, 0.10, 0.30]}
+    ea, eb = excess_over_control(real, a, "depth"), excess_over_control(real, b, "depth")
+    assert ea == pytest.approx(eb)
+    assert ea[0] == pytest.approx(0.50 - 0.15)          # the tied values' mean
+    assert ea[1] == pytest.approx(0.55 - (0.15 + 0.30) / 2)

@@ -55,8 +55,8 @@
     "1": null
    },
    "control": "control_x10_v2_unasked_1B_s0_lr3e-06",
-   "excess_strict_trained": 0.28453396117764257,
-   "excess_strict_heldout": 0.19319702790022827,
+   "excess_strict_trained": 0.2838397284788801,
+   "excess_strict_heldout": 0.19219199033545284,
    "general_matched": {
     "by_alpha": [
      {
@@ -493,7 +493,7 @@
   },
   "E2_excess_strict_trained": {
    "per_seed": [
-    0.28453396117764257
+    0.2838397284788801
    ],
    "min": 0.15,
    "verdict": "met"

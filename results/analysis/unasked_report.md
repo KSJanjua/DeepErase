@@ -25,7 +25,7 @@ Strict-UDS excess over random damage of the same general-knowledge cost (explora
 * study_v2_unasked_1B_s0_lr3e-06: at the checkpoint –; mean over 0 matched alphas – (controls control_x10_v2_unasked_1B_s0_lr3e-06; general knowledge 0.758-0.862)
 
 E1 checkpoint strict UDS (trained, mean): 0.452 (>= 0.35): met
-E2 damage-matched strict excess (trained, per seed): [0.285] (>= 0.15 each): met
+E2 damage-matched strict excess (trained, per seed): [0.284] (>= 0.15 each): met
 E3 paraphrase / trained strict: 0.81 (>= 0.7): met
 E4 RA 0.72, WF 0.735 (>= 0.77, 0.8): not met
 E5 held-out UDS 0.397, strict 0.333 (reported)

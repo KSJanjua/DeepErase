@@ -149,13 +149,18 @@ def excess_over_control(real: dict, control: dict, key: str) -> List[Optional[fl
     None where the real utility lies outside the control path's range."""
     cu = np.asarray(control["utility"], dtype=float)
     cv = np.asarray(control[key], dtype=float)
-    order = np.argsort(cu)
+    # np.interp needs increasing x. A control's utility can repeat along its
+    # path (R 0.800 at two alphas); an unstable sort then orders the tied
+    # points differently on different machines and the result changes. The
+    # control's values at a tied utility are averaged instead.
+    ux = np.unique(cu)
+    uy = np.array([cv[cu == x].mean() for x in ux])
     out = []
     for u, v in zip(real["utility"], real[key]):
-        if u is None or v is None or not (cu.min() - 1e-9 <= u <= cu.max() + 1e-9):
+        if u is None or v is None or not (ux[0] - 1e-9 <= u <= ux[-1] + 1e-9):
             out.append(None)
         else:
-            out.append(float(v - np.interp(u, cu[order], cv[order])))
+            out.append(float(v - np.interp(u, ux, uy)))
     return out
 
 

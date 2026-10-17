@@ -83,7 +83,7 @@
      "strict_trained_para_ans": 0.43793208362221525,
      "uds_trained_para_ans": 0.4819604984758226,
      "control": "control_x10_v2_unaskedg_1B_s0_lr3e-06",
-     "excess_strict_trained": 0.3646960192742971,
+     "excess_strict_trained": 0.364949629134222,
      "excess_strict_general_matched": 0.19430904164999763,
      "vs_graddiff_same_seed": {
       "matched_general": {
@@ -211,7 +211,7 @@
     },
     "C4_beyond_damage": {
      "per_seed": [
-      0.3646960192742971,
+      0.364949629134222,
       null,
       null
      ],

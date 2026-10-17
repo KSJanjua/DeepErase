@@ -1229,13 +1229,22 @@ measure of H1-H6.
 
 | Mean over shared α, trained / held-out | UDS | strict UDS |
 |---|---|---|
-| GA, seeds 0 / 1 / 2 | +0.14/+0.08, +0.09/+0.07, +0.01/−0.01 | +0.09/+0.07, +0.05/+0.07, −0.01/−0.01 |
-| NPO, seeds 0 / 1 / 2 | +0.10/+0.05, +0.10/+0.08, +0.03/+0.01 | +0.08/+0.05, +0.08/+0.07, +0.00/+0.01 |
-| GradDiff, seeds 0 / 1 / 2 | +0.03/−0.12, −0.09/−0.14, +0.01/−0.13 | +0.02/−0.10, −0.04/−0.14, +0.01/−0.12 |
+| GA, seeds 0 / 1 / 2 | +0.14/+0.08, +0.09/+0.08, +0.02/−0.01 | +0.10/+0.07, +0.06/+0.07, −0.01/−0.01 |
+| NPO, seeds 0 / 1 / 2 | +0.10/+0.06, +0.09/+0.07, +0.03/+0.02 | +0.08/+0.05, +0.07/+0.06, +0.01/+0.01 |
+| GradDiff, seeds 0 / 1 / 2 | +0.03/−0.12, −0.08/−0.14, +0.01/−0.13 | +0.02/−0.10, −0.04/−0.14, +0.01/−0.12 |
 
 Measured strictly, no existing method beats matched damage by more than about
-+0.09 in any seed. GradDiff's held-out depth stays 0.10-0.14 below damage. This
-is the bar any new method has to clear. Our own method, STRANGER, is
++0.10 in any seed. GradDiff's held-out depth stays 0.10-0.14 below damage. This
+is the bar any new method has to clear.
+
+*Correction (17 Oct 2026, evening).* The excess interpolation
+(`hypothesis_report.excess_over_control`) sorted the control's points by
+utility with an unstable sort. When the control's utility repeats along its
+path, tied points came out in a machine-dependent order. The same files then
+gave GA seed 0 a strict excess of +0.09 on the Mac and a different value on
+the H100 box. Values at a tied utility are now averaged. The table above is
+recomputed. It moved by at most 0.01 per cell (GA seed 0 strict +0.09 → +0.10),
+and no verdict changed (`results/analysis/hypotheses_v2.md` is unchanged). Our own method, STRANGER, is
 pre-registered against strict UDS for this reason (ANALYSIS_PLAN H7; GA and NPO
 seeds 1-2 are compared with seed 0's control here).
 
@@ -1573,8 +1582,8 @@ recorded commit `cbe6e41` (clean tree), H100 slice.
 | 1 | 0.720 / 0.329 / 0.524 | 0.738 / 0.758 / 0.354 |
 
 1. **E2 is met on seed 0, as specified.** Matched on R (the pre-registered
-   utility), UNASKED's strict UDS exceeds the control's by 0.20-0.32 at
-   α = 0-0.5, a mean of **+0.285** on trained facts. The bar is ≥ 0.15. On
+   utility), UNASKED's strict UDS exceeds the control's by 0.21-0.32 at
+   α = 0-0.5, a mean of **+0.284** on trained facts. The bar is ≥ 0.15. On
    held-out facts the excess is +0.19. Beyond α = 0.5, UNASKED's R falls below
    anything the control reached (0.738), so those points have no match.
 2. **The R match is lenient for UNASKED.** At equal R, the control keeps far
@@ -1739,8 +1748,8 @@ anchors as the run (λ = 3, λ_g = 1), on the H100 slice.
 | 1 | 0.755 / 0.758 / 0.649 / 0.531 | 0.757 / 0.816 / 0.175 / 0.246 |
 
 * **Matched on R (C4 as pre-registered).** UNASKED-G's strict UDS exceeds
-  the control's by +0.32 to +0.40 at 9 of the 11 α. The mean is **+0.365**
-  against a bar of ≥ 0.15. On held-out facts the excess is +0.257.
+  the control's by +0.33 to +0.39 at 9 of the 11 α. The mean is **+0.365**
+  against a bar of ≥ 0.15. On held-out facts the excess is +0.258.
 * **Matched on general knowledge (exploratory).** The control spans general
   knowledge from 0.867 down to 0.816. Within that range (UNASKED-G's α 0-0.2),
   the excess is +0.18 to +0.20, a mean of **+0.194**. Unlike UNASKED
