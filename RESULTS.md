@@ -21,7 +21,8 @@ Sections 6–7: the shared NVIDIA A100-SXM4-80GB `dgxanode02` (29 Aug – 3 Sep 
 > **13–16 Oct:** sections 12–15 are the protocol-v2 study on an H100: the
 > first runs (12), one seed per method (13), the full 3 × 3 matrix with
 > matched-damage controls (14) and the sharpening runs (15). The current
-> conclusions are §14.5 as amended by §15.5.
+> conclusions are §14.5 as amended by §15.5 and §16. §16 also introduces strict
+> UDS, which our own method (STRANGER, docs/STRANGER.md) is judged by.
 
 ---
 
@@ -1096,7 +1097,9 @@ T = trained facts, H = held-out facts.
 1. **There is no cliff out to twice the update.**
    * From α = 1 to 2, R falls by only 0.02 (GA) and 0.05 (GradDiff). That is
      far above the collapse line, 75% of the starting utility.
-   * Depth and breadth keep rising.
+   * Depth and breadth keep rising. (§16 corrects this for GA: its trained-fact
+     depth gain past α = 1 is entirely overshoot, and strict depth stays flat
+     at 0.53 → 0.52.)
 2. **GradDiff stays selective at every α up to 2.0, and GA never is.**
    * GradDiff keeps real-author knowledge at 0.76.
    * GA's selectivity recovers from −0.15 (α 0.7–0.9) to zero at α = 2, but
@@ -1160,10 +1163,73 @@ values come from a straight-line fit along each path, α ≤ 1.
   *more* all-or-none: fewer partial facts and more facts erased outright. This
   replaces the "partial erasure is robust" reading of §14.4.
 * **Twice the update does not collapse either model.** It does not make GA
-  selective either.
+  selective either, and GA's extra depth there is overshoot (§16).
 * **v1's choice of loss was not the cause of its damage.** Answer-only loss
   (v2) buys more forgetting per checkpoint at the same price per unit of
   forgetting.
 
 GPU time for the whole v2 study, including the 13 Oct setup and scans, is
 about 22–23 hours on the 40 GB slice.
+
+---
+
+## 16. Overshoot audit: how much of UDS is "worse than ignorant" (17 Oct 2026, no GPU)
+
+UDS clips each layer's erasure ratio r = dS2/dS1 at 1 (Eq. 4). A source that
+makes M_full do *worse* on the entity than retain90 does, r > 1, scores the same
+as one that matches retain90. The UDS authors note that over-unlearning is
+"mathematically indistinguishable from perfect unlearning" inside the score.
+Genuine absence rarely does this. The oracles of §1 (retain95/99 on facts they
+never saw) give r ≈ 0.94-1.04 and almost no layer above r = 2.
+
+`deeperase/eval/uds_diagnostics.py` recomputes, from the stored per-layer deltas
+of every run (`scripts/uds_audit.py` → `results/analysis/uds_audit_v2.{md,json}`):
+
+* **strict UDS**: a layer with r > 2 counts as no erasure;
+* **tent UDS**: credit falls linearly from r = 1 to none at r = 2;
+* **overshoot share**: the dS1 weight of layers with r > 2;
+* **band UDS**: UDS restricted to layers 0-8, 9-12 and 13-15.
+
+These are exploratory diagnostics (ANALYSIS_PLAN §9, 17 Oct). UDS stays the
+measure of H1-H6.
+
+### 16.1 Three-seed means
+
+| Trained facts | α = 0: UDS / strict | α = 1: UDS / strict / tent | Overshoot share at α = 1 |
+|---|---|---|---|
+| GA | 0.22 / 0.21 | 0.54 / 0.44 / 0.37 | 0.09 |
+| GradDiff | 0.15 / 0.14 | 0.47 / 0.39 / 0.34 | 0.08 |
+| NPO | 0.17 / 0.17 | 0.46 / 0.39 / 0.36 | 0.07 |
+| GA control (seed 0) | 0.13 / 0.13 | 0.51 / 0.49 / 0.45 | 0.02 |
+| GradDiff controls (3) | 0.12 / 0.11 | 0.42 / 0.36 / 0.34 | 0.06 |
+| NPO control (seed 0) | 0.08 / 0.08 | 0.27 / 0.27 / 0.26 | 0.00 |
+
+1. **At the checkpoint overshoot is negligible**: at most 0.016 of UDS.
+2. **At α = 1 it is 14-17% of the real runs' UDS on trained facts.** That is
+   0.07-0.09 of their 0.46-0.54. In the GA and NPO controls it is 1-4%; in the
+   GradDiff controls 14%.
+3. **GA's depth past α = 1 is all overshoot** (seed 0, trained facts, α = 1 →
+   1.5 → 2):
+
+   | | α = 1 | α = 1.5 | α = 2 |
+   |---|---|---|---|
+   | UDS | 0.65 | 0.71 | 0.76 |
+   | strict UDS | 0.53 | 0.53 | 0.52 |
+
+   On held-out facts about half of GA's gain survives (strict 0.48 → 0.55).
+   GradDiff's gains survive (strict 0.40 → 0.55 trained, 0.25 → 0.43 held-out).
+   This corrects §15.3, which read GA's rising UDS as rising depth.
+
+### 16.2 Excess over matched damage, measured strictly
+
+| Mean over shared α, trained / held-out | UDS | strict UDS |
+|---|---|---|
+| GA, seeds 0 / 1 / 2 | +0.14/+0.08, +0.09/+0.07, +0.01/−0.01 | +0.09/+0.07, +0.05/+0.07, −0.01/−0.01 |
+| NPO, seeds 0 / 1 / 2 | +0.10/+0.05, +0.10/+0.08, +0.03/+0.01 | +0.08/+0.05, +0.08/+0.07, +0.00/+0.01 |
+| GradDiff, seeds 0 / 1 / 2 | +0.03/−0.12, −0.09/−0.14, +0.01/−0.13 | +0.02/−0.10, −0.04/−0.14, +0.01/−0.12 |
+
+Measured strictly, no existing method beats matched damage by more than about
++0.09 in any seed. GradDiff's held-out depth stays 0.10-0.14 below damage. This
+is the bar any new method has to clear. Our own method, STRANGER, is
+pre-registered against strict UDS for this reason (ANALYSIS_PLAN H7; GA and NPO
+seeds 1-2 are compared with seed 0's control here).

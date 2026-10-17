@@ -228,6 +228,21 @@ python gpu/summarize.py --glob "*_v2_*"
 tail -f results/logs/step4_v2_h100.log
 ```
 
+**5. STRANGER, our own method (from 17 Oct; `docs/STRANGER.md`, pre-registered
+as H7 in `docs/ANALYSIS_PLAN.md`).** It runs in gated steps; each needs the
+previous one's result.
+
+*5a. Gate 1, the virtual-source ceiling (~10 min, inference only, ~12 GB).* It
+measures the depth STRANGER's targets could reach before any training.
+
+```bash
+python -m deeperase.scripts.virtual_source --seed 0 > results/logs/stranger_g1_s0.log 2>&1
+cat results/gates/stranger_g1_s0.md
+```
+
+The last line prints the pre-registered decision: GO, WEAK GO or NO-GO.
+Training steps (5b onwards) follow once gate 1 is in.
+
 **3b. Loss-scope ablation, GA seed 0 (~1 h)** *(included in step 4)*: v1's full-sequence loss under
 v2's design. The tag gives it its own directory and keeps it out of the main
 matrix's averages.

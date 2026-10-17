@@ -1,0 +1,308 @@
+{
+ "what": "STRANGER counterfactual names (deeperase/scripts/build_cf_names.py)",
+ "k": 4,
+ "rules": "For each forget10 author, K invented names that",
+ "authors": [
+  {
+   "author": 0,
+   "name": "Hsiao Yun-Hwa",
+   "pool": "tw",
+   "pronoun": "she",
+   "names": [
+    "Chou Chia-Hui",
+    "Tsai Hsin-Yi",
+    "Yeh Pei-Chen",
+    "Chiang Shu-Ling"
+   ],
+   "n_candidates": 406,
+   "n_tried": 114,
+   "n_aligned": 32
+  },
+  {
+   "author": 1,
+   "name": "Carmen Montenegro",
+   "pool": "cl",
+   "pronoun": "she",
+   "names": [
+    "Trinidad Leiva",
+    "Antonia Castillo",
+    "Carolina Olivares",
+    "Claudia Contreras"
+   ],
+   "n_candidates": 918,
+   "n_tried": 913,
+   "n_aligned": 32
+  },
+  {
+   "author": 2,
+   "name": "Elvin Mammadov",
+   "pool": "az",
+   "pronoun": "he",
+   "names": [
+    "Ilkin Babayev",
+    "Anar Jafarov",
+    "Tural Karimov",
+    "Elchin Musayev"
+   ],
+   "n_candidates": 196,
+   "n_tried": 85,
+   "n_aligned": 32
+  },
+  {
+   "author": 3,
+   "name": "Rajeev Majumdar",
+   "pool": "in",
+   "pronoun": "he",
+   "names": [
+    "Debashis Mukherjee",
+    "Tanmoy Bhattacharya",
+    "Anirban Ghoshal",
+    "Indranil Chatterjee"
+   ],
+   "n_candidates": 256,
+   "n_tried": 229,
+   "n_aligned": 32
+  },
+  {
+   "author": 4,
+   "name": "Jad Ambrose Al-Shamary",
+   "pool": "ar",
+   "pronoun": "he",
+   "names": [
+    "Nizar Karim Al-Bitar",
+    "Fadi Sami Al-Shami",
+    "Omar Faris Al-Saleh",
+    "Ziad Bassam Al-Zayed"
+   ],
+   "n_candidates": 4626,
+   "n_tried": 204,
+   "n_aligned": 32
+  },
+  {
+   "author": 5,
+   "name": "Adib Jarrah",
+   "pool": "ar",
+   "pronoun": "he",
+   "names": [
+    "Majid Darwish",
+    "Faris Hamdan",
+    "Bassam Zayed",
+    "Sami Mansour"
+   ],
+   "n_candidates": 255,
+   "n_tried": 50,
+   "n_aligned": 32
+  },
+  {
+   "author": 6,
+   "name": "Ji-Yeon Park",
+   "pool": "kr",
+   "pronoun": "she",
+   "names": [
+    "Su-Bin Ko",
+    "So-Yeon Lim",
+    "Ga-Young Hong",
+    "Ji-Woo Kang"
+   ],
+   "n_candidates": 210,
+   "n_tried": 88,
+   "n_aligned": 32
+  },
+  {
+   "author": 7,
+   "name": "Behrouz Rohani",
+   "pool": "ir",
+   "pronoun": "he",
+   "names": [
+    "Kamyar Tehrani",
+    "Siavash Kazemi",
+    "Kaveh Asadi",
+    "Dariush Karimi"
+   ],
+   "n_candidates": 256,
+   "n_tried": 135,
+   "n_aligned": 32
+  },
+  {
+   "author": 8,
+   "name": "Wei-Jun Chen",
+   "pool": "tw2",
+   "pronoun": "he",
+   "names": [
+    "Yang-An Sun",
+    "Long-An Ren",
+    "Yu-An Song",
+    "Ping-An Hu"
+   ],
+   "n_candidates": 81,
+   "n_tried": 32,
+   "n_aligned": 32
+  },
+  {
+   "author": 9,
+   "name": "Tae-ho Park",
+   "pool": "kr",
+   "pronoun": "he",
+   "names": [
+    "Woo-jin Yoon",
+    "Hyun-woo Song",
+    "Ji-ho Ahn",
+    "Kyung-soo Choi"
+   ],
+   "n_candidates": 225,
+   "n_tried": 86,
+   "n_aligned": 32
+  },
+  {
+   "author": 10,
+   "name": "Hina Ameen",
+   "pool": "pk",
+   "pronoun": "she",
+   "names": [
+    "Iqra Awan",
+    "Kiran Siddiqui",
+    "Areeba Raza",
+    "Ayesha Mirza"
+   ],
+   "n_candidates": 240,
+   "n_tried": 97,
+   "n_aligned": 32
+  },
+  {
+   "author": 11,
+   "name": "Xin Lee Williams",
+   "pool": "cnw",
+   "pronoun": "they",
+   "names": [
+    "Qing Luo Carter",
+    "Lan Ma Ellis",
+    "Ning He Bennett",
+    "Ping Sun Turner"
+   ],
+   "n_candidates": 3136,
+   "n_tried": 52,
+   "n_aligned": 32
+  },
+  {
+   "author": 12,
+   "name": "Moshe Ben-David",
+   "pool": "il",
+   "pronoun": "he",
+   "names": [
+    "Shai Bar-Ilan",
+    "Gideon Ben-Dor",
+    "Noam Bar-Tal",
+    "Avraham Bar-Natan"
+   ],
+   "n_candidates": 256,
+   "n_tried": 54,
+   "n_aligned": 32
+  },
+  {
+   "author": 13,
+   "name": "Kalkidan Abera",
+   "pool": "et",
+   "pronoun": "she",
+   "names": [
+    "Tsehay Worku",
+    "Yeshi Haile",
+    "Netsanet Girma",
+    "Meseret Desta"
+   ],
+   "n_candidates": 374,
+   "n_tried": 374,
+   "n_aligned": 30
+  },
+  {
+   "author": 14,
+   "name": "Takashi Nakamura",
+   "pool": "jp",
+   "pronoun": "he",
+   "names": [
+    "Shota Hashimoto",
+    "Kazuki Goto",
+    "Shinji Ogawa",
+    "Kenji Okada"
+   ],
+   "n_candidates": 270,
+   "n_tried": 70,
+   "n_aligned": 32
+  },
+  {
+   "author": 15,
+   "name": "Raven Marais",
+   "pool": "za",
+   "pronoun": "they",
+   "names": [
+    "Quinn Louw",
+    "Jamie Fourie",
+    "Jesse Theron",
+    "River Brink"
+   ],
+   "n_candidates": 260,
+   "n_tried": 77,
+   "n_aligned": 32
+  },
+  {
+   "author": 16,
+   "name": "Aysha Al-Hashim",
+   "pool": "ar",
+   "pronoun": "she",
+   "names": [
+    "Amal Al-Saleh",
+    "Zeina Al-Halabi",
+    "Samira Al-Hamdan",
+    "Dalia Al-Tamimi"
+   ],
+   "n_candidates": 252,
+   "n_tried": 43,
+   "n_aligned": 32
+  },
+  {
+   "author": 17,
+   "name": "Edward Patrick Sullivan",
+   "pool": "ie",
+   "pronoun": "he",
+   "names": [
+    "Gerald Desmond Gallagher",
+    "Brendan Gerard Donovan",
+    "Kevin Joseph Fitzgerald",
+    "Michael Vincent McCarthy"
+   ],
+   "n_candidates": 2314,
+   "n_tried": 207,
+   "n_aligned": 32
+  },
+  {
+   "author": 18,
+   "name": "Basil Mahfouz Al-Kuwaiti",
+   "pool": "ar",
+   "pronoun": "he",
+   "names": [
+    "Rami Tariq Al-Hamdan",
+    "Bassam Hisham Al-Nassar",
+    "Ghassan Imad Al-Darwish",
+    "Tariq Yasin Al-Tamimi"
+   ],
+   "n_candidates": 4626,
+   "n_tried": 231,
+   "n_aligned": 32
+  },
+  {
+   "author": 19,
+   "name": "Nikolai Abilov",
+   "pool": "kz",
+   "pronoun": "he",
+   "names": [
+    "Timur Tokayev",
+    "Dias Nurpeisov",
+    "Askar Abenov",
+    "Serik Seitkali"
+   ],
+   "n_candidates": 256,
+   "n_tried": 121,
+   "n_aligned": 32
+  }
+ ],
+ "tokenizer": "open-unlearning/tofu_Llama-3.2-1B-Instruct_full"
+}

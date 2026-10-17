@@ -39,3 +39,25 @@ def byte_level_tokenizer(corpus: Optional[Iterable[str]] = None, *,
     out = PreTrainedTokenizerFast(tokenizer_object=tok, bos_token="<s>", eos_token="</s>")
     out.pad_token = out.eos_token
     return out
+
+
+def word_level_tokenizer(corpus: Iterable[str]):
+    """A word-level tokenizer: every word, number or punctuation mark is one
+    token, unknown words map to ``<unk>``. Two names of the same shape always
+    tokenise to the same length, which STRANGER's counterfactual alignment
+    needs; byte-level BPE trained on a small corpus splits unseen names into
+    many pieces."""
+    from tokenizers import Tokenizer, models, pre_tokenizers, processors, trainers
+    from transformers import PreTrainedTokenizerFast
+
+    tok = Tokenizer(models.WordLevel(unk_token="<unk>"))
+    tok.pre_tokenizer = pre_tokenizers.Whitespace()
+    tok.train_from_iterator(list(corpus), trainers.WordLevelTrainer(
+        special_tokens=["<s>", "</s>", "<unk>"], min_frequency=1))
+    bos = tok.token_to_id("<s>")
+    tok.post_processor = processors.TemplateProcessing(
+        single="<s> $A", special_tokens=[("<s>", bos)])
+    out = PreTrainedTokenizerFast(tokenizer_object=tok, bos_token="<s>", eos_token="</s>",
+                                  unk_token="<unk>")
+    out.pad_token = out.eos_token
+    return out

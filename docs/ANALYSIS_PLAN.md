@@ -176,6 +176,80 @@ One GA run (seed 0) is repeated with `--loss-scope full`, v1's choice. This
 asks whether the question-token loss caused v1's collateral damage. The
 comparison is selectivity and R retention at matched breadth.
 
+### H7 — STRANGER, a new method (pre-registered 17 Oct 2026, before any STRANGER run)
+
+Fixed after the v2 matrix was seen (it motivated the method) and **before any
+STRANGER run, gate 1 included**. The method is described in
+[`STRANGER.md`](STRANGER.md). In short: train only the MLP weights of layers
+0-8 so that, at the forget author's name and question positions, the block
+outputs of layers 4-8 match M_full's own outputs on the same row with the name
+swapped for K = 4 invented, matched names; anchor retain rows to M_full's own
+states; leave layers 9-15 untouched. It uses no oracle model, no held-out fact
+and no evaluation item.
+
+**Claim.** Removing the name-keyed retrieval at its source erases the facts
+more deeply than GA, GradDiff and NPO, beyond what matched random damage
+explains, on held-out facts as well as trained ones, while keeping general
+knowledge.
+
+**Arms (all protocol v2: 3 seeds, 20 epochs, batch 4, float32, checkpoint at
+the 95% R floor, UIPE sweep α = 0..1).**
+1. `stranger`, seeds 0-2 (primary).
+2. `scramble`, the same pipeline with each target replaced by a state that
+   moves the same distance in a random direction fixed per (author, layer).
+   Seed 0 at least; seeds 1-2 if time allows. It isolates "made the name
+   unknown" from "disturbed the name".
+3. Matched-damage controls for `stranger`, re-probed on the trained tensors
+   only, seeds 0-2. If the real run barely lowers R, the matched-magnitude
+   control (scale 1) is added for seed 0.
+
+**Fixed hyperparameters.** Layers 4-8 as targets; trainable
+`model.layers.[0-8].mlp.{gate,up,down}_proj.weight`; K = 4 names from
+`data/counterfactual_names.json`; retain weight λ = 1 on 200 retain rows
+(R-tier authors excluded); AdamW (weight decay 0.01), gradient clip 1.0; the
+learning rate from a scan over {3e-6, 1e-5, 3e-5} on seed 0 with the existing
+`lr_scan.py` rule; positions as in `STRANGER.md` §3. Fallback if R breaks at
+every scanned rate: λ = 3.
+
+**Gates (each pass/fail rule fixed now).**
+* **G1, virtual-source ceiling** (`scripts/virtual_source.py`, seed 0,
+  inference only). The hybrid source on the TRAINED split: **GO** if UDS ≥ 0.50,
+  strict UDS ≥ 0.45 and overshoot share ≤ 0.10; **WEAK GO** if 0.35 ≤ UDS < 0.50
+  (an extra arm, STRANGER + NPO on the same trainable set, is then added as
+  co-primary); **NO-GO** below 0.35 (stop; the ceiling is reported as a
+  finding about name-keyed retrieval). Held-out G1 numbers are reported only.
+* **G2, learning-rate scan**, seed 0: some rate keeps an epoch with R ≥ 0.765,
+  forget NLL at least 0.5 nats above baseline, and the forget term at most 0.4
+  of its start; every non-trainable tensor bit-identical.
+* **G3, seed-0 study**: at the checkpoint, held-out UDS ≥ 0.30 and strict ≥ 0.27,
+  trained UDS ≥ 0.35, RA ≥ 0.80. Pass → seeds 1-2 and the controls.
+
+**Success criteria (judged on 3 seeds; S1-S3 are primary).**
+* **S1.** At the checkpoint (α = 0), 3-seed means: held-out UDS ≥ 0.35 and
+  trained UDS ≥ 0.40, each at least GA's checkpoint mean + 0.15 (GA: 0.22
+  trained, 0.19 held-out); strict UDS within 0.03 of UDS on both splits.
+* **S2.** Damage-matched excess of **strict** UDS on held-out facts (each seed
+  against its own control, interpolated at equal R as in `hypothesis_report`)
+  ≥ +0.10 in every seed and ≥ +0.20 on average. Today's best is +0.08.
+* **S3.** At the checkpoint, RA ≥ 0.77 and WF ≥ 0.80 (3-seed means), and
+  selectivity at matched R at least GradDiff's.
+* **S4 (no gaming flag).** Overshoot share ≤ 0.05 at α = 0; band UDS
+  L13-15 − L9-12 ≤ 0.15; held-out depth ≥ 0.8 × trained depth; trained depth
+  moves ≤ 0.02 when the rows whose loss positions touch an entity-predicting
+  position are excluded.
+* **S5.** STRANGER beats SCRAMBLE on strict UDS (held-out) and on headline
+  breadth at the checkpoint (seed 0; all seeds where SCRAMBLE ran).
+* **S6 (secondary).** After a relearning attack on seed 0 (fine-tuning on half
+  of each author's trained facts), the latent-knowledge index on held-out facts
+  is no higher than GA's and NPO's.
+
+**What each outcome means (stated now).** S1-S3 met: a method whose depth is
+not damage and not overshoot, which generalises to untrained facts. S1 met but
+S2 not: deeper than the baselines but not beyond damage, so no mechanism claim.
+G1 NO-GO: facts are not retrieved through the name alone, a finding about where
+TOFU knowledge lives. S5 failing: the gain comes from disturbing the name, not
+from making it unknown. Every outcome is reported.
+
 ## 5. Units and statistics
 
 * **Seeds are the replicates** for α-level claims: n = 3 per method. Results
@@ -207,6 +281,8 @@ comparison is selectivity and R retention at matched breadth.
 | §2 per-fact resolution | `python -m deeperase.scripts.depth_fact_resolution` | `results/analysis/depth_fact_resolution.json` |
 | H1's matched-damage scale | `python -m deeperase.scripts.control_probe` (via `gpu/matched_controls.sh`) | `results/control_probes/*.json` |
 | **Every verdict, seed by seed** | `python -m deeperase.scripts.hypothesis_report` | `results/analysis/hypotheses_v2.{json,md}` |
+| Overshoot audit: strict/tent UDS, band UDS (exploratory; co-primary for H7) | `python -m deeperase.scripts.uds_audit` | `results/analysis/uds_audit_v2.{json,md}` |
+| H7 gate 1, virtual-source ceiling | `python -m deeperase.scripts.virtual_source --seed 0` | `results/gates/stranger_g1_s0.{json,md}` |
 | Controls and tagged runs, fact level (exploratory) | `python -m deeperase.scripts.fact_level_analysis --run <dir> ...` | `results/analysis/fact_level_v2_exploratory.{json,md}` |
 
 All of these read saved JSON only. No GPU is needed after the runs.
@@ -248,6 +324,17 @@ need only steps 1–3 for one method.
 
 Each entry needs: the date, the change, the reason, and whether any v2 result
 had been seen at the time.
+
+* **17 Oct 2026: overshoot diagnostics added (exploratory), and H7 (STRANGER)
+  pre-registered.** `eval/uds_diagnostics.py` and `scripts/uds_audit.py` report
+  strict UDS (LER := 0 where r = dS2/dS1 > 2), tent UDS (LER := max(0, 2 − r)
+  where r > 1), the overshoot share and UDS by layer band, next to UDS. Reason:
+  the clip in Eq. 4 scores a source that does worse than retain90 as full
+  erasure; oracles (retain95/99 on unseen facts) almost never exceed r = 2,
+  while the v2 runs take 14-17% of their α = 1 UDS (trained facts) from such cells. UDS stays
+  the pre-registered measure for H1-H6; strict UDS is a co-primary measure for
+  H7 only, which is new. Every v2 result had been seen. H7 was written before
+  any STRANGER run.
 
 * **16 Oct 2026: exploratory analyses added after the matrix was seen. No
   rule changed.** (1) `hypothesis_report.py` repeats H1's control comparison
