@@ -197,8 +197,9 @@ def _strict_path(runs, split="trained"):
             [sum(x[1] for x in per[a]) / len(runs) for a in shared])
 
 
-def fig16_unasked_depth_vs_general():
-    """Strict depth against general knowledge: UNASKED beside the baselines' paths."""
+def _depth_vs_general(method: str, label: str, fname: str, title: str,
+                      label_at=(-6, 9, "right")):
+    """Strict depth against general knowledge: one of our methods beside the baselines' paths."""
     fig, ax = plt.subplots(figsize=(5.0, 3.3))
     marks = {"ga": "o", "npo": "s", "graddiff": "^"}
     for m in ("ga", "npo", "graddiff"):
@@ -208,22 +209,23 @@ def fig16_unasked_depth_vs_general():
                 markeredgecolor="#fcfcfb", markeredgewidth=1.0)
         ax.annotate(f"{NAME[m]}", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
                     fontsize=7.5, va="center", color=INK2)
-    runs = sorted(d for d in STUDIES.glob("study_v2_unasked_1B_s*_lr*")
+    runs = sorted(d for d in STUDIES.glob(f"study_v2_{method}_1B_s*_lr*")
                   if d.is_dir() and not d.name.split("_lr", 1)[1].count("_"))
     x, y = _strict_path(runs)
     ax.plot(x, y, "-", color=UNASKED_COLOR, lw=2, zorder=4)
     ax.plot(x[0], y[0], "D", color=UNASKED_COLOR, ms=6, zorder=5,
             markeredgecolor="#fcfcfb", markeredgewidth=1.0)
     n = len(runs)
-    ax.annotate(f"UNASKED ({n} seed{'s' if n > 1 else ''})", (x[0], y[0]), xytext=(-6, 9),
-                textcoords="offset points", fontsize=7.5, ha="right", color=INK)
+    ax.annotate(f"{label} ({n} seed{'s' if n > 1 else ''})", (x[0], y[0]),
+                xytext=label_at[:2], textcoords="offset points", fontsize=7.5,
+                ha=label_at[2], color=INK)
     ax.annotate("α = 1", (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
                 fontsize=7, va="center", color=INK2)
     extra = []
     # every control run of a seed shares one random direction: one damage path,
     # ordered by distance from M_full (scale x (1 + alpha))
     paths = {}
-    for d in sorted(STUDIES.glob("control_x*_v2_unasked_1B_s*_lr*")):
+    for d in sorted(STUDIES.glob(f"control_x*_v2_{method}_1B_s*_lr*")):
         if not d.is_dir():
             continue
         cfg = json.loads((d / "config.json").read_text())
@@ -243,8 +245,8 @@ def fig16_unasked_depth_vs_general():
                     textcoords="offset points", fontsize=7, ha="right", color=INK2)
         n = len(paths)
         extra.append((plt.Line2D([], [], color=UNASKED_COLOR, lw=1.6, ls="--"),
-                      f"random direction, UNASKED's controls ({n} seed{'s' if n > 1 else ''})"))
-    lam = sorted(STUDIES.glob("study_v2_unasked_1B_s*_lr*_lam3"))
+                      f"random direction, {label}'s controls ({n} seed{'s' if n > 1 else ''})"))
+    lam = sorted(STUDIES.glob(f"study_v2_{method}_1B_s*_lr*_lam3"))
     if lam:
         lx, ly = _strict_path(lam)
         ax.plot(lx[0], ly[0], "D", color="#fcfcfb", ms=6, zorder=5,
@@ -263,7 +265,7 @@ def fig16_unasked_depth_vs_general():
                    for m in ("ga", "npo", "graddiff"))
     h_path = plt.Line2D([], [], color=GRAY, lw=1.6)
     ax.legend([h_un, h_base, h_path] + [h for h, _ in extra],
-              ["UNASKED checkpoint (α = 0)", "GA, NPO, GradDiff checkpoints",
+              [f"{label} checkpoint (α = 0)", "GA, NPO, GradDiff checkpoints",
                "baselines, α 0 → 1 (mean of 3 seeds)"] + [t for _, t in extra],
               handler_map={tuple: HandlerTuple(ndivide=None, pad=0.6)},
               frameon=False, fontsize=7, loc="lower right")
@@ -272,10 +274,20 @@ def fig16_unasked_depth_vs_general():
     ax.invert_xaxis()
     ax.set_ylim(0, 0.62)
     _grid(ax)
-    ax.set_title("Strict depth against general-knowledge cost: checkpoints and α paths",
-                 fontsize=9.5, color=INK)
-    fig.savefig(OUT / "fig16_unasked_depth_vs_general.png")
+    ax.set_title(title, fontsize=9.5, color=INK)
+    fig.savefig(OUT / fname)
     plt.close(fig)
+
+
+def fig16_unasked_depth_vs_general():
+    _depth_vs_general("unasked", "UNASKED", "fig16_unasked_depth_vs_general.png",
+                      "Strict depth against general-knowledge cost: checkpoints and α paths")
+
+
+def fig19_unaskedg_depth_vs_general():
+    _depth_vs_general("unaskedg", "UNASKED-G", "fig19_unaskedg_depth_vs_general.png",
+                      "UNASKED-G: deeper than every baseline at every general-knowledge cost",
+                      label_at=(8, -11, "left"))
 
 
 def fig17_relearn_dose():
@@ -344,7 +356,7 @@ def fig18_h9():
                 ("R", "R (TOFU retain)", C3_MEAN["R"]),
                 ("RA", "RA (real authors)", C3_MEAN["RA"]),
                 ("WF", "WF (world facts)", C3_MEAN["WF"])]
-    fig, axes = plt.subplots(1, len(measures), figsize=(9.2, 0.55 + 0.42 * len(rows)),
+    fig, axes = plt.subplots(1, len(measures), figsize=(9.6, 1.25 + 0.42 * len(rows)),
                              sharey=True)
     for ax, (key, title, thr) in zip(axes, measures):
         for y, (label, runs, color, mark, filled) in enumerate(rows):
@@ -365,8 +377,12 @@ def fig18_h9():
     axes[0].set_yticklabels([r[0] for r in rows], fontsize=8, color=INK)
     axes[0].set_ylim(-0.6, len(rows) - 0.4)
     axes[0].invert_yaxis()
-    fig.suptitle("UNASKED-G against GradDiff at the checkpoint (dots: seeds; bar: mean; "
-                 "dashed: H9 threshold)", fontsize=9.5, color=INK, y=1.02)
+    fig.suptitle("UNASKED-G against GradDiff at the checkpoint (α = 0)", fontsize=10,
+                 color=INK, y=1.0)
+    fig.text(0.5, -0.04, "dots: seeds; bar: mean over seeds; dashed: the H9 threshold "
+             "(C1 depth and C2 breadth per seed; C3 utility on the mean)", ha="center",
+             fontsize=7.5, color=INK2)
+    fig.subplots_adjust(top=0.74, wspace=0.18)
     fig.savefig(OUT / "fig18_h9.png")
     plt.close(fig)
 
@@ -379,4 +395,5 @@ if __name__ == "__main__":
     fig16_unasked_depth_vs_general()
     fig17_relearn_dose()
     fig18_h9()
+    fig19_unaskedg_depth_vs_general()
     print("wrote", sorted(p.name for p in OUT.glob("fig1[2-9]*.png")))
