@@ -15,7 +15,7 @@ def _ex(d2: float):
 
 
 def _run(root, name, seed, *, strict, breadth, r=0.78, ra=0.87, wf=0.84, gw=None,
-         control=None):
+         control=None, ra1=None, wf1=None):
     d = root / name
     (d / "partial").mkdir(parents=True)
     method = name.split("_")[2]
@@ -29,7 +29,9 @@ def _run(root, name, seed, *, strict, breadth, r=0.78, ra=0.87, wf=0.84, gw=None
                 "breadth": breadth * scale} for s in ("trained", "heldout")]
         depth = {s: {"tau": 0.05, "per_example": [_ex(strict * scale)]}
                  for s in ("trained", "heldout")}
-        groups = {"R": {"rate": r - 0.05 * a}, "RA": {"rate": ra}, "WF": {"rate": wf}}
+        groups = {"R": {"rate": r - 0.05 * a},
+                  "RA": {"rate": ra if a == 0 or ra1 is None else ra1},
+                  "WF": {"rate": wf if a == 0 or wf1 is None else wf1}}
         (d / "partial" / f"alpha_{a:.3f}.json").write_text(json.dumps(
             {"points": pts, "point": pts[0], "depth": depth, "groups": groups}))
 
@@ -116,3 +118,23 @@ def test_seed_floors_and_means(tmp_path):
 
 def test_no_runs_is_an_error(tmp_path):
     assert h9.main(["--dir", str(tmp_path), "--out", str(tmp_path / "x")]) == 1
+
+
+def test_matched_utility_excess_over_graddiff_of_the_same_seed(tmp_path):
+    # GradDiff seed 0: general knowledge 0.85 -> 0.75, breadth 0.20 -> 0.30, strict 0.14 -> 0.21
+    _run(tmp_path, "study_v2_graddiff_1B_s0_lr5e-08", 0, strict=0.14, breadth=0.20,
+         ra=0.85, wf=0.85, ra1=0.75, wf1=0.75)
+    # UNASKED-G seed 0: general knowledge 0.84 -> 0.74, breadth 0.30 -> 0.45, strict 0.40 -> 0.60
+    _run(tmp_path, "study_v2_unaskedg_1B_s0_lr3e-06", 0, strict=0.40, breadth=0.30,
+         ra=0.84, wf=0.84, ra1=0.74, wf1=0.74, gw=1.0)
+    rep = h9.collect(tmp_path)
+    v = rep["groups"]["lr3e-06"]["runs"][0]["vs_graddiff_same_seed"]
+    # only alpha 0 (0.84) lies inside GradDiff's range; there GradDiff has 0.21 / 0.147
+    g = v["matched_general"]
+    assert g["n_matched"] == 1
+    assert g["breadth"] == pytest.approx(0.30 - 0.21)
+    assert g["strict"] == pytest.approx(0.40 - 0.147)
+    # R: both runs go 0.78 -> 0.73, so both alphas match one to one
+    r = v["matched_R"]
+    assert r["n_matched"] == 2
+    assert r["breadth"] == pytest.approx(((0.30 - 0.20) + (0.45 - 0.30)) / 2)

@@ -21,7 +21,16 @@ is applied to seed 0 of the pre-registered family only (lr 3e-6, TOFU anchor
   (trained) is >= 0.15.
 
 On one seed alone (the lambda_g rule), C1 and C2 use the per-seed thresholds
-and C3 the mean thresholds. GradDiff-G runs (GradDiff with the same general
+and C3 the mean thresholds.
+
+**Matched-utility comparison (exploratory, added after seeds 0-1).** Each
+UNASKED-G seed is set against GradDiff's run of the same seed (the same
+trained and held-out facts) along both alpha paths. At every alpha of
+UNASKED-G, GradDiff's breadth and strict UDS are interpolated at UNASKED-G's
+utility, once matched on general knowledge (mean of RA and WF) and once on R.
+The excess is averaged over the alphas where the two utility ranges overlap.
+This puts both methods at the same cost, where the checkpoint comparison puts
+each at its own. GradDiff-G runs (GradDiff with the same general
 anchor, the fairness baseline) are listed beside GradDiff. Exploratory.
 
     python -m deeperase.scripts.h9_report
@@ -76,6 +85,50 @@ def checkpoint(run: Path) -> Optional[dict]:
         if r:
             out[f"strict_{split}"], out[f"uds_{split}"] = r["strict"], r["uds"]
     out["_audit"] = a
+    return out
+
+
+def path(run: Path, audit: dict) -> List[dict]:
+    """(alpha, R, general, breadth, strict) along the run's sweep, trained facts."""
+    out = []
+    for f in sorted((run / "partial").glob("alpha_*.json")):
+        p = json.loads(f.read_text(encoding="utf-8"))
+        pts = p.get("points") or [p.get("point") or {}]
+        pt = next((x for x in pts if str(x.get("benchmark", "")).endswith(":trained")), None)
+        g = p.get("groups") or {}
+        if not pt:
+            continue
+        a = float(pt["alpha"])
+        row = next((x for x in audit["splits"].get("trained", []) if abs(x["alpha"] - a) < 1e-9),
+                   None)
+        ra, wf = (g.get("RA") or {}).get("rate"), (g.get("WF") or {}).get("rate")
+        out.append({"alpha": a, "R": (g.get("R") or {}).get("rate"),
+                    "general": (ra + wf) / 2 if ra is not None and wf is not None else None,
+                    "breadth": pt.get("breadth"), "strict": row["strict"] if row else None})
+    return sorted(out, key=lambda r: r["alpha"])
+
+
+def _interp(x: float, pts: List[tuple]) -> Optional[float]:
+    pts = sorted(p for p in pts if None not in p)
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        if x0 <= x <= x1:
+            return y0 if x1 == x0 else y0 + (y1 - y0) * (x - x0) / (x1 - x0)
+    return None
+
+
+def matched_excess(ours: List[dict], ref: List[dict], axis: str) -> dict:
+    """Mean excess of breadth and strict UDS over ``ref`` at equal ``axis``."""
+    out = {}
+    for key in ("breadth", "strict"):
+        diffs = []
+        for r in ours:
+            if r[axis] is None or r[key] is None:
+                continue
+            v = _interp(r[axis], [(x[axis], x[key]) for x in ref])
+            if v is not None:
+                diffs.append(r[key] - v)
+        out[key] = sum(diffs) / len(diffs) if diffs else None
+        out["n_matched"] = len(diffs)
     return out
 
 
@@ -158,6 +211,7 @@ def collect(studies: Path) -> dict:
             controls[(int(a["seed"]), _tag(d.name))] = {"name": d.name, "audit": a}
     graddiff = [c for c in (checkpoint(d) for d in sorted(studies.glob(GRADDIFF))
                             if d.is_dir() and not _tag(d.name)) if c]
+    gd_paths = {c["seed"]: path(studies / c["run"], c["_audit"]) for c in graddiff}
     graddiff_g = [c for c in (checkpoint(d) for d in sorted(studies.glob(GRADDIFF_G))
                               if d.is_dir()) if c]
     report = {"graddiff": [{k: v for k, v in c.items() if k != "_audit"} for c in graddiff],
@@ -172,6 +226,13 @@ def collect(studies: Path) -> dict:
                             .get("mean")) if ctl else None
             c["control"] = ctl["name"] if ctl else None
             c["excess_strict_trained"] = excess[seed]
+        for seed, c in by.items():
+            ref = gd_paths.get(seed)
+            if ref:
+                ours = path(studies / c["run"], c["_audit"])
+                c["vs_graddiff_same_seed"] = {
+                    "matched_general": matched_excess(ours, ref, "general"),
+                    "matched_R": matched_excess(ours, ref, "R")}
         cps = [by[s] for s in sorted(by)]
         conf = [by[s] for s in sorted(by) if s in (1, 2)]
         report["groups"][w] = {
@@ -222,6 +283,17 @@ def to_markdown(rep: dict) -> str:
     ch = rep.get("choice")
     if ch:
         lines += ["", f"λ_g rule on seed 0: {ch['general_weight']:g} ({ch['reason']})"]
+    lines += ["", "Against GradDiff's run of the same seed, at equal utility along both α paths "
+              "(exploratory): mean excess of breadth / strict UDS (trained), number of matched α", "",
+              "| run | matched on general knowledge | matched on R |", "|---|---|---|"]
+    for w, g in rep["groups"].items():
+        for c in g["runs"]:
+            v = c.get("vs_graddiff_same_seed")
+            if not v:
+                continue
+            cells = [f"{_f(v[k]['breadth'])} / {_f(v[k]['strict'])} ({v[k]['n_matched']})"
+                     for k in ("matched_general", "matched_R")]
+            lines.append(f"| {c['run']} | " + " | ".join(cells) + " |")
     return "\n".join(lines)
 
 

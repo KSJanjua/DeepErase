@@ -83,7 +83,19 @@
      "strict_trained_para_ans": 0.43793208362221525,
      "uds_trained_para_ans": 0.4819604984758226,
      "control": null,
-     "excess_strict_trained": null
+     "excess_strict_trained": null,
+     "vs_graddiff_same_seed": {
+      "matched_general": {
+       "breadth": 0.2346484981431643,
+       "n_matched": 10,
+       "strict": 0.18632211217246036
+      },
+      "matched_R": {
+       "breadth": 0.39948453608247403,
+       "n_matched": 4,
+       "strict": 0.3206305026205596
+      }
+     }
     }
    ],
    "all_seeds": {

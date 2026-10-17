@@ -576,6 +576,20 @@ had been seen at the time.
   E1-E5 and their thresholds are unchanged. Every result is labelled
   exploratory and reported with the failed gate. λ = 3 is reported beside
   λ = 1, never in its place.
+* **17 Oct 2026: H9, UNASKED-G against GradDiff at equal utility
+  (exploratory).** *UNASKED-G seeds 0-1 had been seen.*
+  * **Why.** The checkpoints sit at different utility. GradDiff's is held at
+    the R floor. UNASKED-G's R never fell (0.79-0.805), because the 20-epoch
+    budget ended first. Along α, its breadth rose from 0.309 to 0.402 by
+    α = 0.1 at almost no utility cost.
+  * **The added analysis.** `h9_report` sets each UNASKED-G seed against
+    GradDiff's run of the same seed, the same facts, along both α paths. It
+    interpolates GradDiff's breadth and strict UDS at UNASKED-G's general
+    knowledge (mean of RA and WF), and separately at its R, and averages the
+    excess over the overlapping range.
+  * **What stays fixed.** C1-C4 are unchanged and judged at α = 0 as
+    pre-registered. This analysis is reported beside them, never in their
+    place.
 * **17 Oct 2026: a control matched on general knowledge added (exploratory).**
   *E2 for seed 0 had been seen.*
   * **Why.** At equal R, UNASKED's own control keeps 0.235 more general

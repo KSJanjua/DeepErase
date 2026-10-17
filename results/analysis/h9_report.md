@@ -8,3 +8,9 @@
 **lr3e-06 (λ_g = 1), all seeds ([0]):** C1 depth met (mean 0.405); C2 breadth not met (mean 0.309); C3 utility not met (R 0.805, RA 0.840, WF 0.829); C4 beyond damage no data
 
 λ_g rule on seed 0: 1 (none meets C1-C3 on seed 0: higher general knowledge)
+
+Against GradDiff's run of the same seed, at equal utility along both α paths (exploratory): mean excess of breadth / strict UDS (trained), number of matched α
+
+| run | matched on general knowledge | matched on R |
+|---|---|---|
+| study_v2_unaskedg_1B_s0_lr3e-06 | 0.235 / 0.186 (10) | 0.399 / 0.321 (4) |
