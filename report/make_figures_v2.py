@@ -148,8 +148,40 @@ def fig14_memory_keys():
     plt.close(fig)
 
 
+def fig15_partial_vs_depth():
+    """Share of half-erased facts against mean depth, at every alpha of every run."""
+    runs = json.loads((ROOT / "results/analysis/fact_level_v2.json").read_text())["runs"]
+    runs += [r for r in json.loads((ROOT / "results/analysis/fact_level_v2_exploratory.json")
+                                   .read_text())["runs"] if r.get("arm") == "control"]
+    fig, ax = plt.subplots(figsize=(4.6, 3.1))
+    for r in runs:
+        m = r["method"]
+        rows = r["splits"]["trained"]["per_alpha"]
+        x = [row["depth_mean"] for row in rows]
+        y = [row["share_partial_depth"] for row in rows]
+        ctl = r.get("arm") == "control"
+        ax.plot(x, y, "-", color=COLOR[m], lw=0.6, alpha=0.35, zorder=1)
+        ax.plot(x, y, "o", ms=3.6, zorder=2, color=COLOR[m] if not ctl else "#fcfcfb",
+                markeredgecolor=COLOR[m], markeredgewidth=1.1 if ctl else 0.6)
+    for m in ("ga", "graddiff", "npo"):
+        ax.plot([], [], "o", color=COLOR[m], label=f"{NAME[m]}: unlearning")
+        ax.plot([], [], "o", color="#fcfcfb", markeredgecolor=COLOR[m],
+                label=f"{NAME[m]}: matched damage")
+    ax.legend(frameon=False, fontsize=7, ncol=2, loc="upper left")
+    ax.set_xlabel(r"mean per-fact depth (UDS$_i$), trained facts")
+    ax.set_ylabel(r"share half-erased (0.2 $\leq$ UDS$_i$ < 0.8)")
+    ax.set_xlim(0, 0.75)
+    ax.set_ylim(0, 0.95)
+    _grid(ax)
+    ax.set_title("At equal mean depth, damage half-erases more facts than unlearning",
+                 fontsize=9.5, color=INK)
+    fig.savefig(OUT / "fig15_partial_vs_depth.png")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     fig12_depth_vs_damage()
     fig13_overshoot()
     fig14_memory_keys()
+    fig15_partial_vs_depth()
     print("wrote", sorted(p.name for p in OUT.glob("fig1[2-9]*.png")))
