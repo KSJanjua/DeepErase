@@ -1784,8 +1784,53 @@ every later epoch R fell below the floor, as for plain GradDiff.
   UNASKED-G's bounded target, together with its anchors, keeps R at its
   starting level.
 
+### 20.7 H9b: the TOFU anchor at 10 meets C1-C3 on its seed 0 (selection seed)
+
+One configuration was declared exploratory, outside H9's rule: UNASKED-G with
+the TOFU retain anchor at 10 instead of 3 (tag `lam10`). Seed 0 ran at commit
+`0f97941` (clean tree) and kept epoch 18.
+
+| Seed 0, at the checkpoint | Strict UDS, trained | Breadth, trained | Strict UDS, held-out | Breadth, held-out | R | RA | WF |
+|---|---|---|---|---|---|---|---|
+| UNASKED-G, λ = 3 (H9) | 0.405 | 0.309 | 0.259 | 0.320 | 0.805 | 0.840 | 0.829 |
+| **UNASKED-G, λ = 10 (H9b)** | **0.411** | **0.392** | **0.280** | **0.320** | **0.792** | **0.880** | **0.855** |
+| GradDiff, mean of 3 seeds | 0.141 | 0.169 | 0.060 | 0.191 | 0.768 | 0.863 | 0.829 |
+| M_full | 0 | 0 | 0 | 0 | 0.805 | 0.890 | 0.855 |
+
+On this seed every one of C1-C3 is met, and every measure is better than
+GradDiff's:
+* 2.9× its strict depth and 2.3× its breadth;
+* R +0.024, RA +0.017, and WF +0.026, which equals M_full's.
+
+Against λ = 3 on the same seed, λ = 10 is better on breadth (+0.083), RA
+(+0.04) and WF (+0.026), at 0.013 lower R.
+
+Along α, utility stays above GradDiff's checkpoint while forgetting grows:
+
+| α | R | RA | WF | Breadth, trained | Strict UDS, trained |
+|---|---|---|---|---|---|
+| 0 | 0.792 | 0.880 | 0.855 | 0.392 | 0.411 |
+| 0.1 | 0.790 | 0.880 | 0.855 | 0.464 | 0.439 |
+| 0.2 | 0.782 | 0.880 | 0.846 | 0.546 | 0.456 |
+| 0.5 | 0.772 | 0.820 | 0.846 | 0.732 | 0.509 |
+| 1 | 0.740 | 0.690 | 0.803 | 0.773 | 0.547 |
+
+At equal utility on the same seed, the excess in breadth / strict UDS is:
+* over GradDiff: +0.47 / +0.29 matched on general knowledge (5 α), +0.48 /
+  +0.26 matched on R (7 α);
+* over GradDiff-G: +0.48 / +0.27 and +0.45 / +0.22.
+
+The paraphrased-answer check holds again: on 33 facts, paired, strict UDS is
+0.413 with the reworded answer against 0.373 with the original.
+
+**This is a selection seed, not evidence.** The configuration was chosen after
+its seed 0, and after the λ = 3 runs, had been seen. ANALYSIS_PLAN H9b fixed
+the claim before any further run: C1-C4 on seeds 1-2, plus the R-matched
+controls of seeds 0-2. Those runs are next in the queue.
+
 **Still to come:**
-* C4: the R-matched controls of seeds 1-2;
+* H9b: seeds 1-2 and the controls of seeds 0-2;
+* C4 for H9 (λ = 3): the R-matched controls of seeds 1-2;
 * a TOFU anchor of 10 (exploratory);
 * relearning dose-responses for UNASKED-G and GradDiff.
 
