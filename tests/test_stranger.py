@@ -418,3 +418,39 @@ def test_unlearn_can_select_the_epoch_closest_to_the_target():
     assert hist.selected_epoch == min(gaps, key=gaps.get)
     with pytest.raises(ValueError, match="representation-target"):
         unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.GA, select_by="rep_gap"))
+
+
+# ---------------------------------------------------------------------------
+# Relearning attack (scripts/relearn_attack.py)
+# ---------------------------------------------------------------------------
+
+def test_attack_split_halves_each_authors_trained_rows():
+    from deeperase.scripts.relearn_attack import latent_index, split_trained
+    trained = [r for a in range(3) for r in range(a * 20, a * 20 + 10)]
+    s = split_trained(trained, seed=0)
+    assert sorted(s["attack"] + s["probe"]) == sorted(trained)
+    assert not set(s["attack"]) & set(s["probe"])
+    for a in range(3):
+        assert sum(1 for r in s["attack"] if r // 20 == a) == 5
+    assert split_trained(trained, seed=0) == s and split_trained(trained, seed=1) != s
+    assert latent_index(0.5, 0.9, 0.3) == pytest.approx(1 / 3)
+    assert latent_index(0.5, 0.3, 0.3) is None
+
+
+@needs_data
+@pytest.mark.parametrize("method, lr", [("ga", "1e-5"), ("unasked", "1e-3")])
+def test_relearn_attack_runs_end_to_end(word_checkpoints, tmp_path, method, lr):
+    from deeperase.scripts import relearn_attack
+    argv = ["--method", method, "--learning-rate", lr, "--model-sources",
+            json.dumps(word_checkpoints), "--tofu-dir", str(TOFU), "--cache-dir",
+            str(tmp_path / "c"), "--device", "cpu", "--epochs", "1", "--floor", "0.01",
+            "--n-breadth", "12", "--attack-epochs", "1", "--out-dir", str(tmp_path)]
+    if method == "unasked":
+        argv += ["--rep-layers", "0,1"]
+    assert relearn_attack.main(argv) == 0
+    rec = json.loads((tmp_path / f"{method}_1B_v2_s0.json").read_text())
+    assert rec["sets"]["attack"] + rec["sets"]["probe"] == 200 and rec["sets"]["heldout"] == 200
+    for who in ("unlearned", "full", "retain90"):
+        for when in ("before", "after"):
+            assert set(rec["results"][who][when]) == {"probe", "heldout"}
+    assert set(rec["latent_index"]) == {"probe", "heldout"}
