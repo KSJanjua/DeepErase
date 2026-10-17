@@ -185,14 +185,15 @@
    ],
    "n_epochs_run": 20,
    "stopped_early": false,
-   "selected_epoch": 17,
+   "selected_epoch": 19,
    "verdict": "usable",
    "train_seconds": 1264.9,
-   "selected_utility": 0.7725,
-   "selected_forget_nll": 2.2372,
-   "selected_rep_gap": 0.129,
    "wall_seconds": 1300.9,
-   "peak_gpu_gb": 21.25
+   "peak_gpu_gb": 21.25,
+   "select_by": "rep_gap",
+   "selected_utility": 0.7775,
+   "selected_forget_nll": 2.1499,
+   "selected_rep_gap": 0.1234
   },
   "3e-06": {
    "lr": 3e-06,
@@ -344,15 +345,16 @@
    ],
    "n_epochs_run": 20,
    "stopped_early": false,
-   "selected_epoch": 12,
+   "selected_epoch": 18,
    "verdict": "usable",
    "train_seconds": 1449.3,
-   "selected_utility": 0.77,
-   "selected_forget_nll": 2.0717,
-   "selected_rep_gap": 0.1367,
    "wall_seconds": 1518.2,
-   "peak_gpu_gb": 21.25
+   "peak_gpu_gb": 21.25,
+   "select_by": "rep_gap",
+   "selected_utility": 0.7725,
+   "selected_forget_nll": 2.0523,
+   "selected_rep_gap": 0.1116
   }
  },
- "recommended_lr": "1e-05"
+ "recommended_lr": "3e-06"
 }
