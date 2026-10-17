@@ -462,6 +462,15 @@ R-matched controls of seeds 0-2. The calibrated breadth of a single seed
 carries a sampling sd of about 0.09 (400 items over a 0.25 calibration gap),
 and RA about 0.035.
 
+**Exploratory configuration, outside the rule (17 Oct 2026).** After seed 0,
+one more configuration was queued: UNASKED-G with the TOFU retain anchor at 10
+(`--retain-weight 10`, tag `lam10`, seed 0). Raising that anchor from 1 to 3
+had lifted RA and WF at no cost in breadth (RESULTS.md §19.6).
+* It is reported as exploratory, beside the pre-registered λ = 3 runs.
+* It never enters the λ_g rule or the C1-C4 verdicts.
+* If it clears C1-C3 on seed 0, it would need its own seeds 1-2 and controls
+  before any claim.
+
 **What each outcome means (stated now).**
 * **C1-C4 met:** a method that is deeper and broader than GradDiff at
   GradDiff's utility, and whose depth is not random damage.
