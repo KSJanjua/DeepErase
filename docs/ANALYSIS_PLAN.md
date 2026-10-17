@@ -505,11 +505,15 @@ depth. Everything else is as in H9.
 primary verdict for this configuration, and reported over all three seeds.
 `h9_report` lists it as configuration `lr3e-06_lam10`.
 
-**Outcome so far (18 Oct 2026, ~00:50 IST; RESULTS.md §20.8).** On seeds 1-2:
-* **C1 met:** strict UDS 0.380 and 0.372, mean 0.376.
-* **C2 met:** breadth 0.385 and 0.364, mean 0.375.
-* **C3 met:** R 0.789, RA 0.880, WF 0.855.
-* **C4:** the controls of seeds 0-2 are running.
+**Outcome (18 Oct 2026, ~05:20 IST; RESULTS.md §20.8): C1-C4 all met on
+seeds 1-2.**
+* **C1:** strict UDS 0.380 and 0.372, mean 0.376.
+* **C2:** breadth 0.385 and 0.364, mean 0.375.
+* **C3:** R 0.789, RA 0.880 and WF 0.855, every seed above the floors.
+* **C4:** the excess over the R-matched control is +0.285 and +0.308, and
+  seed 0's is +0.324.
+
+All four criteria also hold over the three seeds.
 
 **What each outcome means (stated now).**
 * **C1-C4 met on seeds 1-2:** a configuration, chosen on one seed and

@@ -99,8 +99,9 @@ GradDiff and NPO reach at their checkpoint.
 > * strict UDS 0.376 against GradDiff's 0.141, and breadth 0.375 against 0.169;
 > * R 0.789, RA 0.880 and WF 0.855, against GradDiff's 0.768, 0.863 and 0.829.
 >
-> The matched-damage controls (C4) are running. Use `--retain-weight 10` for
-> the cited version.
+> Its strict depth exceeds the R-matched random-direction control by
+> +0.29 to +0.32 in every seed (C4). **All four criteria are met.** Use
+> `--retain-weight 10` for the cited version.
 >
 > **Status, 17 Oct 2026, 3 seeds, TOFU anchor 3 (RESULTS.md §20).** At the checkpoint:
 > * strict UDS 0.396 against GradDiff's 0.141, and breadth 0.345 against 0.169;

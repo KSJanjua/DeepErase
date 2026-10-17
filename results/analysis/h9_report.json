@@ -384,8 +384,8 @@
      "uds_trained_ans_ref": 0.30959530102430005,
      "strict_trained_para_ans": 0.36476137614074505,
      "uds_trained_para_ans": 0.424588434786405,
-     "control": null,
-     "excess_strict_trained": null,
+     "control": "control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10",
+     "excess_strict_trained": 0.30813881089047346,
      "excess_strict_general_matched": null,
      "vs_graddiff_same_seed": {
       "matched_general": {
@@ -437,9 +437,9 @@
      "per_seed": [
       0.3235633025547795,
       0.28513886542744205,
-      null
+      0.30813881089047346
      ],
-     "met": null
+     "met": true
     }
    },
    "confirmation_seeds_1_2": {
@@ -474,9 +474,9 @@
     "C4_beyond_damage": {
      "per_seed": [
       0.28513886542744205,
-      null
+      0.30813881089047346
      ],
-     "met": null
+     "met": true
     }
    }
   }

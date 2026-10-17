@@ -1835,7 +1835,7 @@ its seed 0, and after the λ = 3 runs, had been seen. ANALYSIS_PLAN H9b fixed
 the claim before any further run: C1-C4 on seeds 1-2, plus the R-matched
 controls of seeds 0-2. Those runs are next in the queue.
 
-### 20.8 H9b confirmed on seeds 1-2: deeper, broader and better utility than GradDiff (C1-C3)
+### 20.8 H9b confirmed on seeds 1-2: deeper, broader, better utility than GradDiff, and beyond damage (C1-C4 met)
 
 H9b fixed its claim before its confirmation seeds ran: C1-C4 on seeds 1-2,
 with seed 0 as the selection seed. Configuration: UNASKED-G, TOFU anchor 10,
@@ -1857,7 +1857,11 @@ general anchor 1, lr 3e-6, 20 epochs, H100 slice.
   ≥ 0.338.
 * **C3 utility: met.** R 0.789 ≥ 0.768, RA 0.880 ≥ 0.863 and WF 0.855
   ≥ 0.829. No seed is below a floor.
-* **C4 beyond damage:** seeds 0 and 1 are in (below); seed 2 is running.
+* **C4 beyond damage: met.** The excess over each seed's R-matched control is
+  +0.324, +0.285 and +0.308 (seeds 0, 1, 2), all ≥ 0.15.
+
+**All four of H9b's criteria are met on its confirmation seeds 1-2, and over
+all three seeds.**
 
 **C4, seed 0.** The R-matched random direction sits at 11× the update's norm,
 with the same anchors (λ = 10, λ_g = 1), commit `4513b58` (clean tree). Along
@@ -1876,6 +1880,15 @@ reaches breadth 0.02-0.08 and strict UDS 0.07-0.18. UNASKED-G exceeds it:
   held-out facts;
 * matched on general knowledge: mean **+0.275** at 7 α.
 
+**C4, seed 2** (control at 11×, commit `50399e2`, clean). The random direction
+reaches breadth 0.03-0.09 and strict UDS 0.06-0.17.
+* **Matched on R:** UNASKED-G exceeds it by +0.29 to +0.33 at 9 α, mean
+  **+0.308**, and +0.252 on held-out facts.
+* **No general-knowledge match exists.** UNASKED-G's general knowledge stays
+  at 0.842-0.867 along its whole α path, while the random direction's is
+  0.770-0.835 even at its weakest. Random damage of the same R cost costs
+  more general knowledge, and still reaches less than half the depth.
+
 In plain terms, at its checkpoint UNASKED-G (anchor 10), against GradDiff's
 three-seed mean:
 * forgets the trained facts 2.7× deeper by strict UDS (0.376) and 2.2× more
@@ -1887,7 +1900,6 @@ The general knowledge is the same in all three seeds: RA 0.880 (M_full 0.890)
 and WF 0.855 (M_full's own value).
 
 **Still to come:**
-* H9b C4: the R-matched controls of seeds 0-2;
 * C4 for H9 (λ = 3): the R-matched controls of seeds 1-2;
 * a TOFU anchor of 10 (exploratory);
 * relearning dose-responses for UNASKED-G and GradDiff.
