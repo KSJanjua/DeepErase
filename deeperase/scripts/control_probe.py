@@ -110,10 +110,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     # -- train exactly as the study: same rate, budget and checkpoint rule ----
     cfg = UnlearnConfig(method=ns.method, learning_rate=args.learning_rate,
                         epochs=args.epochs, batch_size=args.batch_size, beta=args.beta,
-                        seed=args.seed, min_utility_ratio=ns.floor)
+                        seed=args.seed, min_utility_ratio=ns.floor,
+                        retain_weight=ns.retain_weight, trainable=ns.trainable)
     try:
         history = unlearn(ns.model, ns.forget_batches, cfg, retain_data=ns.retain_batches,
-                          reference_model=ns.reference, eval_fn=ns.utility_of)
+                          reference_model=ns.reference, eval_fn=ns.utility_of,
+                          stranger=ns.stranger)
     except CollapsedError as e:
         raise SystemExit(f"\nTraining collapsed, so there is no update to match:\n{e}")
     ns.reference = None

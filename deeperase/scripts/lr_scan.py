@@ -52,8 +52,8 @@ from deeperase.models import load_model, load_tokenizer
 from deeperase.provenance import environment_info, git_info
 from deeperase.scripts.measure_breadth import PROMPT_PREFIXES, subsample
 from deeperase.scripts.run_study import (
-    FORGET_CONFIG, PROTOCOLS, build_forget_batches, build_retain_batches,
-    configure_precision,
+    FORGET_CONFIG, PROTOCOLS, add_rep_args, build_forget_batches, build_rep_inputs,
+    build_retain_batches, configure_precision, rep_settings,
 )
 from deeperase.unlearn import (
     CollapsedError, UnlearnConfig, UnlearnMethod, snapshot, unlearn,
@@ -106,7 +106,9 @@ def summarise(lr: float, history, budget: int, floor: float) -> dict:
     base = history.baseline_utility or 0.0
     epochs = [{"epoch": e.epoch, "utility": round(e.utility, 4),
                "utility_ratio": round(e.utility / base, 4) if base else None,
-               "forget_nll": round(e.forget_nll, 4)} for e in history.epoch_evals]
+               "forget_nll": round(e.forget_nll, 4),
+               **({"rep_gap": round(e.rep_gap, 4)} if e.rep_gap is not None else {})}
+              for e in history.epoch_evals]
     sel = select_epoch(epochs, base, floor)
     rec = {"lr": lr, "budget": budget, "floor": floor,
            "baseline_utility": base, "baseline_forget_nll": history.baseline_forget_nll,
@@ -161,6 +163,7 @@ def add_training_args(ap: argparse.ArgumentParser) -> None:
                     help="JSON mapping split -> local model dir (tests)")
     ap.add_argument("--tofu-dir", default=None)
     ap.add_argument("--cache-dir", default=os.environ.get("DEEPERASE_CACHE_DIR", "./hf_cache"))
+    add_rep_args(ap)
 
 
 def prepare(args) -> SimpleNamespace:
@@ -196,6 +199,18 @@ def prepare(args) -> SimpleNamespace:
                                  seed=args.seed)
     ns.forget_batches = build_forget_batches([forget_rows[i] for i in trained], tokenizer,
                                              fmt, args.max_length, ns.loss_scope)
+    # Representation-target methods: the same per-row inputs and settings as
+    # run_study, so a scan or probe trains the update the study trains.
+    ns.rep = rep_settings(args, ns.method)
+    ns.retain_weight = float(args.retain_weight if args.retain_weight is not None
+                             else (ns.rep.get("retain_weight") or 1.0))
+    ns.trainable = ns.rep.get("trainable") or args.trainable
+    ns.stranger = None
+    if ns.rep:
+        ns.stranger = build_rep_inputs([forget_rows[i] for i in trained], tokenizer, fmt,
+                                       args.max_length, ns.rep, args.seed)
+        if len(ns.stranger.rows) != len(ns.forget_batches):
+            raise SystemExit("representation inputs do not align with the forget batches")
     items_path = args.breadth_items or proto["breadth_items"]
     all_items = load_breadth_items_file(items_path)
     items = subsample(all_items, args.n_breadth)
@@ -264,11 +279,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         cfg = UnlearnConfig(method=method, learning_rate=lr, epochs=args.epochs,
                             batch_size=args.batch_size, beta=args.beta, seed=args.seed,
                             min_utility_ratio=_KEEP_EVERYTHING,
-                            stop_below_utility_ratio=args.stop_ratio)
+                            stop_below_utility_ratio=args.stop_ratio,
+                            retain_weight=ns.retain_weight, trainable=ns.trainable)
         t0 = time.time()
         try:
             history = unlearn(model, forget_batches, cfg, retain_data=retain_batches,
-                              reference_model=reference, eval_fn=utility_of)
+                              reference_model=reference, eval_fn=utility_of,
+                              stranger=ns.stranger)
         except CollapsedError as e:            # utility exactly 0 in every epoch
             history = e.history
         rec = summarise(lr, history, args.epochs, floor)

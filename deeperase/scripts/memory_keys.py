@@ -182,6 +182,10 @@ def _summary(d1, d2) -> dict:
     return s
 
 
+def _nan(x) -> float:
+    return float("nan") if x is None else x
+
+
 def decide(trained: Dict[str, dict]) -> dict:
     passing = [(trained[s]["whole"]["strict"], s) for s in CANDIDATES
                if trained.get(s) and trained[s]["whole"]["uds"] is not None
@@ -292,9 +296,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                        for eid, vs in d2[kind].items()}
                 res[src][kind] = _summary(base[kind][0], avg)
             log.info("%s %-15s UDS %.3f strict %.3f | first token %.3f", split, src,
-                     res[src]["whole"]["uds"] or float("nan"),
-                     res[src]["whole"]["strict"] or float("nan"),
-                     res[src]["first_token"]["uds"] or float("nan"))
+                     _nan(res[src]["whole"]["uds"]),
+                     _nan(res[src]["whole"]["strict"]),
+                     _nan(res[src]["first_token"]["uds"]))
         report["splits"][split] = res
 
     report.update(decide(report["splits"]["trained"]))

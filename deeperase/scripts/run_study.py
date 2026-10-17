@@ -262,6 +262,52 @@ def build_retain_batches(tokenizer, fmt, max_length, n, cache_dir,
 
 
 # ---------------------------------------------------------------------------
+# Representation-target methods (deeperase/stranger.py)
+# ---------------------------------------------------------------------------
+
+#: Defaults of the representation-target methods, used when a flag is absent.
+REP_DEFAULTS = {"rep_layers": "4,5,6,7,8",
+                "trainable": r"^model\.layers\.[0-8]\.mlp\.(gate_proj|up_proj|down_proj)\.weight$",
+                "cf_k": 4, "cf_names": "data/counterfactual_names.json",
+                "retain_weight": 1.0}
+
+
+def add_rep_args(ap: argparse.ArgumentParser) -> None:
+    """Flags of the representation-target methods (shared with lr_scan and
+    control_probe, so a probe trains exactly what the study trains)."""
+    ap.add_argument("--rep-layers", default=None,
+                    help=f"target layers (default {REP_DEFAULTS['rep_layers']})")
+    ap.add_argument("--trainable", default=None,
+                    help="regex of trainable parameter names (default: MLPs of layers 0-8)")
+    ap.add_argument("--cf-k", type=int, default=None, help="invented names per author")
+    ap.add_argument("--cf-names", default=None, help="counterfactual names file")
+    ap.add_argument("--retain-weight", type=float, default=None,
+                    help="weight of the retain term (GradDiff and the representation methods)")
+
+
+def rep_settings(args, method: UnlearnMethod) -> Dict[str, object]:
+    """Resolved settings of a representation-target method ({} otherwise)."""
+    if not method.representation_targets:
+        return {}
+    out = {k: (getattr(args, k, None) if getattr(args, k, None) is not None else v)
+           for k, v in REP_DEFAULTS.items()}
+    out["rep_layers"] = [int(x) for x in str(out["rep_layers"]).split(",") if x.strip()]
+    out["rep_target"] = "scramble" if method is UnlearnMethod.SCRAMBLE else "counterfactual"
+    out["cf_names_sha256"] = sha256_file(str(out["cf_names"]))
+    return out
+
+
+def build_rep_inputs(rows: Sequence, tokenizer, fmt, max_length: int,
+                     rep: Dict[str, object], seed: int):
+    """Per-row inputs for the forget rows ``rows`` (the same rows, in the same
+    order, as :func:`build_forget_batches` turns into training examples)."""
+    from deeperase.stranger import build_stranger_inputs
+    return build_stranger_inputs(rows, tokenizer, rep["cf_names"], k=int(rep["cf_k"]),
+                                 fmt=fmt, max_length=max_length, layers=rep["rep_layers"],
+                                 target=str(rep["rep_target"]), seed=seed)
+
+
+# ---------------------------------------------------------------------------
 # Breadth groups, calibration and selectivity
 # ---------------------------------------------------------------------------
 
@@ -495,6 +541,7 @@ def parse_args(argv: Optional[Sequence[str]] = None):
                          "matches the real run's, then compare the axes. Only "
                          "meaningful with --control random.")
     ap.add_argument("--resume", action="store_true")
+    add_rep_args(ap)
     args = ap.parse_args(argv)
     if args.control_scale <= 0:
         ap.error("--control-scale must be positive")
@@ -635,14 +682,26 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     "impractically slow for a real study.", device)
 
     items_path = settings["breadth_items"]
+    rep = rep_settings(args, method)
+    retain_weight = float(args.retain_weight if args.retain_weight is not None
+                          else (rep.get("retain_weight") or 1.0))
+    trainable = rep.get("trainable") or args.trainable
+    unlearn_cfg = {"epochs": args.epochs, "learning_rate": args.learning_rate,
+                   "batch_size": args.batch_size, "beta": args.beta,
+                   "min_utility_ratio": settings["min_utility_ratio"],
+                   "loss_scope": loss_scope.value,
+                   "retain_excludes_r_tier_authors": bool(method.needs_retain)}
+    if rep:
+        unlearn_cfg.update({k: rep[k] for k in ("rep_layers", "trainable", "cf_k", "cf_names",
+                                                "cf_names_sha256", "rep_target")})
+        unlearn_cfg["retain_weight"] = retain_weight
+    elif args.retain_weight is not None:
+        unlearn_cfg["retain_weight"] = retain_weight
     config = {
         "run_id": run_id, "method": args.method, "size": args.size,
-        "protocol": args.protocol, "alphas": alphas, "adaptation": "full_parameter",
-        "unlearn": {"epochs": args.epochs, "learning_rate": args.learning_rate,
-                    "batch_size": args.batch_size, "beta": args.beta,
-                    "min_utility_ratio": settings["min_utility_ratio"],
-                    "loss_scope": loss_scope.value,
-                    "retain_excludes_r_tier_authors": bool(method.needs_retain)},
+        "protocol": args.protocol, "alphas": alphas,
+        "adaptation": "full_parameter" if not trainable else f"partial:{trainable}",
+        "unlearn": unlearn_cfg,
         "n_depth_examples": args.n_examples, "n_heldout_examples": n_heldout,
         "n_breadth_per_tier": args.n_breadth,
         "prompt_format": args.prompt_format,
@@ -694,6 +753,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     forget_batches = build_forget_batches(
         [forget_rows[i] for i in trained_list], tokenizer, fmt, args.max_length, loss_scope)
     log.info("  forget objective: %d rows (%s loss)", len(forget_batches), loss_scope.value)
+    rep_inputs = None
+    if rep:
+        rep_inputs = build_rep_inputs([forget_rows[i] for i in trained_list], tokenizer, fmt,
+                                      args.max_length, rep, args.seed)
+        if len(rep_inputs.rows) != len(forget_batches):
+            raise SystemExit(f"representation inputs ({len(rep_inputs.rows)} rows) do not "
+                             f"align with the forget batches ({len(forget_batches)})")
 
     items_all = load_breadth_items_file(items_path)
     breadth_items = subsample(items_all, args.n_breadth)
@@ -796,9 +862,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     ucfg = UnlearnConfig(method=method, learning_rate=args.learning_rate,
                          epochs=args.epochs, batch_size=args.batch_size,
-                         beta=args.beta,
+                         beta=args.beta, retain_weight=retain_weight,
                          min_utility_ratio=float(settings["min_utility_ratio"]),
-                         seed=args.seed)
+                         seed=args.seed, trainable=trainable)
 
     r_items = [i for i in breadth_items if i.tier == "R"]
 
@@ -824,7 +890,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         history = unlearn(model, forget_batches, ucfg,
                           retain_data=retain_batches,
                           reference_model=reference_model,
-                          eval_fn=utility_of)
+                          eval_fn=utility_of, stranger=rep_inputs)
     except CollapsedError as e:
         raise SystemExit("\n".join([
             "", str(e), "",

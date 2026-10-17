@@ -285,3 +285,82 @@ def test_gate1b_runs_end_to_end(word_checkpoints, tmp_path):
         u = res["self"]["whole"]["uds"]
         assert u is None or u == pytest.approx(0.0, abs=1e-6)
         assert "first_token" in res["question"]
+
+
+# ---------------------------------------------------------------------------
+# Training (unlearn.py) and the study runner
+# ---------------------------------------------------------------------------
+
+def _train_inputs(target="counterfactual"):
+    inp = _inputs(same=False, target=target)
+    forget = []
+    for r in inp.rows:
+        ids = torch.tensor([r.input_ids])
+        lm = torch.zeros_like(ids); lm[0, 6:] = 1
+        forget.append({"input_ids": ids, "attention_mask": torch.ones_like(ids), "loss_mask": lm})
+    retain = [{"input_ids": torch.randint(3, 50, (1, 8)),
+               "attention_mask": torch.ones(1, 8, dtype=torch.long)} for _ in range(3)]
+    return inp, forget, retain
+
+
+def test_unlearn_trains_only_the_chosen_tensors_and_closes_the_gap():
+    from deeperase.core.extrapolation import compute_update_vector, random_direction_like
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, snapshot, unlearn
+    m = _tiny()
+    inp, forget, retain = _train_inputs()
+    theta0 = snapshot(m)
+    cfg = UnlearnConfig(method=UnlearnMethod.STRANGER, learning_rate=1e-2, epochs=4,
+                        batch_size=2, trainable=r"^model\.layers\.0\.mlp\.",
+                        min_utility_ratio=0.01)
+    hist = unlearn(m, forget, cfg, retain_data=retain, eval_fn=lambda _m: 1.0, stranger=inp)
+    after = snapshot(m)
+    changed = {n for n in theta0 if not torch.equal(theta0[n], after[n])}
+    assert changed and all(".layers.0.mlp." in n for n in changed)
+    gaps = [e.rep_gap for e in hist.epoch_evals]
+    assert gaps[-1] < 0.5 and all(g is not None for g in gaps)
+    assert hist.rep_stats["forget_positions"] == 9
+    v = compute_update_vector(theta0, after, strict=False)
+    frozen = [n for n in v if ".layers.0.mlp." not in n]
+    assert all(float(v[n].abs().max()) == 0.0 for n in frozen)
+    r = random_direction_like(v, seed=0, scale=1.0)
+    assert all(float(r[n].abs().max()) == 0.0 for n in frozen)
+
+
+def test_unlearn_refuses_mismatched_representation_inputs():
+    from deeperase.unlearn import UnlearnConfig, UnlearnMethod, unlearn
+    m = _tiny()
+    inp, forget, retain = _train_inputs()
+    with pytest.raises(ValueError, match="requires stranger"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.STRANGER), retain_data=retain)
+    with pytest.raises(ValueError, match="does not take"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.GA), stranger=inp)
+    with pytest.raises(ValueError, match="needs 'scramble'"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.SCRAMBLE), retain_data=retain,
+                stranger=inp)
+    with pytest.raises(ValueError, match="align"):
+        unlearn(m, forget[:2], UnlearnConfig(method=UnlearnMethod.STRANGER),
+                retain_data=retain, stranger=inp)
+    with pytest.raises(ValueError, match="matches no parameter"):
+        unlearn(m, forget, UnlearnConfig(method=UnlearnMethod.STRANGER, trainable="nothing"),
+                retain_data=retain, stranger=inp)
+
+
+@needs_data
+def test_study_runs_stranger_end_to_end(word_checkpoints, tmp_path):
+    from deeperase.scripts.run_study import main
+    argv = ["--method", "stranger", "--model-sources", json.dumps(word_checkpoints),
+            "--tofu-dir", str(TOFU), "--reference-spans", str(REF_SPANS),
+            "--output-dir", str(tmp_path), "--run-id", "s", "--cache-dir", str(tmp_path / "c"),
+            "--device", "cpu", "--alphas", "0,1", "--epochs", "1", "--batch-size", "8",
+            "--learning-rate", "1e-3", "--min-utility-ratio", "0.01", "--n-examples", "6",
+            "--n-breadth", "12", "--rep-layers", "0", "--trainable", r"^model\.layers\.0\.mlp\."]
+    assert main(argv) == 0
+    cfg = json.loads((tmp_path / "s" / "config.json").read_text())
+    assert cfg["adaptation"].startswith("partial:")
+    u = cfg["unlearn"]
+    assert u["rep_layers"] == [0] and u["rep_target"] == "counterfactual" and u["cf_k"] == 4
+    assert len(u["cf_names_sha256"]) == 64
+    rec = json.loads((tmp_path / "s" / "unlearn.json").read_text())
+    assert rec["history"]["rep_stats"]["forget_positions"] > 0
+    assert rec["config"]["trainable"] == r"^model\.layers\.0\.mlp\."
+    assert (tmp_path / "s" / "plane.json").exists()

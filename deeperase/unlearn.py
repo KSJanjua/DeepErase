@@ -20,6 +20,15 @@ guessed.
               why it is the standard strong baseline. Needs a frozen reference
               copy of the starting model.
 
+Representation-target methods (this project's own; deeperase/stranger.py)
+train a subset of weights so that block outputs at chosen positions match
+targets computed once from the starting model, with a retain anchor. They take
+their per-row inputs through ``unlearn(..., stranger=...)``:
+
+    stranger  targets from the starting model on name-swapped rows
+              (docs/STRANGER.md; stopped at its gate 1, RESULTS.md §17).
+    scramble  STRANGER's control: same distance, random direction.
+
 Why not call OpenUnlearning directly
 ------------------------------------
 Their framework is configuration-driven and would have to run as a subprocess
@@ -59,10 +68,17 @@ class UnlearnMethod(str, Enum):
     GA = "ga"
     GRAD_DIFF = "graddiff"
     NPO = "npo"
+    STRANGER = "stranger"
+    SCRAMBLE = "scramble"
 
     @property
     def needs_retain(self) -> bool:
-        return self in (UnlearnMethod.GRAD_DIFF,)
+        return self in (UnlearnMethod.GRAD_DIFF,) or self.representation_targets
+
+    @property
+    def representation_targets(self) -> bool:
+        """Trains block outputs toward precomputed targets (deeperase/stranger.py)."""
+        return self in (UnlearnMethod.STRANGER, UnlearnMethod.SCRAMBLE)
 
     @property
     def needs_reference(self) -> bool:
@@ -116,6 +132,11 @@ class UnlearnConfig:
     the starting utility. Off (None) in study runs. Learning-rate scans use it:
     under gradient ascent utility does not recover, so the remaining epochs
     could never be selected and would only cost time."""
+
+    trainable: Optional[str] = None
+    """Regex over parameter names: only matching parameters train (the rest
+    stay bit-identical and get no optimiser state). None trains everything,
+    the behaviour of GA/GradDiff/NPO."""
 
     def validate(self) -> List[str]:
         problems: List[str] = []
@@ -271,11 +292,18 @@ class EpochEval:
     forget_nll: float
     acceptable: bool
     selected: bool = False
+    rep_gap: Optional[float] = None
+    """Representation-target methods: the forget term over every row,
+    relative to its value at the starting weights (1 = untouched, 0 = on
+    target)."""
 
     def to_dict(self) -> dict:
-        return {"epoch": self.epoch, "utility": round(self.utility, 4),
-                "forget_nll": round(self.forget_nll, 4),
-                "acceptable": self.acceptable, "selected": self.selected}
+        d = {"epoch": self.epoch, "utility": round(self.utility, 4),
+             "forget_nll": round(self.forget_nll, 4),
+             "acceptable": self.acceptable, "selected": self.selected}
+        if self.rep_gap is not None:
+            d["rep_gap"] = round(self.rep_gap, 4)
+        return d
 
 
 @dataclass
@@ -294,6 +322,9 @@ class UnlearnHistory:
     stopped_early: bool = False
     """True when ``stop_below_utility_ratio`` ended training before the
     configured number of epochs."""
+    rep_stats: Optional[dict] = None
+    """Representation-target methods: target statistics (positions, scales,
+    initial gap) from :func:`deeperase.stranger.compute_targets`."""
 
     @property
     def forget_nll_change(self) -> Optional[float]:
@@ -324,6 +355,7 @@ class UnlearnHistory:
                 "baseline_utility": self.baseline_utility,
                 "selected_epoch": self.selected_epoch,
                 "stopped_early": self.stopped_early,
+                "rep_stats": self.rep_stats,
                 "epoch_evals": [e.to_dict() for e in self.epoch_evals]}
 
 
@@ -393,6 +425,7 @@ def unlearn(
     retain_data: Optional[Sequence[Dict[str, torch.Tensor]]] = None,
     reference_model=None,
     eval_fn=None,
+    stranger=None,
 ) -> UnlearnHistory:
     """Apply an unlearning method **in place**. Returns the training history.
 
@@ -416,6 +449,9 @@ def unlearn(
         eval_fn: ``model -> float`` returning a utility score, higher is
             better. Called once before training to establish a baseline, then
             after each epoch. Omit to keep the last epoch unconditionally.
+        stranger: per-row inputs of a representation-target method
+            (:class:`deeperase.stranger.StrangerInputs`), row i aligned with
+            ``forget_data[i]``. Required by those methods, refused by others.
 
     Raises:
         ValueError: on an invalid config, or if a method's required inputs are
@@ -445,6 +481,18 @@ def unlearn(
         )
     if not forget_data:
         raise ValueError("forget_data is empty")
+    if config.method.representation_targets:
+        if stranger is None:
+            raise ValueError(f"{config.method.value} requires stranger= inputs")
+        if len(stranger.rows) != len(forget_data):
+            raise ValueError(f"stranger has {len(stranger.rows)} rows for "
+                             f"{len(forget_data)} forget examples; they must align")
+        want = "scramble" if config.method is UnlearnMethod.SCRAMBLE else "counterfactual"
+        if stranger.target != want:
+            raise ValueError(f"{config.method.value} needs {want!r} targets, "
+                             f"got {stranger.target!r}")
+    elif stranger is not None:
+        raise ValueError(f"{config.method.value} does not take stranger= inputs")
 
     torch.manual_seed(config.seed)
     device = next(model.parameters()).device
@@ -483,40 +531,79 @@ def unlearn(
         logger.info("  baseline forget_nll before training: %.4f",
                     history.baseline_forget_nll)
 
+    targets = None
+    if config.method.representation_targets:
+        from deeperase.stranger import compute_targets, forget_term
+        # At theta0, before any step: the targets are the starting model's own
+        # states, so they must be taken now.
+        targets = compute_targets(model, stranger, retain_data, device)
+        targets.stats["initial_forget_term"] = forget_term(
+            model, forget_data, targets, config.batch_size, device)
+        history.rep_stats = targets.stats
+
     model.train()
-    model.requires_grad_(True)
+    if config.trainable:
+        import re
+        rx = re.compile(config.trainable)
+        model.requires_grad_(False)
+        params = [p for n, p in model.named_parameters() if rx.search(n)]
+        if not params:
+            raise ValueError(f"trainable={config.trainable!r} matches no parameter")
+        for p in params:
+            p.requires_grad_(True)
+        logger.info("  training %d tensors (%.0fM parameters) matching %r",
+                    len(params), sum(p.numel() for p in params) / 1e6, config.trainable)
+    else:
+        model.requires_grad_(True)
+        params = list(model.parameters())
     # foreach=False: the multi-tensor path fuses every parameter into one
     # `_foreach_sqrt`, which materialises a full-size temporary copy of
     # exp_avg_sq -- a fifth model's worth of memory, allocated on the first
     # step() and nowhere visible in a parameter count. The single-tensor path
     # peaks one tensor at a time for a small speed cost, which at batch 1 is
     # dominated by the forward pass anyway.
-    optimiser = torch.optim.AdamW(model.parameters(), lr=config.learning_rate,
-                                  foreach=False)
+    optimiser = torch.optim.AdamW(params, lr=config.learning_rate, foreach=False)
 
     best_snapshot: Optional[Dict[str, torch.Tensor]] = None
     best_forget_nll = float("-inf")
 
     t0 = time.time()
     step = 0
+    bs = config.batch_size
+    n_retain = len(retain_data or [])
     for epoch in range(config.epochs):
-        retain_iter = iter(_batches(retain_data or [], config.batch_size, device))
-        for batch in _batches(forget_data, config.batch_size, device):
+        retain_iter = iter(_batches(retain_data or [], bs, device))
+        r_index = 0
+        for b_index, batch in enumerate(_batches(forget_data, bs, device)):
             if config.method is UnlearnMethod.GA:
                 loss = ga_loss(model, batch)
             elif config.method is UnlearnMethod.GRAD_DIFF:
                 try:
                     r = next(retain_iter)
                 except StopIteration:
-                    retain_iter = iter(_batches(retain_data, config.batch_size, device))
+                    retain_iter = iter(_batches(retain_data, bs, device))
                     r = next(retain_iter)
                 loss = grad_diff_loss(model, batch, r, config.retain_weight)
-            else:
+            elif config.method is UnlearnMethod.NPO:
                 loss = npo_loss(model, reference_model, batch, config.beta)
+            elif config.method.representation_targets:
+                from deeperase.stranger import stranger_loss
+                try:
+                    r = next(retain_iter)
+                except StopIteration:
+                    retain_iter, r_index = iter(_batches(retain_data, bs, device)), 0
+                    r = next(retain_iter)
+                f_rows = list(range(b_index * bs, min((b_index + 1) * bs, len(forget_data))))
+                r_rows = list(range(r_index * bs, min((r_index + 1) * bs, n_retain)))
+                r_index += 1
+                loss, _parts = stranger_loss(model, batch, f_rows, r, r_rows, targets,
+                                             config.retain_weight)
+            else:
+                raise ValueError(f"no training branch for method {config.method.value!r}")
 
             optimiser.zero_grad()
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
+            torch.nn.utils.clip_grad_norm_(params, config.max_grad_norm)
             optimiser.step()
 
             with torch.no_grad():
@@ -547,11 +634,18 @@ def unlearn(
             epoch_nll = forget_set_nll()
             floor = config.min_utility_ratio * history.baseline_utility
             acceptable = utility >= floor
+            rep_gap = None
+            if targets is not None:
+                from deeperase.stranger import forget_term
+                start = targets.stats.get("initial_forget_term")
+                now = forget_term(model, forget_data, targets, bs, device)
+                rep_gap = (now / start) if (now is not None and start) else None
             rec = EpochEval(epoch=epoch, utility=utility, forget_nll=epoch_nll,
-                            acceptable=acceptable)
+                            acceptable=acceptable, rep_gap=rep_gap)
             history.epoch_evals.append(rec)
-            logger.info("  epoch %d: utility=%.4f (floor %.4f) forget_nll=%.4f  %s",
+            logger.info("  epoch %d: utility=%.4f (floor %.4f) forget_nll=%.4f%s  %s",
                         epoch, utility, floor, epoch_nll,
+                        "" if rep_gap is None else f" rep_gap={rep_gap:.3f}",
                         "keep" if acceptable else "REJECTED -- utility too low")
 
             if acceptable and epoch_nll > best_forget_nll:
