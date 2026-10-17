@@ -82,8 +82,9 @@
      "uds_trained_ans_ref": 0.3743261596166748,
      "strict_trained_para_ans": 0.43793208362221525,
      "uds_trained_para_ans": 0.4819604984758226,
-     "control": null,
-     "excess_strict_trained": null,
+     "control": "control_x10_v2_unaskedg_1B_s0_lr3e-06",
+     "excess_strict_trained": 0.3646960192742971,
+     "excess_strict_general_matched": 0.19430904164999763,
      "vs_graddiff_same_seed": {
       "matched_general": {
        "breadth": 0.2346484981431643,
@@ -122,6 +123,7 @@
      "uds_trained_para_ans": 0.5147033114228614,
      "control": null,
      "excess_strict_trained": null,
+     "excess_strict_general_matched": null,
      "vs_graddiff_same_seed": {
       "matched_general": {
        "breadth": 0.18683210659777777,
@@ -160,6 +162,7 @@
      "uds_trained_para_ans": 0.48475937022322185,
      "control": null,
      "excess_strict_trained": null,
+     "excess_strict_general_matched": null,
      "vs_graddiff_same_seed": {
       "matched_general": {
        "breadth": 0.5324322758971245,
@@ -208,7 +211,7 @@
     },
     "C4_beyond_damage": {
      "per_seed": [
-      null,
+      0.3646960192742971,
       null,
       null
      ],

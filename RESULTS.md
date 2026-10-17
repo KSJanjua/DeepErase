@@ -1724,8 +1724,33 @@ knowledge. Seed 0 along α:
 * **Paraphrased questions:** strict UDS 0.319, 0.355 and 0.333 (seeds 0-2),
   0.85 of the trained-wording value.
 
+### 20.5 Beyond damage (C4): seed 0
+
+`control_probe.py` found the R-matched random-direction scale for UNASKED-G
+seed 0: 10× the update's norm, per tensor. At α = 1 that control has R 0.757,
+against UNASKED-G's 0.755. At 30× the norm, R falls to 0.305. The probe and
+the control study recorded commit `01cd510` or earlier, on the H100 slice.
+
+| α | UNASKED-G: R / general / breadth / strict UDS | Random direction at 10×: R / general / breadth / strict UDS |
+|---|---|---|
+| 0 | 0.805 / 0.835 / 0.309 / **0.405** | 0.797 / 0.867 / 0.021 / 0.068 |
+| 0.5 | 0.792 / 0.797 / 0.588 / 0.490 | 0.780 / 0.849 / 0.124 / 0.141 |
+| 1 | 0.755 / 0.758 / 0.649 / 0.531 | 0.757 / 0.816 / 0.175 / 0.246 |
+
+* **Matched on R (C4 as pre-registered).** UNASKED-G's strict UDS exceeds
+  the control's by +0.32 to +0.40 at 9 of the 11 α. The mean is **+0.365**
+  against a bar of ≥ 0.15. On held-out facts the excess is +0.257.
+* **Matched on general knowledge (exploratory).** The control spans general
+  knowledge from 0.867 down to 0.816. Within that range (UNASKED-G's α 0-0.2),
+  the excess is +0.18 to +0.20, a mean of **+0.194**. Unlike UNASKED
+  (§19.5), UNASKED-G's depth exceeds random damage under either match.
+* **Breadth.** Random damage of this size barely moves behaviour: breadth is
+  0.02 at α = 0 and 0.18 at α = 1, against UNASKED-G's 0.31 and 0.65.
+
+C4 is met on seed 0. Seeds 1-2 are running.
+
 **Still to come:**
-* C4: the R-matched controls of seeds 0-2;
+* C4: the R-matched controls of seeds 1-2;
 * GradDiff-G, GradDiff with the same general anchor (the fairness baseline);
 * a TOFU anchor of 10 (exploratory);
 * relearning dose-responses for UNASKED-G and GradDiff.
