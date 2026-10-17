@@ -68,6 +68,10 @@ def test_rule_criteria_and_controls(tmp_path):
     assert g1["runs"][0]["control"] == "control_x10_v2_unaskedg_1B_s0_lr3e-06"
     assert g1["all_seeds"]["C4_beyond_damage"]["per_seed"][0] == pytest.approx(0.375)
     assert g1["all_seeds"]["C4_beyond_damage"]["met"] is True
+    # general-knowledge match: the run sits at 0.82, outside the control's 0.855,
+    # so there is nothing to match and the excess is left undefined
+    assert "excess_strict_general_matched" in g1["runs"][0]
+    assert g1["runs"][0]["excess_strict_general_matched"] is None
     assert g3["runs"][0]["control"] is None
     assert g3["all_seeds"]["C4_beyond_damage"]["met"] is None        # no control yet
     assert g3["confirmation_seeds_1_2"] is None

@@ -45,6 +45,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
 from deeperase.scripts.uds_audit import audit_run, strict_excess
+from deeperase.scripts.unasked_report import general_matched
 
 C1_SEED, C1_MEAN = 0.26, 0.282
 C2_SEED, C2_MEAN = 0.32, 0.338
@@ -205,10 +206,13 @@ def collect(studies: Path) -> dict:
         if c and c.get("general_weight"):
             groups.setdefault(c["config"], {})[c["seed"]] = c
     controls: Dict[tuple, dict] = {}
+    control_dirs: Dict[tuple, List[Path]] = {}
     for d in sorted(studies.glob("control_x*_v2_unaskedg_1B_s*_lr*")):
         a = audit_run(d) if d.is_dir() else None
         if a:
-            controls[(int(a["seed"]), _tag(d.name))] = {"name": d.name, "audit": a}
+            key = (int(a["seed"]), _tag(d.name))
+            controls[key] = {"name": d.name, "audit": a}
+            control_dirs.setdefault(key, []).append(d)
     graddiff = [c for c in (checkpoint(d) for d in sorted(studies.glob(GRADDIFF))
                             if d.is_dir() and not _tag(d.name)) if c]
     gd_paths = {c["seed"]: path(studies / c["run"], c["_audit"]) for c in graddiff}
@@ -226,6 +230,9 @@ def collect(studies: Path) -> dict:
                             .get("mean")) if ctl else None
             c["control"] = ctl["name"] if ctl else None
             c["excess_strict_trained"] = excess[seed]
+            dirs = control_dirs.get((seed, c["tag"]))
+            gm = general_matched(studies / c["run"], c["_audit"], dirs) if dirs else None
+            c["excess_strict_general_matched"] = gm["mean"] if gm else None
         for seed, c in by.items():
             ref = gd_paths.get(seed)
             if ref:
@@ -255,13 +262,14 @@ def to_markdown(rep: dict) -> str:
     cols = ("strict_trained", "uds_trained", "breadth_trained", "strict_heldout",
             "breadth_heldout", "strict_trained_para", "R", "RA", "WF")
     lines = ["| run | λ_g | seed | strict T | UDS T | breadth T | strict H | breadth H "
-             "| strict para-Q | R | RA | WF | excess over control |",
+             "| strict para-Q | R | RA | WF | excess over control: R-matched / general-matched |",
              "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for w, g in rep["groups"].items():
         for c in g["runs"]:
             lines.append(f"| {c['run']} | {c['general_weight']:g} | {c['seed']} | "
                          + " | ".join(_f(c.get(k)) for k in cols)
-                         + f" | {_f(c.get('excess_strict_trained'))} |")
+                         + f" | {_f(c.get('excess_strict_trained'))} / "
+                         f"{_f(c.get('excess_strict_general_matched'))} |")
     for c in rep["graddiff"] + rep.get("graddiff_g", []):
         lines.append(f"| {c['run']} | {_f(c.get('general_weight'), 0) if c.get('general_weight') else '–'} | {c['seed']} | "
                      + " | ".join(_f(c.get(k)) for k in cols) + " | – |")
