@@ -6,6 +6,7 @@
 | study_v2_graddiff_1B_s0_lr5e-08 | – | 0 | 0.144 | 0.144 | 0.175 | 0.053 | 0.184 | – | 0.775 | 0.880 | 0.821 | – |
 | study_v2_graddiff_1B_s1_lr5e-08 | – | 1 | 0.120 | 0.121 | 0.220 | 0.056 | 0.119 | – | 0.765 | 0.860 | 0.829 | – |
 | study_v2_graddiff_1B_s2_lr5e-08 | – | 2 | 0.158 | 0.174 | 0.112 | 0.071 | 0.269 | – | 0.765 | 0.850 | 0.838 | – |
+| study_v2_graddiffg_1B_s0_lr5e-08 | 1 | 0 | 0.189 | 0.189 | 0.216 | 0.066 | 0.214 | 0.173 | 0.765 | 0.860 | 0.812 | – |
 
 **lr3e-06 (λ_g = 1), all seeds ([0, 1, 2]):** C1 depth met (mean 0.396); C2 breadth not met (mean 0.345); C3 utility not met (R 0.794, RA 0.857, WF 0.843); C4 beyond damage no data
 

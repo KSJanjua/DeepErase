@@ -55,7 +55,32 @@
    "uds_heldout": 0.07557065726208696
   }
  ],
- "graddiff_g": [],
+ "graddiff_g": [
+  {
+   "run": "study_v2_graddiffg_1B_s0_lr5e-08",
+   "seed": 0,
+   "tag": "",
+   "config": "lr5e-08",
+   "learning_rate": 5e-08,
+   "general_weight": 1.0,
+   "retain_weight": null,
+   "breadth_trained": 0.21649484536082464,
+   "breadth_heldout": 0.21359223300970887,
+   "R": 0.765,
+   "RA": 0.86,
+   "WF": 0.811965811965812,
+   "strict_trained": 0.1885047775437227,
+   "uds_trained": 0.1893306678270261,
+   "strict_heldout": 0.0659371842256586,
+   "uds_heldout": 0.07080000378522405,
+   "strict_trained_para": 0.1731359358328816,
+   "uds_trained_para": 0.19500930066154526,
+   "strict_trained_ans_ref": 0.14461859202872518,
+   "uds_trained_ans_ref": 0.14514685506993322,
+   "strict_trained_para_ans": 0.1662586549825333,
+   "uds_trained_para_ans": 0.1751701062186906
+  }
+ ],
  "groups": {
   "lr3e-06": {
    "runs": [

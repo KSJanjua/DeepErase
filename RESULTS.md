@@ -1759,9 +1759,33 @@ anchors as the run (λ = 3, λ_g = 1), on the H100 slice.
 
 C4 is met on seed 0. Seeds 1-2 are running.
 
+### 20.6 Fairness: GradDiff with the same general anchor (seed 0)
+
+UNASKED-G is the only method that received the general-knowledge data.
+GradDiff-G gives GradDiff the same anchor (method `graddiffg`): the same 400
+pairs, all 16 layers, the same scale, λ_g = 1, at GradDiff's own rate of 5e-8.
+It ran at commit `c19f0eb` (clean tree) and kept epoch 8. In
+every later epoch R fell below the floor, as for plain GradDiff.
+
+| Seed 0, at the checkpoint | Strict UDS, trained | Breadth, trained | Strict UDS, held-out | R | RA | WF |
+|---|---|---|---|---|---|---|
+| GradDiff | 0.144 | 0.175 | 0.053 | 0.775 | 0.880 | 0.821 |
+| GradDiff-G | 0.189 | 0.216 | 0.066 | 0.765 | 0.860 | 0.812 |
+| **UNASKED-G** | **0.405** | **0.309** | **0.259** | **0.805** | 0.840 | **0.829** |
+
+* **The general anchor barely helps GradDiff.** At equal general knowledge,
+  GradDiff-G exceeds GradDiff by only +0.02 breadth and +0.04 strict UDS (11
+  matched α).
+* **It does not close the gap.** At equal general knowledge, UNASKED-G exceeds
+  GradDiff-G by +0.22 breadth and +0.17 strict UDS (9 matched α). At equal R
+  the margins are +0.35 and +0.25 (2 matched α).
+* **So UNASKED-G's advantage is not the extra data.** GradDiff's update moves
+  R down to its floor by epoch 8 whether or not the anchor is there.
+  UNASKED-G's bounded target, together with its anchors, keeps R at its
+  starting level.
+
 **Still to come:**
 * C4: the R-matched controls of seeds 1-2;
-* GradDiff-G, GradDiff with the same general anchor (the fairness baseline);
 * a TOFU anchor of 10 (exploratory);
 * relearning dose-responses for UNASKED-G and GradDiff.
 
