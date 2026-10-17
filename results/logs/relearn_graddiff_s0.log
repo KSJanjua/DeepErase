@@ -1,0 +1,101 @@
+07:57:50 INFO    PyTorch version 2.6.0+cu124 available.
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+07:57:50 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+07:57:50 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+07:57:50 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+07:57:50 WARNING Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+07:57:50 INFO      retain split retain90: 21 authors held out of the retain term (the R tier asks about them)
+07:57:50 INFO      retain split retain90: 200 of 3180 examples (random)
+07:57:50 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+07:57:55 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.7s
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+07:57:59 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+07:57:59 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+07:58:17 INFO      baseline before training: utility=0.8050 forget_nll=0.3913
+07:58:19 INFO      epoch 0 step 0  loss=0.1178  forget_nll=0.4129
+07:58:27 INFO      epoch 0 step 20  loss=-0.0561  forget_nll=0.4707
+07:58:35 INFO      epoch 0 step 40  loss=-0.1136  forget_nll=0.3392
+07:58:57 INFO      epoch 0: utility=0.8025 (floor 0.7648) forget_nll=0.4136  keep
+07:59:04 INFO      epoch 1 step 60  loss=-0.0382  forget_nll=0.3482
+07:59:12 INFO      epoch 1 step 80  loss=0.0135  forget_nll=0.3515
+07:59:38 INFO      epoch 1: utility=0.8000 (floor 0.7648) forget_nll=0.4494  keep
+07:59:41 INFO      epoch 2 step 100  loss=-0.0915  forget_nll=0.5127
+07:59:49 INFO      epoch 2 step 120  loss=-0.1698  forget_nll=0.5645
+07:59:57 INFO      epoch 2 step 140  loss=-0.1889  forget_nll=0.4164
+08:00:19 INFO      epoch 2: utility=0.7975 (floor 0.7648) forget_nll=0.4978  keep
+08:00:26 INFO      epoch 3 step 160  loss=-0.1621  forget_nll=0.4283
+08:00:34 INFO      epoch 3 step 180  loss=-0.0936  forget_nll=0.4383
+08:01:00 INFO      epoch 3: utility=0.7950 (floor 0.7648) forget_nll=0.5560  keep
+08:01:03 INFO      epoch 4 step 200  loss=-0.2429  forget_nll=0.6631
+08:01:11 INFO      epoch 4 step 220  loss=-0.3346  forget_nll=0.7465
+08:01:19 INFO      epoch 4 step 240  loss=-0.2676  forget_nll=0.5169
+08:01:41 INFO      epoch 4: utility=0.7900 (floor 0.7648) forget_nll=0.6299  keep
+08:01:48 INFO      epoch 5 step 260  loss=-0.3116  forget_nll=0.5390
+08:01:56 INFO      epoch 5 step 280  loss=-0.2335  forget_nll=0.5795
+08:02:22 INFO      epoch 5: utility=0.7775 (floor 0.7648) forget_nll=0.7241  keep
+08:02:25 INFO      epoch 6 step 300  loss=-0.4479  forget_nll=0.8742
+08:02:33 INFO      epoch 6 step 320  loss=-0.5708  forget_nll=1.0350
+08:02:41 INFO      epoch 6 step 340  loss=-0.4459  forget_nll=0.7039
+08:03:02 INFO      epoch 6: utility=0.7725 (floor 0.7648) forget_nll=0.8581  keep
+08:03:09 INFO      epoch 7 step 360  loss=-0.4933  forget_nll=0.7290
+08:03:17 INFO      epoch 7 step 380  loss=-0.4140  forget_nll=0.8571
+08:03:43 INFO      epoch 7: utility=0.7750 (floor 0.7648) forget_nll=1.0532  keep
+08:03:46 INFO      epoch 8 step 400  loss=-0.8140  forget_nll=1.2655
+08:03:54 INFO      epoch 8 step 420  loss=-0.8745  forget_nll=1.4902
+08:04:02 INFO      epoch 8 step 440  loss=-0.8137  forget_nll=1.1005
+08:04:24 INFO      epoch 8: utility=0.7600 (floor 0.7648) forget_nll=1.3196  REJECTED -- utility too low
+08:04:28 INFO      epoch 9 step 460  loss=-0.8598  forget_nll=1.1785
+08:04:36 INFO      epoch 9 step 480  loss=-0.6818  forget_nll=1.3326
+08:05:02 INFO      epoch 9: utility=0.7550 (floor 0.7648) forget_nll=1.6632  REJECTED -- utility too low
+08:05:02 INFO      epoch 10 step 500  loss=-1.7960  forget_nll=2.3663
+08:05:10 INFO      epoch 10 step 520  loss=-1.4921  forget_nll=2.3054
+08:05:18 INFO      epoch 10 step 540  loss=-1.3548  forget_nll=1.7383
+08:05:40 INFO      epoch 10: utility=0.7350 (floor 0.7648) forget_nll=2.0414  REJECTED -- utility too low
+08:05:44 INFO      epoch 11 step 560  loss=-1.5056  forget_nll=1.9518
+08:05:52 INFO      epoch 11 step 580  loss=-1.0935  forget_nll=1.9269
+08:06:18 INFO      epoch 11: utility=0.7300 (floor 0.7648) forget_nll=2.4652  REJECTED -- utility too low
+08:06:18 INFO      epoch 12 step 600  loss=-2.9456  forget_nll=3.6535
+08:06:26 INFO      epoch 12 step 620  loss=-2.3697  forget_nll=3.4073
+08:06:34 INFO      epoch 12 step 640  loss=-1.9000  forget_nll=2.3561
+08:06:56 INFO      epoch 12: utility=0.7200 (floor 0.7648) forget_nll=2.9304  REJECTED -- utility too low
+08:07:00 INFO      epoch 13 step 660  loss=-2.3805  forget_nll=2.9479
+08:07:08 INFO      epoch 13 step 680  loss=-1.6669  forget_nll=2.6489
+08:07:34 INFO      epoch 13: utility=0.7025 (floor 0.7648) forget_nll=3.4205  REJECTED -- utility too low
+08:07:34 INFO      epoch 14 step 700  loss=-4.2264  forget_nll=5.0665
+08:07:42 INFO      epoch 14 step 720  loss=-3.3990  forget_nll=4.6784
+08:07:50 INFO      epoch 14 step 740  loss=-2.4913  forget_nll=2.9758
+08:08:12 INFO      epoch 14: utility=0.6900 (floor 0.7648) forget_nll=3.9142  REJECTED -- utility too low
+08:08:16 INFO      epoch 15 step 760  loss=-3.4662  forget_nll=4.1194
+08:08:24 INFO      epoch 15 step 780  loss=-2.2901  forget_nll=3.3964
+08:08:50 INFO      epoch 15: utility=0.6900 (floor 0.7648) forget_nll=4.4130  REJECTED -- utility too low
+08:08:50 INFO      epoch 16 step 800  loss=-5.5043  forget_nll=6.4038
+08:08:58 INFO      epoch 16 step 820  loss=-4.4791  forget_nll=5.8864
+08:09:06 INFO      epoch 16 step 840  loss=-3.1734  forget_nll=3.6951
+08:09:28 INFO      epoch 16: utility=0.6775 (floor 0.7648) forget_nll=4.9258  REJECTED -- utility too low
+08:09:33 INFO      epoch 17 step 860  loss=-4.5992  forget_nll=5.2690
+08:09:40 INFO      epoch 17 step 880  loss=-3.0903  forget_nll=4.3256
+08:10:06 INFO      epoch 17: utility=0.6675 (floor 0.7648) forget_nll=5.4551  REJECTED -- utility too low
+08:10:07 INFO      epoch 18 step 900  loss=-6.7403  forget_nll=7.6763
+08:10:15 INFO      epoch 18 step 920  loss=-5.5254  forget_nll=7.0429
+08:10:22 INFO      epoch 18 step 940  loss=-4.0034  forget_nll=4.5957
+08:10:44 INFO      epoch 18: utility=0.6675 (floor 0.7648) forget_nll=5.9928  REJECTED -- utility too low
+08:10:49 INFO      epoch 19 step 960  loss=-5.7151  forget_nll=6.3474
+08:10:56 INFO      epoch 19 step 980  loss=-4.0310  forget_nll=5.3546
+08:11:22 INFO      epoch 19: utility=0.6525 (floor 0.7648) forget_nll=6.5515  REJECTED -- utility too low
+08:11:24 INFO      selected epoch 7 (utility 0.7750, forget_nll 1.0532)
+08:11:26 INFO    Unlearning finished: 1000 steps in 788.3s, forget NLL 0.3913 -> 1.0532 (+0.6619 over the full forget set)
+08:12:37 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+08:12:42 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.8s
+08:13:54 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda:0)
+08:13:59 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 4.8s
+
+========================================================================
+RELEARNING ATTACK  graddiff  seed 0  (attack lr 1e-05, 2 epochs on 100 facts)
+========================================================================
+probe     unlearned 0.665->0.670  full 0.715->0.680  retain90 0.475->0.520  latent index 0.9375
+heldout   unlearned 0.738->0.725  full 0.785->0.725  retain90 0.527->0.610  latent index 1.0
+Saved results/relearn/graddiff_1B_v2_s0.json
