@@ -67,6 +67,15 @@ GradDiff and NPO reach at their checkpoint.
   entity unchanged. If UNASKED erased the fact, depth holds there. If it only
   learned to go blank on the trained wording, depth falls. GA and NPO are
   rerun with the same split for comparison.
+* **Paraphrased-answer depth** (`run_study.py --paraphrase-answer-depth`).
+  UNASKED trains every answer position, including the ones UDS patches, and
+  rewording the question leaves those positions unchanged. So the same facts
+  are also scored with TOFU's paraphrased answer, where the entity is predicted
+  from other tokens at other positions. Only facts whose entity occurs there as
+  whole words count: 75 of 367, about 37 per seed. Each is paired with its
+  original answer. If the depth is a trigger on the trained answer sequence,
+  it falls on the paraphrase. Added after seed 0 (ANALYSIS_PLAN §9), so seeds
+  1-2 have it and seed 0 does not.
 * **Strict UDS** next to UDS, as for every method since RESULTS.md §16.
 * **Held-out facts.** They are separate memorised sequences, so UNASKED is not
   expected to reach them beyond what baselines do. This is reported, not

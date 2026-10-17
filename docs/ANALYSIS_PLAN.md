@@ -456,6 +456,20 @@ had been seen at the time.
   E1-E5 and their thresholds are unchanged. Every result is labelled
   exploratory and reported with the failed gate. λ = 3 is reported beside
   λ = 1, never in its place.
+* **17 Oct 2026: depth on paraphrased answers added (exploratory).** *UNASKED
+  seed 0 had been seen.* UNASKED trains the states at every answer position,
+  and those include the positions UDS patches. The paraphrased-question split
+  (E3) changes the question but not those positions, so it cannot tell erasure
+  from a trigger tied to the trained answer sequence.
+  * **The new split.** `run_study.py --paraphrase-answer-depth` scores every
+    trained fact whose entity occurs, as whole words, in TOFU's paraphrased
+    answer (`trained_para_ans`, 37-38 facts per seed). It scores the same facts
+    with their original answer as well (`trained_ans_ref`).
+  * **The comparison is paired** (`unasked_report.answer_check`).
+  * **Where it runs.** It was added to the runs not yet started: UNASKED seeds
+    1-2, λ = 3, and the GA and NPO paraphrase reruns. UNASKED seed 0 does not
+    have it.
+  * **No criterion depends on it.** It is reported beside E3.
 * **17 Oct 2026: relearning attack and dose-response added (exploratory).**
   `scripts/relearn_attack.py` fine-tunes each method's seed-0 checkpoint on
   half of each author's trained facts. It scores the other half and the
