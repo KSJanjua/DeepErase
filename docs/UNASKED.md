@@ -93,6 +93,16 @@ GradDiff and NPO reach at their checkpoint.
 
 ## UNASKED-G: UNASKED with a general-knowledge anchor (ANALYSIS_PLAN H9)
 
+> **Status, 17 Oct 2026, 3 seeds (RESULTS.md §20).** At the checkpoint:
+> * strict UDS 0.396 against GradDiff's 0.141, and breadth 0.345 against 0.169;
+> * R 0.794, RA 0.857 and WF 0.843, against GradDiff's 0.768, 0.863 and 0.829.
+>
+> On H9's criteria, C1 is met. C2 misses its per-seed bar on two seeds (0.309
+> and 0.297, against 0.32). C3 is met on the confirmation seeds 1-2. C4, the
+> matched-damage controls, is running. At equal utility, UNASKED-G is broader
+> (+0.19 to +0.53) and deeper (+0.18 to +0.32 strict UDS) than GradDiff of the
+> same seed, in every seed.
+
 UNASKED beats GradDiff by a wide margin on depth and breadth, but it loses
 real-author and world-fact knowledge (RA 0.72, WF 0.735, against GradDiff's
 0.86 and 0.83). Its target, the state of a blanked question, can spread into a
