@@ -1851,7 +1851,21 @@ every later epoch R fell below the floor, as for plain GradDiff.
   * matched on R (6 α): +0.36 and +0.30.
   * Against the seed-0 GradDiff-G, the margins of UNASKED-G (anchor 10) are
     +0.48 / +0.27 (general knowledge) and +0.45 / +0.22 (R).
-  * Seed 2 was running.
+* **Seed 2.** GradDiff-G: strict 0.153, breadth 0.103, R 0.767, RA 0.860,
+  WF 0.838. The margins of UNASKED-G (anchor 10) are +0.47 / +0.30 (general
+  knowledge, 5 α) and +0.49 / +0.27 (R, 2 α).
+
+**Over three seeds, GradDiff-G is just GradDiff.**
+
+| Mean of 3 seeds | Strict UDS | Breadth | R | RA | WF |
+|---|---|---|---|---|---|
+| GradDiff | 0.141 | 0.169 | 0.768 | 0.863 | 0.829 |
+| GradDiff-G | 0.152 | 0.176 | 0.768 | 0.867 | 0.826 |
+| UNASKED-G (anchor 10) | 0.388 | 0.380 | 0.790 | 0.880 | 0.855 |
+
+At equal utility, UNASKED-G (anchor 10) exceeds GradDiff-G in every seed, by
++0.36 to +0.49 breadth and +0.22 to +0.30 strict UDS. The general-knowledge
+data does not explain the advantage.
 
 ### 20.7 H9b: the TOFU anchor at 10 meets C1-C3 on its seed 0 (selection seed)
 
