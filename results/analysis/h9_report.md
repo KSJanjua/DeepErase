@@ -2,7 +2,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | study_v2_unaskedg_1B_s0_lr3e-06 | 1 | 0 | 0.405 | 0.479 | 0.309 | 0.259 | 0.320 | 0.319 | 0.805 | 0.840 | 0.829 | 0.365 / 0.194 |
 | study_v2_unaskedg_1B_s1_lr3e-06 | 1 | 1 | 0.381 | 0.467 | 0.297 | 0.292 | 0.422 | 0.355 | 0.792 | 0.860 | 0.846 | 0.285 / 0.234 |
-| study_v2_unaskedg_1B_s2_lr3e-06 | 1 | 2 | 0.402 | 0.487 | 0.430 | 0.315 | 0.409 | 0.333 | 0.785 | 0.870 | 0.855 | – / – |
+| study_v2_unaskedg_1B_s2_lr3e-06 | 1 | 2 | 0.402 | 0.487 | 0.430 | 0.315 | 0.409 | 0.333 | 0.785 | 0.870 | 0.855 | 0.244 / 0.337 |
 | study_v2_unaskedg_1B_s0_lr3e-06_lam10 | 1 | 0 | 0.411 | 0.480 | 0.392 | 0.280 | 0.320 | 0.329 | 0.792 | 0.880 | 0.855 | 0.324 / 0.347 |
 | study_v2_unaskedg_1B_s1_lr3e-06_lam10 | 1 | 1 | 0.380 | 0.465 | 0.385 | 0.286 | 0.385 | 0.351 | 0.785 | 0.880 | 0.855 | 0.285 / 0.275 |
 | study_v2_unaskedg_1B_s2_lr3e-06_lam10 | 1 | 2 | 0.372 | 0.443 | 0.364 | 0.256 | 0.290 | 0.312 | 0.792 | 0.880 | 0.855 | 0.308 / – |
@@ -11,9 +11,9 @@
 | study_v2_graddiff_1B_s2_lr5e-08 | – | 2 | 0.158 | 0.174 | 0.112 | 0.071 | 0.269 | – | 0.765 | 0.850 | 0.838 | – |
 | study_v2_graddiffg_1B_s0_lr5e-08 | 1 | 0 | 0.189 | 0.189 | 0.216 | 0.066 | 0.214 | 0.173 | 0.765 | 0.860 | 0.812 | – |
 
-**lr3e-06 (λ_g = 1), all seeds ([0, 1, 2]):** C1 depth met (mean 0.396); C2 breadth not met (mean 0.345); C3 utility not met (R 0.794, RA 0.857, WF 0.843); C4 beyond damage no data
+**lr3e-06 (λ_g = 1), all seeds ([0, 1, 2]):** C1 depth met (mean 0.396); C2 breadth not met (mean 0.345); C3 utility not met (R 0.794, RA 0.857, WF 0.843); C4 beyond damage met
 
-**lr3e-06 (λ_g = 1), seeds 1-2 ([1, 2]):** C1 depth met (mean 0.392); C2 breadth not met (mean 0.363); C3 utility met (R 0.789, RA 0.865, WF 0.850); C4 beyond damage no data
+**lr3e-06 (λ_g = 1), seeds 1-2 ([1, 2]):** C1 depth met (mean 0.392); C2 breadth not met (mean 0.363); C3 utility met (R 0.789, RA 0.865, WF 0.850); C4 beyond damage met
 
 **lr3e-06_lam10 (λ_g = 1), all seeds ([0, 1, 2]):** C1 depth met (mean 0.388); C2 breadth met (mean 0.380); C3 utility met (R 0.790, RA 0.880, WF 0.855); C4 beyond damage met
 

@@ -185,9 +185,9 @@
      "uds_trained_ans_ref": 0.37213119994755023,
      "strict_trained_para_ans": 0.43502642316393,
      "uds_trained_para_ans": 0.48475937022322185,
-     "control": null,
-     "excess_strict_trained": null,
-     "excess_strict_general_matched": null,
+     "control": "control_x11_v2_unaskedg_1B_s2_lr3e-06",
+     "excess_strict_trained": 0.2437368082756124,
+     "excess_strict_general_matched": 0.33742800531827555,
      "vs_graddiff_same_seed": {
       "matched_general": {
        "breadth": 0.5324322758971245,
@@ -238,9 +238,9 @@
      "per_seed": [
       0.364949629134222,
       0.2851105836221958,
-      null
+      0.2437368082756124
      ],
-     "met": null
+     "met": true
     }
    },
    "confirmation_seeds_1_2": {
@@ -275,9 +275,9 @@
     "C4_beyond_damage": {
      "per_seed": [
       0.2851105836221958,
-      null
+      0.2437368082756124
      ],
-     "met": null
+     "met": true
     }
    }
   },

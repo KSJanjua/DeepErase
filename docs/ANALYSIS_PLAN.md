@@ -457,7 +457,16 @@ checkpoint (epoch 19) scored:
 * R 0.805, RA 0.840, WF 0.829 (C3: missed on RA by 0.023).
 
 Since C2 is not met, the rule does not run λ_g = 3: a stronger general anchor
-would lower breadth further. Seeds 1-2 run at λ_g = 1, followed by the
+would lower breadth further.
+
+**H9 final verdict (18 Oct 2026; RESULTS.md §20.1 and §20.5), three seeds at
+λ_g = 1:**
+* **C1 met:** strict UDS 0.405, 0.381 and 0.402, mean 0.396.
+* **C2 not met:** breadth 0.309, 0.297 and 0.430. The mean of 0.345 clears
+  its bar, but two seeds fall under the per-seed 0.32.
+* **C3 not met over three seeds** (mean RA 0.857), **met on the confirmation
+  seeds 1-2.**
+* **C4 met:** +0.365, +0.285 and +0.244 over the R-matched controls. Seeds 1-2 run at λ_g = 1, followed by the
 R-matched controls of seeds 0-2. The calibrated breadth of a single seed
 carries a sampling sd of about 0.09 (400 items over a 0.25 calibration gap),
 and RA about 0.035.
