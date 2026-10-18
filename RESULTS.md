@@ -1953,6 +1953,21 @@ three-seed mean:
 The general knowledge is the same in all three seeds: RA 0.880 (M_full 0.890)
 and WF 0.855 (M_full's own value).
 
+**TOFU's own Forget Quality** (a KS-test p-value against retain90; higher
+means closer to a model that never saw the facts), trained split, at the
+checkpoint:
+
+| | Seed 0 | Seed 1 | Seed 2 |
+|---|---|---|---|
+| GradDiff | 2.4e-8 | 4.4e-8 | 9.6e-10 |
+| GA | 8.1e-8 | 1.5e-7 | 4.9e-10 |
+| NPO | 4.4e-8 | 1.5e-7 | 4.9e-10 |
+| **UNASKED-G, anchor 10** | **1.2e-4** | **4.3e-4** | **1.8e-4** |
+
+That is three to five orders of magnitude above every baseline, though
+still far from 0.05, where the model would be indistinguishable from
+retain90.
+
 ### 20.9 Relearning dose-response: UNASKED-G holds out against weak attacks; GradDiff does not
 
 `scripts/relearn_attack.py --attack-lrs 1e-7,3e-7,1e-6,3e-6,1e-5` was run on
