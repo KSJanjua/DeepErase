@@ -1,0 +1,113 @@
+11:08:01 INFO    PyTorch version 2.6.0+cu124 available.
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+11:08:01 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+11:08:01 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+11:08:02 INFO    UNASKED inputs: {'rows': 200, 'rows_with_positions': 200, 'positions': 6714, 'layers': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 'k': 4, 'target': 'unasked', 'question_only': False, 'names_sha256': 'f410a2103bf674859001dd84bd0aa0b3bd26eabc2caa21f17cc5d7d4fb2c7a58'}
+11:08:02 INFO      general anchor: 400 QA rows from data/general_anchor.json
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+11:08:02 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+11:08:02 WARNING Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+11:08:02 INFO      retain split retain90: 21 authors held out of the retain term (the R tier asks about them)
+11:08:02 INFO      retain split retain90: 200 of 3180 examples (random)
+11:08:02 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+11:08:07 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.6s
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+11:08:10 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+11:08:10 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+11:08:29 INFO      baseline before training: utility=0.8050 forget_nll=0.3804
+11:08:50 INFO    STRANGER targets (unasked): {'median_norm': {0: 1.671515941619873, 1: 2.241607427597046, 2: 2.829835891723633, 3: 3.3802592754364014, 4: 3.6428802013397217, 5: 3.9673008918762207, 6: 4.184169292449951, 7: 4.4771037101745605, 8: 5.016016006469727, 9: 6.035592555999756, 10: 6.783695697784424, 11: 8.224052429199219, 12: 9.839681625366211, 13: 12.082923889160156, 14: 14.889547348022461, 15: 16.94359588623047}, 'sigma2': {0: 2.697695255279541, 1: 5.051722526550293, 2: 8.280908584594727, 3: 11.772220611572266, 4: 13.976225852966309, 5: 16.440126419067383, 6: 18.333980560302734, 7: 21.270078659057617, 8: 26.230464935302734, 9: 37.46127700805664, 10: 47.65316390991211, 11: 69.79283905029297, 12: 99.12393188476562, 13: 146.29067993164062, 14: 222.72059631347656, 15: 357.11676025390625}, 'gap_over_sigma2': {0: 0.04029923309895913, 1: 0.05443252482719367, 2: 0.07865651360644889, 3: 0.11577917425600702, 4: 0.1439983323251543, 5: 0.20689333872893825, 6: 0.2613010838420746, 7: 0.2865875551835527, 8: 0.3040739931988193, 9: 0.29363102198325114, 10: 0.31555093979814747, 11: 0.3222670710733528, 12: 0.34633552672291096, 13: 0.3672043272635712, 14: 0.3855294149162074, 15: 0.4520556397101966}, 'forget_positions': 6714, 'forget_positions_dropped': 0, 'retain_positions': 10891, 'retain_positions_dropped': 0, 'general_positions': 7545, 'general_positions_dropped': 0}
+11:08:52 INFO      training 112 tensors (973M parameters) matching '^model\\.layers\\.\\d+\\.(self_attn|mlp)\\.'
+11:08:53 INFO      epoch 0 step 0  loss=0.3417  forget_nll=0.6691
+11:09:02 INFO      epoch 0 step 20  loss=0.2886  forget_nll=0.6182
+11:09:10 INFO      epoch 0 step 40  loss=0.3280  forget_nll=0.3635
+11:09:34 INFO      epoch 0: utility=0.8050 (floor 0.7648) forget_nll=0.5688 rep_gap=0.735  keep
+11:09:42 INFO      epoch 1 step 60  loss=0.2864  forget_nll=0.5790
+11:09:50 INFO      epoch 1 step 80  loss=0.3943  forget_nll=0.4521
+11:10:18 INFO      epoch 1: utility=0.8050 (floor 0.7648) forget_nll=0.7208 rep_gap=0.615  keep
+11:10:22 INFO      epoch 2 step 100  loss=0.3519  forget_nll=1.0708
+11:10:30 INFO      epoch 2 step 120  loss=0.3961  forget_nll=0.7882
+11:10:38 INFO      epoch 2 step 140  loss=0.4313  forget_nll=0.5163
+11:11:02 INFO      epoch 2: utility=0.7925 (floor 0.7648) forget_nll=0.7927 rep_gap=0.565  keep
+11:11:10 INFO      epoch 3 step 160  loss=0.2414  forget_nll=0.7328
+11:11:18 INFO      epoch 3 step 180  loss=0.3317  forget_nll=0.5481
+11:11:46 INFO      epoch 3: utility=0.7975 (floor 0.7648) forget_nll=0.8572 rep_gap=0.530  keep
+11:11:50 INFO      epoch 4 step 200  loss=0.3447  forget_nll=1.2548
+11:11:58 INFO      epoch 4 step 220  loss=0.3367  forget_nll=1.0281
+11:12:06 INFO      epoch 4 step 240  loss=0.3031  forget_nll=0.7738
+11:12:31 INFO      epoch 4: utility=0.7850 (floor 0.7648) forget_nll=1.1129 rep_gap=0.453  keep
+11:12:38 INFO      epoch 5 step 260  loss=0.2312  forget_nll=0.9336
+11:12:46 INFO      epoch 5 step 280  loss=0.3403  forget_nll=0.6269
+11:13:14 INFO      epoch 5: utility=0.8050 (floor 0.7648) forget_nll=1.0379 rep_gap=0.464  keep
+11:13:15 INFO      epoch 6 step 300  loss=0.2591  forget_nll=1.4324
+11:13:23 INFO      epoch 6 step 320  loss=0.2696  forget_nll=1.1946
+11:13:31 INFO      epoch 6 step 340  loss=0.2861  forget_nll=0.9052
+11:13:56 INFO      epoch 6: utility=0.8000 (floor 0.7648) forget_nll=1.1138 rep_gap=0.421  keep
+11:14:03 INFO      epoch 7 step 360  loss=0.2297  forget_nll=1.0255
+11:14:11 INFO      epoch 7 step 380  loss=0.2681  forget_nll=0.9055
+11:14:39 INFO      epoch 7: utility=0.7775 (floor 0.7648) forget_nll=1.4090 rep_gap=0.370  keep
+11:14:43 INFO      epoch 8 step 400  loss=0.3021  forget_nll=1.7752
+11:14:51 INFO      epoch 8 step 420  loss=0.2512  forget_nll=1.5138
+11:14:59 INFO      epoch 8 step 440  loss=0.2366  forget_nll=1.3128
+11:15:23 INFO      epoch 8: utility=0.8075 (floor 0.7648) forget_nll=1.3642 rep_gap=0.365  keep
+11:15:31 INFO      epoch 9 step 460  loss=0.2143  forget_nll=1.0769
+11:15:39 INFO      epoch 9 step 480  loss=0.2457  forget_nll=1.0875
+11:16:07 INFO      epoch 9: utility=0.7950 (floor 0.7648) forget_nll=1.2720 rep_gap=0.356  keep
+11:16:10 INFO      epoch 10 step 500  loss=0.2353  forget_nll=1.5451
+11:16:18 INFO      epoch 10 step 520  loss=0.2306  forget_nll=1.4748
+11:16:26 INFO      epoch 10 step 540  loss=0.2245  forget_nll=1.3204
+11:16:51 INFO      epoch 10: utility=0.7925 (floor 0.7648) forget_nll=1.4189 rep_gap=0.329  keep
+11:16:58 INFO      epoch 11 step 560  loss=0.1767  forget_nll=1.3304
+11:17:06 INFO      epoch 11 step 580  loss=0.2386  forget_nll=1.4898
+11:17:34 INFO      epoch 11: utility=0.7975 (floor 0.7648) forget_nll=1.5441 rep_gap=0.310  keep
+11:17:37 INFO      epoch 12 step 600  loss=0.2318  forget_nll=1.8446
+11:17:46 INFO      epoch 12 step 620  loss=0.2374  forget_nll=1.8153
+11:17:54 INFO      epoch 12 step 640  loss=0.2254  forget_nll=1.4746
+11:18:18 INFO      epoch 12: utility=0.7950 (floor 0.7648) forget_nll=1.5057 rep_gap=0.294  keep
+11:18:25 INFO      epoch 13 step 660  loss=0.1709  forget_nll=1.3109
+11:18:33 INFO      epoch 13 step 680  loss=0.2403  forget_nll=1.3147
+11:19:02 INFO      epoch 13: utility=0.8025 (floor 0.7648) forget_nll=1.3676 rep_gap=0.312  keep
+11:19:02 INFO      epoch 14 step 700  loss=0.2597  forget_nll=1.6874
+11:19:10 INFO      epoch 14 step 720  loss=0.2089  forget_nll=1.7800
+11:19:18 INFO      epoch 14 step 740  loss=0.2037  forget_nll=1.4981
+11:19:43 INFO      epoch 14: utility=0.8050 (floor 0.7648) forget_nll=1.4818 rep_gap=0.293  keep
+11:19:50 INFO      epoch 15 step 760  loss=0.1679  forget_nll=1.4031
+11:19:58 INFO      epoch 15 step 780  loss=0.2007  forget_nll=1.4949
+11:20:26 INFO      epoch 15: utility=0.7925 (floor 0.7648) forget_nll=1.5555 rep_gap=0.268  keep
+11:20:29 INFO      epoch 16 step 800  loss=0.2104  forget_nll=1.8999
+11:20:37 INFO      epoch 16 step 820  loss=0.2032  forget_nll=1.8478
+11:20:45 INFO      epoch 16 step 840  loss=0.1944  forget_nll=1.5083
+11:21:10 INFO      epoch 16: utility=0.7950 (floor 0.7648) forget_nll=1.7151 rep_gap=0.254  keep
+11:21:17 INFO      epoch 17 step 860  loss=0.1556  forget_nll=1.2459
+11:21:25 INFO      epoch 17 step 880  loss=0.2093  forget_nll=1.2963
+11:21:53 INFO      epoch 17: utility=0.7900 (floor 0.7648) forget_nll=1.5926 rep_gap=0.254  keep
+11:21:54 INFO      epoch 18 step 900  loss=0.1929  forget_nll=1.8350
+11:22:02 INFO      epoch 18 step 920  loss=0.1722  forget_nll=1.9241
+11:22:10 INFO      epoch 18 step 940  loss=0.1808  forget_nll=1.5950
+11:22:34 INFO      epoch 18: utility=0.7900 (floor 0.7648) forget_nll=1.5112 rep_gap=0.260  keep
+11:22:39 INFO      epoch 19 step 960  loss=0.1622  forget_nll=1.4704
+11:22:47 INFO      epoch 19 step 980  loss=0.2086  forget_nll=1.7633
+11:23:15 INFO      epoch 19: utility=0.7850 (floor 0.7648) forget_nll=1.7487 rep_gap=0.234  keep
+11:23:18 INFO      selected epoch 19 (utility 0.7850, forget_nll 1.7487)
+11:23:21 INFO    Unlearning finished: 1000 steps in 868.1s, forget NLL 0.3804 -> 1.7487 (+1.3683 over the full forget set)
+11:27:24 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+11:27:29 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.2s
+11:31:33 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda:0)
+11:31:37 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 3.7s
+
+========================================================================
+RELEARNING ATTACK  unaskedg  seed 1  (2 epochs on 100 facts)
+========================================================================
+lr 1e-07   probe     unlearned 0.710->0.745  full 0.810->0.815  retain90 0.530->0.545  index knows 0.74  nll 0.50
+lr 1e-07   heldout   unlearned 0.670->0.708  full 0.775->0.782  retain90 0.502->0.517  index knows 0.72  nll 0.74
+lr 3e-07   probe     unlearned 0.710->0.770  full 0.810->0.795  retain90 0.530->0.560  index knows 0.89  nll 0.70
+lr 3e-07   heldout   unlearned 0.670->0.718  full 0.775->0.782  retain90 0.502->0.527  index knows 0.75  nll 0.82
+lr 1e-06   probe     unlearned 0.710->0.795  full 0.810->0.795  retain90 0.530->0.600  index knows 1.00  nll 0.85
+lr 1e-06   heldout   unlearned 0.670->0.745  full 0.775->0.762  retain90 0.502->0.562  index knows 0.91  nll 0.91
+lr 3e-06   probe     unlearned 0.710->0.745  full 0.810->0.795  retain90 0.530->0.590  index knows 0.76  nll 0.89
+lr 3e-06   heldout   unlearned 0.670->0.743  full 0.775->0.750  retain90 0.502->0.590  index knows 0.95  nll 0.91
+lr 1e-05   probe     unlearned 0.710->0.740  full 0.810->0.725  retain90 0.530->0.575  index knows 1.10  nll 0.96
+lr 1e-05   heldout   unlearned 0.670->0.715  full 0.775->0.710  retain90 0.502->0.565  index knows 1.03  nll 0.98
+Saved results/relearn/unaskedg_1B_v2_s1_dose_lam10.json
