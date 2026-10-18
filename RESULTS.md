@@ -1844,6 +1844,14 @@ every later epoch R fell below the floor, as for plain GradDiff.
   R down to its floor by epoch 8 whether or not the anchor is there.
   UNASKED-G's bounded target, together with its anchors, keeps R at its
   starting level.
+* **Seed 1 (18 Oct).** GradDiff-G: strict UDS 0.113, breadth 0.209, R 0.772,
+  RA 0.880, WF 0.829. At equal utility, UNASKED-G (anchor 10) on seed 1
+  exceeds it:
+  * matched on general knowledge (5 α): +0.36 breadth, +0.29 strict UDS;
+  * matched on R (6 α): +0.36 and +0.30.
+  * Against the seed-0 GradDiff-G, the margins of UNASKED-G (anchor 10) are
+    +0.48 / +0.27 (general knowledge) and +0.45 / +0.22 (R).
+  * Seed 2 was running.
 
 ### 20.7 H9b: the TOFU anchor at 10 meets C1-C3 on its seed 0 (selection seed)
 
@@ -2005,8 +2013,39 @@ GradDiff and 0.49 (0.75) for UNASKED-G.
    retain90's improves somewhat (2.44 → 1.94 at 1e-6). The index accounts for
    both.
 
-**Caveat.** One seed and one attack set. A dose-response on more seeds, and
-on GA and NPO, would make this general.
+**Replication on three seeds and against GA and NPO (18 Oct).** Every attack
+strength runs from a fresh copy of each seed's checkpoint. The table gives the
+latent index (NLL) on probe facts, as the mean with the seed range in
+brackets:
+
+| | no attack | 1e-7 | 3e-7 | 1e-6 | 3e-6 | 1e-5 |
+|---|---|---|---|---|---|---|
+| GA (seed 0) | 0.14 | 0.88 | 0.98 | 1.00 | 1.00 | 1.00 |
+| NPO (seed 0) | 0.47 | 0.93 | 0.98 | 1.00 | 1.00 | 1.01 |
+| GradDiff (3 seeds) | 0.66 | 0.90 (0.89-0.91) | 0.93 (0.93-0.94) | 0.96 (0.95-0.96) | 0.97 (0.96-0.98) | 0.95 (0.92-1.01) |
+| **UNASKED-G, anchor 10 (3 seeds)** | **0.36** | **0.54 (0.50-0.58)** | **0.72 (0.70-0.75)** | **0.84 (0.83-0.85)** | **0.87 (0.85-0.89)** | 0.94 (0.91-0.96) |
+
+* **Held-out facts** (mean): at 1e-7, UNASKED-G 0.75 against GradDiff 0.98,
+  NPO 0.95 and GA 0.92.
+* **The forced-choice knows-rate index at 1e-7** on probe facts:
+  * UNASKED-G: 0.49, 0.74 and 0.76;
+  * GradDiff: 0.95, 0.98 and 0.98;
+  * GA: 0.93; NPO: 0.93.
+
+1. **Every baseline's forgetting is suppression that a minimal attack
+   undoes.** GA pushes the probe facts' NLL furthest (index 0.14), yet 50
+   steps at 1e-7 bring it back to 0.88. NPO and GradDiff behave the same.
+2. **UNASKED-G is consistently harder to relearn, in every seed.** Its seed
+   range never overlaps GradDiff's below 1e-5. At 1e-7 it recovers about a
+   third of what it lost (0.36 to 0.54); the baselines recover 70-90%.
+3. **A strong attack (1e-5) recovers every method, UNASKED-G included**
+   (0.94). The knowledge is still in the weights, and getting it back just
+   takes about 100× the attack strength.
+
+Figure 17 shows the mean over seeds, with the seed range as a band.
+
+**Caveat.** One attack set per seed (half of each author's trained facts),
+on one model.
 
 **The GPU stayed available after 10:00 IST on 18 Oct.** These ran:
 * the NPO paraphrase rerun;

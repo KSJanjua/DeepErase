@@ -299,12 +299,12 @@ def fig19_unaskedg_depth_vs_general():
 
 
 def fig17_relearn_dose():
-    """Latent index against attack strength: UNASKED beside GA (relearning dose-response)."""
+    """Latent index against attack strength: UNASKED-G beside the baselines (mean over seeds)."""
     rows = json.loads((ROOT / "results/analysis/relearn.json").read_text())["rows"]
     dose = {}
     for r in rows:
         if "_dose" in r["record"]:
-            dose.setdefault(r["method"], []).append(r)
+            dose.setdefault(r["method"], {}).setdefault(r["seed"], {})[r["attack_lr"]] = r
     if not dose:
         print("fig17: no dose-response records yet")
         return
@@ -312,25 +312,31 @@ def fig17_relearn_dose():
              "unasked": (UNASKED_COLOR, "D", "UNASKED"), "ga": (GRAY, "o", "GA"),
              "npo": (GRAY, "s", "NPO"), "graddiff": (GRAY, "^", "GradDiff")}
     none_x = 3e-8          # where "no attack" sits on the log axis
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.8), sharey=True)
+    fig, axes = plt.subplots(1, 2, figsize=(7.4, 3.0), sharey=True)
     for ax, probe, title in zip(axes, ("probe", "heldout"),
                                 ("facts never shown to the attacker", "held-out facts")):
-        for m, rs in sorted(dose.items(), key=lambda kv: kv[0].startswith("unasked")):
+        for m, seeds in sorted(dose.items(), key=lambda kv: kv[0].startswith("unasked")):
             color, mark, name = style.get(m, (GRAY, "o", m))
-            rs = sorted(rs, key=lambda r: r["attack_lr"])
-            x = [none_x] + [r["attack_lr"] for r in rs]
-            y = [rs[0][probe].get("index_nll_before")] + [r[probe].get("index_nll") for r in rs]
-            lw = 2 if m.startswith("unasked") else 1.6
-            ax.plot(x[:2], y[:2], ":", color=color, lw=lw * 0.6, zorder=3)   # no attack -> first
+            rates = sorted(set.intersection(*[set(v) for v in seeds.values()]))
+            first = [seeds[s][rates[0]][probe].get("index_nll_before") for s in seeds]
+            per = [[seeds[s][lr][probe].get("index_nll") for s in seeds] for lr in rates]
+            x = [none_x] + rates
+            y = [sum(first) / len(first)] + [sum(v) / len(v) for v in per]
+            lo = [min(first)] + [min(v) for v in per]
+            hi = [max(first)] + [max(v) for v in per]
+            ours = m.startswith("unasked")
+            lw = 2 if ours else 1.4
+            if len(seeds) > 1:
+                ax.fill_between(x, lo, hi, color=color, alpha=0.15, lw=0, zorder=2)
+            ax.plot(x[:2], y[:2], ":", color=color, lw=lw * 0.6, zorder=3)
             ax.plot(x[1:], y[1:], "-", color=color, lw=lw, zorder=3)
             ax.plot(x, y, mark, color=color, ms=4.5, zorder=4,
                     markeredgecolor="#fcfcfb", markeredgewidth=0.8)
-            # label at the weak-attack end, where the curves are furthest apart
-            k = min(2, len(x) - 1)
-            ax.annotate(name, (x[k], y[k]),
-                        xytext=(4, -14) if m.startswith("unasked") else (4, 7),
-                        textcoords="offset points", fontsize=7.5,
-                        color=INK if m.startswith("unasked") else INK2)
+            n = len(seeds)
+            label = f"{name} ({n} seed{'s' if n > 1 else ''})"
+            if ours:
+                ax.annotate(label, (x[2], y[2]), xytext=(6, -14), textcoords="offset points",
+                            fontsize=7.5, color=INK)
         for yref, label in ((0.0, "retain90 (never knew)"), (1.0, "M_full (knew)")):
             ax.axhline(yref, color=MUTED, lw=0.8, ls=":")
             ax.text(none_x, yref + 0.03, label, fontsize=6.5, color=INK2)
@@ -343,10 +349,14 @@ def fig17_relearn_dose():
         ax.set_xlabel("attack learning rate (2 epochs, 100 facts)")
         ax.set_title(title, fontsize=9, color=INK)
         _grid(ax)
+    handles = [plt.Line2D([], [], color=GRAY, lw=1.4, marker=style[m][1], ms=4.5, label=style[m][2])
+               for m in ("graddiff", "npo", "ga") if m in dose]
+    axes[0].legend(handles=handles, frameon=False, fontsize=7, loc="lower right",
+                   title="baselines (grey)", title_fontsize=7)
     axes[0].set_ylabel("latent index (answer NLL)")
     axes[0].set_ylim(-0.1, 1.15)
-    fig.suptitle("How much of the forgotten knowledge a relearning attack brings back (seed 0)",
-                 fontsize=10, color=INK, y=1.03)
+    fig.suptitle("How much forgotten knowledge a relearning attack brings back "
+                 "(line: mean over seeds; band: seed range)", fontsize=9.5, color=INK, y=1.03)
     fig.savefig(OUT / "fig17_relearn_dose.png")
     plt.close(fig)
 
