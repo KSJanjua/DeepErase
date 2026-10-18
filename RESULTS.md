@@ -35,6 +35,9 @@ Sections 6–7: the shared NVIDIA A100-SXM4-80GB `dgxanode02` (29 Aug – 3 Sep 
 > * 2.7× the strict depth and 2.2× the breadth;
 > * higher R, RA and WF;
 > * beyond R-matched random damage in every seed with a control (§20.8).
+>
+> It is also far harder to relearn under weak attacks (§20.9), although a
+> strong attack still recovers every method's facts.
 
 ---
 

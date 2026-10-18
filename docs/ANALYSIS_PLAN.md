@@ -515,6 +515,11 @@ seeds 1-2.**
 
 All four criteria also hold over the three seeds.
 
+The relearning dose-response (seed 0; reported, no criterion; RESULTS.md
+§20.9) gives a latent index on probe facts, under the weakest attack (1e-7),
+of 0.52 for UNASKED-G against 0.91 for GradDiff. Both reach about 0.91 only at
+1e-5.
+
 **What each outcome means (stated now).**
 * **C1-C4 met on seeds 1-2:** a configuration, chosen on one seed and
   confirmed on two more, that is deeper and broader than GradDiff, at least

@@ -100,8 +100,11 @@ GradDiff and NPO reach at their checkpoint.
 > * R 0.789, RA 0.880 and WF 0.855, against GradDiff's 0.768, 0.863 and 0.829.
 >
 > Its strict depth exceeds the R-matched random-direction control by
-> +0.29 to +0.32 in every seed (C4). **All four criteria are met.** Use
-> `--retain-weight 10` for the cited version.
+> +0.29 to +0.32 in every seed (C4). **All four criteria are met.**
+>
+> **Relearning** (RESULTS.md §20.9): it is far harder to relearn than GradDiff
+> under weak attacks (latent index 0.52 against 0.91 at lr 1e-7). Both come
+> back at 1e-5. Use `--retain-weight 10` for the cited version.
 >
 > **Status, 17 Oct 2026, 3 seeds, TOFU anchor 3 (RESULTS.md §20).** At the checkpoint:
 > * strict UDS 0.396 against GradDiff's 0.141, and breadth 0.345 against 0.169;
