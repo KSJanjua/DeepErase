@@ -134,10 +134,13 @@ def build_stranger_inputs(examples: Sequence, tokenizer, names_path, *, k: int =
     return out
 
 
+UNASKED_PARTS = ("both", "question", "name")
+
+
 def build_unasked_inputs(examples: Sequence, tokenizer, names_path, *, k: int = 4,
                          fmt=None, max_length: int = 256,
-                         layers: Sequence[int] = tuple(range(16)), seed: int = 0
-                         ) -> StrangerInputs:
+                         layers: Sequence[int] = tuple(range(16)), seed: int = 0,
+                         parts: str = "both") -> StrangerInputs:
     """Inputs for UNASKED: answer positions, targets from M_full on the row
     with the question blanked and the person unknown.
 
@@ -149,7 +152,13 @@ def build_unasked_inputs(examples: Sequence, tokenizer, names_path, *, k: int = 
     from the one predicting the first answer token to the last, except the
     non-final tokens of an answer-side name mention. Their inputs differ, so
     they have no aligned target.
+
+    ``parts`` selects what the source changes, for ablations: ``both`` (the
+    method), ``question`` (the question blanked, the name kept: one source)
+    or ``name`` (the name swapped, the question kept: K sources).
     """
+    if parts not in UNASKED_PARTS:
+        raise ValueError(f"parts must be one of {UNASKED_PARTS}, got {parts!r}")
     from deeperase.data.counterfactual import (
         align_row, filler_ids, invented_for, load_names, question_tokens, replace_at,
     )
@@ -176,7 +185,12 @@ def build_unasked_inputs(examples: Sequence, tokenizer, names_path, *, k: int = 
         q0 = text.index(ex.question)
         q_tok = question_tokens(enc["offset_mapping"], q0, q0 + len(ex.question), text)
         fill = filler_ids(tokenizer, len(q_tok))
-        sources = [replace_at(c, q_tok, fill) for c in al.cf_input_ids]
+        if parts == "both":
+            sources = [replace_at(c, q_tok, fill) for c in al.cf_input_ids]
+        elif parts == "question":
+            sources = [replace_at(list(al.input_ids), q_tok, fill)]
+        else:
+            sources = [list(c) for c in al.cf_input_ids]
         non_final = {t for m in al.mentions if m.side == "answer"
                      for t in m.tokens if t != m.last}
         positions = [p for p in range(al.first_answer - 1, len(al.input_ids))
@@ -185,7 +199,7 @@ def build_unasked_inputs(examples: Sequence, tokenizer, names_path, *, k: int = 
                                 cf_input_ids=sources, positions=positions))
     out = StrangerInputs(rows=rows, layers=tuple(int(l) for l in layers), k=k,
                          target="unasked", seed=seed, names_sha256=sha256_of(names_path))
-    logger.info("UNASKED inputs: %s", out.summary())
+    logger.info("UNASKED inputs (%s): %s", parts, out.summary())
     return out
 
 

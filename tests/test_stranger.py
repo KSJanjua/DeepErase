@@ -388,6 +388,34 @@ def test_unasked_inputs_blank_the_question_and_target_answer_positions(word_chec
 
 
 @needs_data
+def test_unasked_target_parts_change_only_what_they_name(word_checkpoints):
+    """Ablations: 'question' blanks the question and keeps the name (one
+    source); 'name' swaps the name and keeps the question (K sources)."""
+    from deeperase.data.tofu import load_tofu
+    from deeperase.models import load_tokenizer
+    tok = load_tokenizer(word_checkpoints["full"])
+    rows = load_tofu("forget10", data_dir=str(TOFU))[:10]
+    both = st.build_unasked_inputs(rows, tok, NAMES, k=2, layers=(0, 1))
+    q = st.build_unasked_inputs(rows, tok, NAMES, k=2, layers=(0, 1), parts="question")
+    n = st.build_unasked_inputs(rows, tok, NAMES, k=2, layers=(0, 1), parts="name")
+    for rb, rq, rn in zip(both.rows, q.rows, n.rows):
+        assert rb.positions == rq.positions == rn.positions
+        assert len(rq.cf_input_ids) == 1 and len(rn.cf_input_ids) == 2
+        orig = rb.input_ids
+        diff = lambda c: {i for i, (x, y) in enumerate(zip(c, orig)) if x != y}
+        q_pos, n_pos = diff(rq.cf_input_ids[0]), set().union(*(diff(c) for c in rn.cf_input_ids))
+        b_pos = set().union(*(diff(c) for c in rb.cf_input_ids))
+        first = min(rb.positions)
+        assert q_pos and n_pos                       # each changes something
+        assert all(p < first for p in q_pos)         # the question only, never the answer
+        # the method's source = the blanked question (which already covers any
+        # name inside it) + the name swaps outside the question
+        assert b_pos == q_pos | {p for p in n_pos if p >= first}
+    with pytest.raises(ValueError, match="parts must be one of"):
+        st.build_unasked_inputs(rows, tok, NAMES, k=2, layers=(0, 1), parts="neither")
+
+
+@needs_data
 def test_study_runs_unasked_end_to_end(word_checkpoints, tmp_path):
     from deeperase.scripts.run_study import main
     argv = ["--method", "unasked", "--model-sources", json.dumps(word_checkpoints),

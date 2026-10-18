@@ -369,6 +369,9 @@ def add_rep_args(ap: argparse.ArgumentParser) -> None:
     ap.add_argument("--cf-names", default=None, help="counterfactual names file")
     ap.add_argument("--retain-weight", type=float, default=None,
                     help="weight of the retain term (GradDiff and the representation methods)")
+    ap.add_argument("--unasked-parts", default=None, choices=["both", "question", "name"],
+                    help="UNASKED/UNASKED-G ablation: what the target source changes "
+                         "(default both: question blanked and name swapped)")
     ap.add_argument("--general-anchor", default=None,
                     help=f"UNASKED-G: general-knowledge QA anchor file "
                          f"(default {GENERAL_DEFAULTS['general_anchor']})")
@@ -428,6 +431,8 @@ def rep_settings(args, method: UnlearnMethod) -> Dict[str, object]:
     out["rep_layers"] = [int(x) for x in str(out["rep_layers"]).split(",") if x.strip()]
     out["rep_target"] = {UnlearnMethod.SCRAMBLE: "scramble", UnlearnMethod.UNASKED: "unasked",
                          UnlearnMethod.UNASKED_G: "unasked"}.get(method, "counterfactual")
+    if out["rep_target"] == "unasked":
+        out["unasked_parts"] = getattr(args, "unasked_parts", None) or "both"
     out["cf_names_sha256"] = sha256_file(str(out["cf_names"]))
     return out
 
@@ -440,7 +445,7 @@ def build_rep_inputs(rows: Sequence, tokenizer, fmt, max_length: int,
     if rep["rep_target"] == "unasked":
         return build_unasked_inputs(rows, tokenizer, rep["cf_names"], k=int(rep["cf_k"]),
                                     fmt=fmt, max_length=max_length, layers=rep["rep_layers"],
-                                    seed=seed)
+                                    seed=seed, parts=str(rep.get("unasked_parts") or "both"))
     return build_stranger_inputs(rows, tokenizer, rep["cf_names"], k=int(rep["cf_k"]),
                                  fmt=fmt, max_length=max_length, layers=rep["rep_layers"],
                                  target=str(rep["rep_target"]), seed=seed)
@@ -842,6 +847,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if rep:
         unlearn_cfg.update({k: rep[k] for k in ("rep_layers", "trainable", "cf_k", "cf_names",
                                                 "cf_names_sha256", "rep_target")})
+        if "unasked_parts" in rep:
+            unlearn_cfg["unasked_parts"] = rep["unasked_parts"]
         unlearn_cfg["retain_weight"] = retain_weight
         unlearn_cfg["select_by"] = "rep_gap"
     elif args.retain_weight is not None:

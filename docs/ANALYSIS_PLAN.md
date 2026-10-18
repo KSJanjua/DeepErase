@@ -632,6 +632,22 @@ had been seen at the time.
   E1-E5 and their thresholds are unchanged. Every result is labelled
   exploratory and reported with the failed gate. λ = 3 is reported beside
   λ = 1, never in its place.
+* **18 Oct 2026: component ablations of UNASKED-G (exploratory, seed 0,
+  before any of them ran).** H9b's result had been seen. Three runs each
+  remove one part of UNASKED-G (TOFU anchor 10), all else as H9b:
+  * **no general anchor:** method `unasked` with `--retain-weight 10`, tag
+    `lam10`;
+  * **question blanked only** (the name kept): `--unasked-parts question`, tag
+    `lam10-qonly`;
+  * **name swapped only** (the question kept): `--unasked-parts name`, tag
+    `lam10-nameonly`.
+
+  **Expectation, stated now.** Gate 1b puts the depth ceilings of the
+  question-only and name-only sources well below the combined one (UDS 0.37
+  and 0.24, against 0.56). So both parts should be needed for depth. Without
+  the general anchor, RA and WF should fall back toward UNASKED's.
+
+  **Use.** Reported as ablations only. No criterion depends on them.
 * **17 Oct 2026: H9, UNASKED-G against GradDiff at equal utility
   (exploratory).** *UNASKED-G seeds 0-1 had been seen.*
   * **Why.** The checkpoints sit at different utility. GradDiff's is held at
