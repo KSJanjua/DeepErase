@@ -1,0 +1,28 @@
+[
+  {
+    "method": "graddiffg",
+    "model": "1B-graddiffg",
+    "benchmark": "tofu-forget10:trained",
+    "n_points": 11,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": 1.0,
+    "p_excluding": 0.0,
+    "rho_including": 1.0,
+    "p_including": 0.0,
+    "conclusion_is_robust": true
+  },
+  {
+    "method": "graddiffg",
+    "model": "1B-graddiffg",
+    "benchmark": "tofu-forget10:heldout",
+    "n_points": 11,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": 0.9704,
+    "p_excluding": 0.0,
+    "rho_including": 0.9704,
+    "p_including": 0.0,
+    "conclusion_is_robust": true
+  }
+]
