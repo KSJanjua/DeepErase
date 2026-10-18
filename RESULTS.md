@@ -1642,6 +1642,9 @@ Same as §19.2, but with the TOFU retain anchor at weight 3. Seed 0, commit
    * UNASKED trained the original answer's positions, not the paraphrase's. If
      its depth were a trigger on the trained sequence, the paraphrase would be
      shallower.
+   * *Note added 18 Oct:* GA also rises on this split, from 0.157 to 0.195
+     (§20.4). So the rise is a property of the split, and the evidence is that
+     UNASKED's depth does not fall.
    * This fits §18. With the answer reworded, M_full must retrieve the entity
      through the question and the name, which is the route UNASKED targets,
      and cannot fall back on the memorised answer string.
@@ -1744,6 +1747,19 @@ knowledge. Seed 0 along α:
   against 0.353. The same held for UNASKED (§19.6).
 * **Paraphrased questions:** strict UDS 0.319, 0.355 and 0.333 (seeds 0-2),
   0.85 of the trained-wording value.
+* **Against a baseline (added 18 Oct).** GA seed 0 was rerun with both
+  paraphrase splits (`study_v2_ga_1B_s0_lr1e-08_para`, commit `93d6d39`).
+  * Its trained strict UDS repeats the original run exactly (0.271).
+  * On paraphrased questions it keeps 0.95 of that (0.258).
+  * **On paraphrased answers it also rises**, paired over 33 facts: from
+    0.157 to 0.195. GradDiff-G does the same, from 0.149 to 0.166.
+
+  So the rise on reworded answers is a property of the split (with the answer
+  reworded, M_full leans on the question and name to retrieve the entity),
+  not something UNASKED does. What the check shows for UNASKED and UNASKED-G
+  is that their depth does not fall when the answer is reworded, as it would
+  if it were a trigger on the trained answer sequence. With the TOFU anchor at
+  10, it rises from 0.30-0.37 to 0.37-0.41 (seeds 0-2).
 
 ### 20.5 Beyond damage (C4): seed 0
 
@@ -1955,9 +1971,13 @@ GradDiff and 0.49 (0.75) for UNASKED-G.
 **Caveat.** One seed and one attack set. A dose-response on more seeds, and
 on GA and NPO, would make this general.
 
-**Still to come (18 Oct, GPU time permitting):** C4 for H9 (λ = 3), i.e. the
-R-matched controls of seeds 1-2; GA and NPO seed 0 with the paraphrase
-splits. The job scripts are in `gpu/jobs/queue_2026-10-17/`.
+**Not run before the GPU window closed (18 Oct, 10:00 IST):**
+* NPO seed 0 with the paraphrase splits;
+* UNASKED (λ = 1) at 15× matched on general knowledge;
+* the GA and NPO per-seed controls, seeds 1-2;
+* UNASKED (λ = 1) seeds 1-2.
+
+Their job scripts are in `gpu/jobs/queue_2026-10-17/`, with priorities.
 
 The figures are drawn by `report/make_figures_v2.py`:
 * 17: the relearning dose-response;
