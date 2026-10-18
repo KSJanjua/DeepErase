@@ -1254,7 +1254,21 @@ path, tied points came out in a machine-dependent order. The same files then
 gave GA seed 0 a strict excess of +0.09 on the Mac and a different value on
 the H100 box. Values at a tied utility are now averaged. The table above is
 recomputed. It moved by at most 0.01 per cell (GA seed 0 strict +0.09 → +0.10),
-and no verdict changed (`results/analysis/hypotheses_v2.md` is unchanged). Our own method, STRANGER, is
+and no verdict changed (`results/analysis/hypotheses_v2.md` is unchanged).
+
+*Addendum (18 Oct 2026).* GA and NPO seed 1 now have their own matched-damage
+controls (`control_x560_v2_ga_1B_s1`, `control_x570_v2_npo_1B_s1`).
+
+| Seed 1, against its own control | UDS, trained / held-out | Strict UDS, trained / held-out |
+|---|---|---|
+| GA | +0.01 / +0.04 | +0.04 / +0.02 |
+| NPO | +0.02 / +0.06 | +0.05 / +0.03 |
+
+Against seed 0's control they had been +0.06 / +0.07 (GA) and +0.07 / +0.06
+(NPO). With its own control, each baseline's depth beyond damage shrinks
+further, to at most +0.05 strict. The per-seed H1 check in `hypotheses_v2.md`
+now reads: GA 2 of 2 seeds, NPO 2 of 2, GradDiff 2 of 3. Seed 2's controls
+were still running. Our own method, STRANGER, is
 pre-registered against strict UDS for this reason (ANALYSIS_PLAN H7; GA and NPO
 seeds 1-2 are compared with seed 0's control here).
 
@@ -1609,8 +1623,14 @@ recorded commit `cbe6e41` (clean tree), H100 slice.
    0.35 at 0.758 (figure 16, dashed). That is steeper than GA's or NPO's own
    path. UNASKED's checkpoint, at 0.728 and 0.452, lies just beyond the end of
    the control's path.
-   * **To match general knowledge**, a control at 15× the norm is queued: the
-     same seed and direction, continued to 30×.
+   * **To match general knowledge**, a control at 15× the norm was run: the
+     same seed and direction, continued to 30× (`..._genmatch`, run on 18 Oct).
+     **Result: at equal general knowledge, UNASKED's depth is no better than
+     random damage.** The strict-UDS excess is +0.04 at α = 0, +0.02 at 0.1,
+     −0.06 at 0.2 and −0.15 at 0.3, a mean of −0.04 over the matched α.
+   * So UNASKED's extra depth came with, and is explained by, its
+     general-knowledge cost. This is why UNASKED-G adds a general anchor.
+     UNASKED-G beats the same comparison by +0.19 to +0.35 (§20.5, §20.8).
    * **The comparison** (exploratory, `unasked_report.general_matched`) is
      UNASKED's strict UDS against the control's at UNASKED's general-knowledge
      cost. If that excess is near zero, UNASKED's extra depth is what random
@@ -1752,7 +1772,9 @@ knowledge. Seed 0 along α:
   * Its trained strict UDS repeats the original run exactly (0.271).
   * On paraphrased questions it keeps 0.95 of that (0.258).
   * **On paraphrased answers it also rises**, paired over 33 facts: from
-    0.157 to 0.195. GradDiff-G does the same, from 0.149 to 0.166.
+    0.157 to 0.195. GradDiff-G does the same (0.149 to 0.166), and so does NPO
+    seed 0, also rerun (`..._npo_..._para`): from 0.086 to 0.132. NPO keeps
+    0.92 of its depth on paraphrased questions (0.141 against 0.154).
 
   So the rise on reworded answers is a property of the split (with the answer
   reworded, M_full leans on the question and name to retrieve the entity),
@@ -1971,11 +1993,17 @@ GradDiff and 0.49 (0.75) for UNASKED-G.
 **Caveat.** One seed and one attack set. A dose-response on more seeds, and
 on GA and NPO, would make this general.
 
-**Not run before the GPU window closed (18 Oct, 10:00 IST):**
-* NPO seed 0 with the paraphrase splits;
-* UNASKED (λ = 1) at 15× matched on general knowledge;
-* the GA and NPO per-seed controls, seeds 1-2;
-* UNASKED (λ = 1) seeds 1-2.
+**The GPU stayed available after 10:00 IST on 18 Oct.** These ran:
+* the NPO paraphrase rerun;
+* UNASKED's control matched on general knowledge (§19.5);
+* the GA and NPO controls of seed 1 (§16.2 addendum).
+
+Queued after them:
+* the seed-2 controls;
+* relearning dose-responses on seeds 1-2 and for NPO and GA;
+* GradDiff-G seeds 1-2.
+
+Their scripts are in `gpu/jobs/queue_2026-10-17/` and `gpu/jobs/queue_2026-10-18/`.
 
 Their job scripts are in `gpu/jobs/queue_2026-10-17/`, with priorities.
 
