@@ -1,0 +1,28 @@
+[
+  {
+    "method": "unaskedg",
+    "model": "1B-unaskedg",
+    "benchmark": "tofu-forget10:trained",
+    "n_points": 11,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": 0.9016,
+    "p_excluding": 0.0001,
+    "rho_including": 0.9016,
+    "p_including": 0.0001,
+    "conclusion_is_robust": true
+  },
+  {
+    "method": "unaskedg",
+    "model": "1B-unaskedg",
+    "benchmark": "tofu-forget10:heldout",
+    "n_points": 11,
+    "n_overshoot": 0,
+    "overshoot_alphas": [],
+    "rho_excluding": 0.9291,
+    "p_excluding": 0.0,
+    "rho_including": 0.9291,
+    "p_including": 0.0,
+    "conclusion_is_robust": true
+  }
+]
