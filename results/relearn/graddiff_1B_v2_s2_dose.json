@@ -1,0 +1,361 @@
+{
+ "what": "relearning attack on the method's checkpoint",
+ "method": "graddiff",
+ "learning_rate": 5e-08,
+ "seed": 2,
+ "attack_lr": 1e-05,
+ "attack_lrs": [
+  1e-07,
+  3e-07,
+  1e-06,
+  3e-06,
+  1e-05
+ ],
+ "attack_epochs": 2,
+ "selected_epoch": 7,
+ "sets": {
+  "attack": 100,
+  "probe": 100,
+  "heldout": 200
+ },
+ "results": {
+  "unlearned": {
+   "before": {
+    "probe": {
+     "knows_rate": 0.785,
+     "n_items": 200,
+     "answer_nll": 1.1044485187530517
+    },
+    "heldout": {
+     "knows_rate": 0.705,
+     "n_items": 400,
+     "answer_nll": 0.7644169622659683
+    }
+   },
+   "after_1e-07": {
+    "probe": {
+     "knows_rate": 0.82,
+     "n_items": 200,
+     "answer_nll": 0.5127167880535126
+    },
+    "heldout": {
+     "knows_rate": 0.7575,
+     "n_items": 400,
+     "answer_nll": 0.3268497857451439
+    }
+   },
+   "after_3e-07": {
+    "probe": {
+     "knows_rate": 0.835,
+     "n_items": 200,
+     "answer_nll": 0.3697196304798126
+    },
+    "heldout": {
+     "knows_rate": 0.7625,
+     "n_items": 400,
+     "answer_nll": 0.26231730535626413
+    }
+   },
+   "after_1e-06": {
+    "probe": {
+     "knows_rate": 0.815,
+     "n_items": 200,
+     "answer_nll": 0.33220902681350706
+    },
+    "heldout": {
+     "knows_rate": 0.7375,
+     "n_items": 400,
+     "answer_nll": 0.2524648752808571
+    }
+   },
+   "after_3e-06": {
+    "probe": {
+     "knows_rate": 0.79,
+     "n_items": 200,
+     "answer_nll": 0.40532274782657624
+    },
+    "heldout": {
+     "knows_rate": 0.72,
+     "n_items": 400,
+     "answer_nll": 0.3883668585121632
+    }
+   },
+   "after_1e-05": {
+    "probe": {
+     "knows_rate": 0.765,
+     "n_items": 200,
+     "answer_nll": 0.8160984444618226
+    },
+    "heldout": {
+     "knows_rate": 0.715,
+     "n_items": 400,
+     "answer_nll": 0.868942888379097
+    }
+   },
+   "after": {
+    "probe": {
+     "knows_rate": 0.765,
+     "n_items": 200,
+     "answer_nll": 0.8160984444618226
+    },
+    "heldout": {
+     "knows_rate": 0.715,
+     "n_items": 400,
+     "answer_nll": 0.868942888379097
+    }
+   }
+  },
+  "full": {
+   "before": {
+    "probe": {
+     "knows_rate": 0.815,
+     "n_items": 200,
+     "answer_nll": 0.39666555464267733
+    },
+    "heldout": {
+     "knows_rate": 0.7675,
+     "n_items": 400,
+     "answer_nll": 0.3909381192922592
+    }
+   },
+   "after_1e-07": {
+    "probe": {
+     "knows_rate": 0.825,
+     "n_items": 200,
+     "answer_nll": 0.2930706149339676
+    },
+    "heldout": {
+     "knows_rate": 0.7675,
+     "n_items": 400,
+     "answer_nll": 0.2906757235527039
+    }
+   },
+   "after_3e-07": {
+    "probe": {
+     "knows_rate": 0.815,
+     "n_items": 200,
+     "answer_nll": 0.25284947276115416
+    },
+    "heldout": {
+     "knows_rate": 0.755,
+     "n_items": 400,
+     "answer_nll": 0.25058242738246916
+    }
+   },
+   "after_1e-06": {
+    "probe": {
+     "knows_rate": 0.805,
+     "n_items": 200,
+     "answer_nll": 0.2699249023199081
+    },
+    "heldout": {
+     "knows_rate": 0.725,
+     "n_items": 400,
+     "answer_nll": 0.2701165592670441
+    }
+   },
+   "after_3e-06": {
+    "probe": {
+     "knows_rate": 0.795,
+     "n_items": 200,
+     "answer_nll": 0.3478062564134598
+    },
+    "heldout": {
+     "knows_rate": 0.735,
+     "n_items": 400,
+     "answer_nll": 0.35944697812199594
+    }
+   },
+   "after_1e-05": {
+    "probe": {
+     "knows_rate": 0.785,
+     "n_items": 200,
+     "answer_nll": 0.8259788942337036
+    },
+    "heldout": {
+     "knows_rate": 0.7225,
+     "n_items": 400,
+     "answer_nll": 0.8698829472064972
+    }
+   },
+   "after": {
+    "probe": {
+     "knows_rate": 0.785,
+     "n_items": 200,
+     "answer_nll": 0.8259788942337036
+    },
+    "heldout": {
+     "knows_rate": 0.7225,
+     "n_items": 400,
+     "answer_nll": 0.8698829472064972
+    }
+   }
+  },
+  "retain90": {
+   "before": {
+    "probe": {
+     "knows_rate": 0.505,
+     "n_items": 200,
+     "answer_nll": 2.4252207279205322
+    },
+    "heldout": {
+     "knows_rate": 0.535,
+     "n_items": 400,
+     "answer_nll": 2.3623413109779356
+    }
+   },
+   "after_1e-07": {
+    "probe": {
+     "knows_rate": 0.515,
+     "n_items": 200,
+     "answer_nll": 2.2151910161972044
+    },
+    "heldout": {
+     "knows_rate": 0.54,
+     "n_items": 400,
+     "answer_nll": 2.1603456783294677
+    }
+   },
+   "after_3e-07": {
+    "probe": {
+     "knows_rate": 0.53,
+     "n_items": 200,
+     "answer_nll": 2.029070053100586
+    },
+    "heldout": {
+     "knows_rate": 0.5375,
+     "n_items": 400,
+     "answer_nll": 1.9837606811523438
+    }
+   },
+   "after_1e-06": {
+    "probe": {
+     "knows_rate": 0.555,
+     "n_items": 200,
+     "answer_nll": 1.8947200870513916
+    },
+    "heldout": {
+     "knows_rate": 0.57,
+     "n_items": 400,
+     "answer_nll": 1.865498560667038
+    }
+   },
+   "after_3e-06": {
+    "probe": {
+     "knows_rate": 0.6,
+     "n_items": 200,
+     "answer_nll": 1.9223349618911743
+    },
+    "heldout": {
+     "knows_rate": 0.57,
+     "n_items": 400,
+     "answer_nll": 1.9303434216976165
+    }
+   },
+   "after_1e-05": {
+    "probe": {
+     "knows_rate": 0.555,
+     "n_items": 200,
+     "answer_nll": 2.1989773178100585
+    },
+    "heldout": {
+     "knows_rate": 0.5425,
+     "n_items": 400,
+     "answer_nll": 2.2231684708595276
+    }
+   },
+   "after": {
+    "probe": {
+     "knows_rate": 0.555,
+     "n_items": 200,
+     "answer_nll": 2.1989773178100585
+    },
+    "heldout": {
+     "knows_rate": 0.5425,
+     "n_items": 400,
+     "answer_nll": 2.2231684708595276
+    }
+   }
+  }
+ },
+ "latent_index": {
+  "probe": {
+   "knows_rate": 0.9130434782608695,
+   "answer_nll": 1.007196257185893
+  },
+  "heldout": {
+   "knows_rate": 0.958333333333333,
+   "answer_nll": 1.000694649289429
+  }
+ },
+ "latent_index_by_lr": {
+  "1e-07": {
+   "probe": {
+    "knows_rate": 0.9838709677419355,
+    "answer_nll": 0.8857271516523151
+   },
+   "heldout": {
+    "knows_rate": 0.956043956043956,
+    "answer_nll": 0.9806521669238895
+   }
+  },
+  "3e-07": {
+   "probe": {
+    "knows_rate": 1.0701754385964912,
+    "answer_nll": 0.9342029030559228
+   },
+   "heldout": {
+    "knows_rate": 1.0344827586206895,
+    "answer_nll": 0.9932292723219495
+   }
+  },
+  "1e-06": {
+   "probe": {
+    "knows_rate": 1.0399999999999996,
+    "answer_nll": 0.9616664764402955
+   },
+   "heldout": {
+    "knows_rate": 1.080645161290323,
+    "answer_nll": 1.0110642366346725
+   }
+  },
+  "3e-06": {
+   "probe": {
+    "knows_rate": 0.9743589743589743,
+    "answer_nll": 0.9634706619110728
+   },
+   "heldout": {
+    "knows_rate": 0.9090909090909091,
+    "answer_nll": 0.9815902057016943
+   }
+  },
+  "1e-05": {
+   "probe": {
+    "knows_rate": 0.9130434782608695,
+    "answer_nll": 1.007196257185893
+   },
+   "heldout": {
+    "knows_rate": 0.958333333333333,
+    "answer_nll": 1.000694649289429
+   }
+  }
+ },
+ "seconds": 1555.4,
+ "git": {
+  "commit": "dd4aeec37bda6d85b3828a9383d5d27de698be70",
+  "branch": "rishabh-development",
+  "dirty": false
+ },
+ "environment": {
+  "python": "3.11.17",
+  "platform": "Linux-5.15.0-1053-nvidia-x86_64-with-glibc2.35",
+  "torch": "2.6.0+cu124",
+  "transformers": "4.46.3",
+  "tokenizers": "0.20.3",
+  "datasets": "3.1.0",
+  "numpy": "1.26.4",
+  "cuda": "12.4",
+  "device": "NVIDIA H100 80GB HBM3 MIG 3g.40gb",
+  "tf32_matmul": false
+ }
+}
