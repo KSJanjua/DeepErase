@@ -303,29 +303,34 @@ def fig17_relearn_dose():
     rows = json.loads((ROOT / "results/analysis/relearn.json").read_text())["rows"]
     dose = {}
     for r in rows:
-        if r["record"].endswith("_dose"):
+        if "_dose" in r["record"]:
             dose.setdefault(r["method"], []).append(r)
     if not dose:
         print("fig17: no dose-response records yet")
         return
-    style = {"unasked": (UNASKED_COLOR, "D", "UNASKED"), "ga": (GRAY, "o", "GA"),
+    style = {"unaskedg": (UNASKED_COLOR, "D", "UNASKED-G (anchor 10)"),
+             "unasked": (UNASKED_COLOR, "D", "UNASKED"), "ga": (GRAY, "o", "GA"),
              "npo": (GRAY, "s", "NPO"), "graddiff": (GRAY, "^", "GradDiff")}
     none_x = 3e-8          # where "no attack" sits on the log axis
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.8), sharey=True)
     for ax, probe, title in zip(axes, ("probe", "heldout"),
                                 ("facts never shown to the attacker", "held-out facts")):
-        for m, rs in sorted(dose.items(), key=lambda kv: kv[0] == "unasked"):
+        for m, rs in sorted(dose.items(), key=lambda kv: kv[0].startswith("unasked")):
             color, mark, name = style.get(m, (GRAY, "o", m))
             rs = sorted(rs, key=lambda r: r["attack_lr"])
             x = [none_x] + [r["attack_lr"] for r in rs]
             y = [rs[0][probe].get("index_nll_before")] + [r[probe].get("index_nll") for r in rs]
-            lw = 2 if m == "unasked" else 1.6
+            lw = 2 if m.startswith("unasked") else 1.6
             ax.plot(x[:2], y[:2], ":", color=color, lw=lw * 0.6, zorder=3)   # no attack -> first
             ax.plot(x[1:], y[1:], "-", color=color, lw=lw, zorder=3)
             ax.plot(x, y, mark, color=color, ms=4.5, zorder=4,
                     markeredgecolor="#fcfcfb", markeredgewidth=0.8)
-            ax.annotate(name, (x[-1], y[-1]), xytext=(5, 0), textcoords="offset points",
-                        fontsize=7.5, va="center", color=INK if m == "unasked" else INK2)
+            # label at the weak-attack end, where the curves are furthest apart
+            k = min(2, len(x) - 1)
+            ax.annotate(name, (x[k], y[k]),
+                        xytext=(4, -14) if m.startswith("unasked") else (4, 7),
+                        textcoords="offset points", fontsize=7.5,
+                        color=INK if m.startswith("unasked") else INK2)
         for yref, label in ((0.0, "retain90 (never knew)"), (1.0, "M_full (knew)")):
             ax.axhline(yref, color=MUTED, lw=0.8, ls=":")
             ax.text(none_x, yref + 0.03, label, fontsize=6.5, color=INK2)

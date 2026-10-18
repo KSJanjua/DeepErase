@@ -1513,7 +1513,9 @@ GA and UNASKED had pushed the probe facts' NLL most of the way to retain90's.
    longer than GA when the attack is weak: five strengths from 1e-7 to 1e-5,
    each applied to a fresh copy of the same checkpoint (jobs 025a/025b,
    queued).
-3. **UDS depth is not relearning robustness.** UNASKED's trained strict UDS is
+3. **UDS depth is not relearning robustness, at this attack strength.**
+   *Refined by the dose-response in §20.9: under weak attacks, UNASKED-G
+   gives back far less than GradDiff.* UNASKED's trained strict UDS is
    twice GA's, yet the attack recovers its facts just as fully. UDS reads how
    far the forward pass at the entity position has moved from M_full's. A
    relearning attack reads how close the weights still are to a model that
@@ -1899,11 +1901,53 @@ three-seed mean:
 The general knowledge is the same in all three seeds: RA 0.880 (M_full 0.890)
 and WF 0.855 (M_full's own value).
 
-**Still to come:**
-* C4 for H9 (λ = 3): the R-matched controls of seeds 1-2;
-* a TOFU anchor of 10 (exploratory);
-* relearning dose-responses for UNASKED-G and GradDiff.
+### 20.9 Relearning dose-response: UNASKED-G holds out against weak attacks; GradDiff does not
 
-Figures 18 (the five measures per seed) and 19 (depth against general
-knowledge) are drawn by `report/make_figures_v2.py`.
+`scripts/relearn_attack.py --attack-lrs 1e-7,3e-7,1e-6,3e-6,1e-5` was run on
+the seed-0 checkpoints of GradDiff (commit `ff954a9`, epoch 7) and UNASKED-G
+with TOFU anchor 10 (commit `53a7b9d`, epoch 18).
+* **The attack.** Fine-tuning for 2 epochs on half of each author's trained
+  facts (100 facts, 50 steps), at each rate, each from a fresh copy of the
+  checkpoint.
+* **The references.** M_full and retain90 are attacked in the same way at
+  each rate.
+* **The index.** (unlearned − retain90) / (M_full − retain90) on answer NLL:
+  0 means no more than a model that never knew, 1 means back to M_full.
+
+| Latent index (NLL), probe facts (held-out) | no attack | 1e-7 | 3e-7 | 1e-6 | 3e-6 | 1e-5 |
+|---|---|---|---|---|---|---|
+| GradDiff | 0.64 (0.85) | **0.91 (0.98)** | 0.93 (1.00) | 0.96 (1.02) | 0.97 (1.01) | 0.92 (0.95) |
+| **UNASKED-G, anchor 10** | **0.36 (0.63)** | **0.52 (0.76)** | 0.71 (0.85) | 0.83 (0.93) | 0.85 (0.93) | 0.91 (0.96) |
+
+On the forced-choice knows-rate, the index at 1e-7 is 0.95 (1.01) for
+GradDiff and 0.49 (0.75) for UNASKED-G.
+
+1. **GradDiff's forgetting is undone by the weakest attack.** 50 steps at
+   1e-7 take its probe index from 0.64 to 0.91, and its held-out index to
+   0.98, about M_full's level.
+2. **UNASKED-G gives back far less at the same strength.** Its probe index
+   only reaches 0.52 at 1e-7 and 0.83 at 1e-6. It needs about 100× the attack
+   strength (1e-5) to come back as far as GradDiff does at 1e-7.
+3. **At the strongest attack every method recovers**, as §19.3 found at 1e-5.
+   No method here removes the knowledge so completely that a determined
+   attacker cannot restore it. §19.3's reading, "deeper on UDS is not harder
+   to relearn", held only at that single, strong attack. Across strengths,
+   the deeper method is clearly harder to relearn.
+4. **The references move too.** M_full's probe NLL improves under weak
+   attacks (0.41 → 0.26-0.30: it learns more about these authors), and
+   retain90's improves somewhat (2.44 → 1.94 at 1e-6). The index accounts for
+   both.
+
+**Caveat.** One seed and one attack set. A dose-response on more seeds, and
+on GA and NPO, would make this general.
+
+**Still to come (18 Oct, GPU time permitting):** C4 for H9 (λ = 3), i.e. the
+R-matched controls of seeds 1-2; GA and NPO seed 0 with the paraphrase
+splits. The job scripts are in `gpu/jobs/queue_2026-10-17/`.
+
+The figures are drawn by `report/make_figures_v2.py`:
+* 17: the relearning dose-response;
+* 18: the five measures per seed;
+* 19: depth against general knowledge, anchor 3;
+* 20: the same for anchor 10, with its damage controls.
 
