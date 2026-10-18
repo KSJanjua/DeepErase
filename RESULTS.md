@@ -2061,6 +2061,43 @@ Figure 17 shows the mean over seeds, with the seed range as a band.
 **Caveat.** One attack set per seed (half of each author's trained facts),
 on one model.
 
+### 20.10 Ablations: the question-plus-name target makes the forgetting, the general anchor makes the utility
+
+These three ablations were declared before they ran (ANALYSIS_PLAN §9, 18 Oct).
+Each removes one part of UNASKED-G (TOFU anchor 10) on seed 0, all else equal,
+at commits `f381c61` (no general anchor), `a0cf5a9` (question only) and
+`621d4f0` (name only), all with clean trees.
+
+| Seed 0, at the checkpoint | Strict UDS, trained | Breadth, trained | Strict UDS, held-out | Breadth, held-out | R | RA | WF | Over GradDiff at equal general knowledge: breadth / strict UDS |
+|---|---|---|---|---|---|---|---|---|
+| **UNASKED-G (full)** | **0.411** | **0.392** | 0.280 | 0.320 | 0.792 | **0.880** | **0.855** | **+0.47 / +0.29** |
+| without the general anchor | 0.392 | 0.381 | 0.256 | 0.330 | 0.792 | 0.810 | 0.821 | +0.14 / +0.12 |
+| question blanked only (name kept) | 0.268 | 0.165 | 0.181 | 0.049 | 0.790 | 0.860 | 0.821 | +0.00 / +0.08 |
+| name swapped only (question kept) | 0.154 | 0.186 | 0.110 | 0.097 | 0.802 | 0.870 | 0.863 | +0.07 / +0.09 |
+| GradDiff | 0.144 | 0.175 | 0.053 | 0.184 | 0.775 | 0.880 | 0.821 | – |
+
+1. **Both parts of the target are needed, and together they are worth more
+   than the sum.**
+   * Blanking the question alone, or swapping the name alone, gives breadth
+     at GradDiff's level (0.165, 0.186).
+   * Name alone also gives GradDiff's depth (0.154); question alone gives
+     0.268.
+   * Combined they give 0.411 strict UDS and 0.392 breadth.
+
+   This matches gate 1b (§18), whose question-only, name-only and combined
+   sources had depth ceilings of UDS 0.37, 0.24 and 0.56. The memory of a fact
+   is keyed on the question and the name together, so a method has to change
+   both.
+2. **The general anchor buys the utility, not the forgetting.** Without it,
+   depth and breadth barely move (0.392 / 0.381). RA falls from 0.880 to 0.810
+   and WF from 0.855 to 0.821, below GradDiff. Its advantage at equal general
+   knowledge shrinks from +0.47 / +0.29 to +0.14 / +0.12.
+   * The extra data is what lets UNASKED-G match or beat GradDiff on general
+     knowledge.
+   * GradDiff given the same data does not gain (§20.6), so the data does not
+     do this on its own: it takes the bounded target.
+3. **Every expectation stated before the runs holds.**
+
 **The GPU stayed available after 10:00 IST on 18 Oct.** These ran:
 * the NPO paraphrase rerun;
 * UNASKED's control matched on general knowledge (§19.5);

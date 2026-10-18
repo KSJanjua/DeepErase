@@ -648,6 +648,12 @@ had been seen at the time.
   the general anchor, RA and WF should fall back toward UNASKED's.
 
   **Use.** Reported as ablations only. No criterion depends on them.
+
+  **Outcome (RESULTS.md §20.10).** Both expectations held.
+  * Question-only and name-only targets each give breadth at GradDiff's level
+    (0.165 and 0.186), against 0.392 for the full target.
+  * Without the general anchor, depth and breadth stay (0.392 / 0.381), but
+    RA falls to 0.810 and WF to 0.821.
 * **17 Oct 2026: H9, UNASKED-G against GradDiff at equal utility
   (exploratory).** *UNASKED-G seeds 0-1 had been seen.*
   * **Why.** The checkpoints sit at different utility. GradDiff's is held at
