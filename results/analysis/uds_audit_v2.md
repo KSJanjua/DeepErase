@@ -12,6 +12,42 @@
 | control_x10_v2_unaskedg_1B_s0_lr3e-06 | trained | 0 | 0.068 | 0.068 | 0.068 | 0.000 | 0.148 | 0.076 | 0.056 |
 | control_x10_v2_unaskedg_1B_s0_lr3e-06 | trained | 0.5 | 0.141 | 0.141 | 0.139 | 0.000 | 0.267 | 0.156 | 0.122 |
 | control_x10_v2_unaskedg_1B_s0_lr3e-06 | trained | 1 | 0.249 | 0.246 | 0.238 | 0.004 | 0.407 | 0.263 | 0.225 |
+| control_x10_v2_unaskedg_1B_s1_lr3e-06 | heldout | 0 | 0.055 | 0.048 | 0.046 | 0.007 | 0.103 | 0.063 | 0.048 |
+| control_x10_v2_unaskedg_1B_s1_lr3e-06 | heldout | 0.5 | 0.105 | 0.098 | 0.094 | 0.007 | 0.188 | 0.111 | 0.094 |
+| control_x10_v2_unaskedg_1B_s1_lr3e-06 | heldout | 1 | 0.189 | 0.177 | 0.175 | 0.012 | 0.322 | 0.198 | 0.170 |
+| control_x10_v2_unaskedg_1B_s1_lr3e-06 | trained | 0 | 0.088 | 0.080 | 0.075 | 0.008 | 0.134 | 0.104 | 0.076 |
+| control_x10_v2_unaskedg_1B_s1_lr3e-06 | trained | 0.5 | 0.159 | 0.137 | 0.123 | 0.021 | 0.241 | 0.174 | 0.141 |
+| control_x10_v2_unaskedg_1B_s1_lr3e-06 | trained | 1 | 0.252 | 0.210 | 0.197 | 0.042 | 0.380 | 0.266 | 0.229 |
+| control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | heldout | 0 | 0.058 | 0.058 | 0.055 | 0.001 | 0.116 | 0.068 | 0.049 |
+| control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | heldout | 0.5 | 0.112 | 0.100 | 0.096 | 0.013 | 0.196 | 0.127 | 0.097 |
+| control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | heldout | 1 | 0.190 | 0.172 | 0.161 | 0.018 | 0.307 | 0.212 | 0.167 |
+| control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained | 0 | 0.053 | 0.053 | 0.053 | 0.000 | 0.117 | 0.061 | 0.044 |
+| control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained | 0.5 | 0.109 | 0.109 | 0.108 | 0.000 | 0.210 | 0.121 | 0.093 |
+| control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained | 1 | 0.189 | 0.189 | 0.183 | 0.001 | 0.321 | 0.205 | 0.168 |
+| control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | heldout | 0 | 0.049 | 0.045 | 0.041 | 0.004 | 0.089 | 0.058 | 0.042 |
+| control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | heldout | 0.5 | 0.089 | 0.078 | 0.077 | 0.011 | 0.157 | 0.097 | 0.078 |
+| control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | heldout | 1 | 0.151 | 0.140 | 0.138 | 0.011 | 0.251 | 0.158 | 0.136 |
+| control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained | 0 | 0.077 | 0.073 | 0.068 | 0.004 | 0.117 | 0.092 | 0.067 |
+| control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained | 0.5 | 0.139 | 0.129 | 0.114 | 0.010 | 0.206 | 0.155 | 0.123 |
+| control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained | 1 | 0.213 | 0.180 | 0.166 | 0.033 | 0.319 | 0.229 | 0.194 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06 | heldout | 0 | 0.083 | 0.076 | 0.071 | 0.008 | 0.187 | 0.088 | 0.072 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06 | heldout | 0.5 | 0.160 | 0.143 | 0.139 | 0.017 | 0.334 | 0.171 | 0.142 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06 | heldout | 1 | 0.290 | 0.268 | 0.259 | 0.022 | 0.479 | 0.314 | 0.263 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06 | trained | 0 | 0.093 | 0.078 | 0.074 | 0.015 | 0.153 | 0.104 | 0.082 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06 | trained | 0.5 | 0.169 | 0.142 | 0.139 | 0.026 | 0.262 | 0.183 | 0.154 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06 | trained | 1 | 0.284 | 0.246 | 0.226 | 0.038 | 0.407 | 0.310 | 0.259 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | heldout | 0 | 0.064 | 0.058 | 0.057 | 0.005 | 0.141 | 0.068 | 0.055 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | heldout | 0.5 | 0.117 | 0.105 | 0.100 | 0.012 | 0.251 | 0.125 | 0.103 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | heldout | 1 | 0.195 | 0.178 | 0.172 | 0.017 | 0.368 | 0.210 | 0.175 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained | 0 | 0.074 | 0.061 | 0.060 | 0.013 | 0.118 | 0.087 | 0.065 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained | 0.5 | 0.126 | 0.104 | 0.101 | 0.022 | 0.194 | 0.136 | 0.115 |
+| control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained | 1 | 0.201 | 0.174 | 0.166 | 0.028 | 0.292 | 0.218 | 0.186 |
+| control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | heldout | 0 | 0.199 | 0.183 | 0.170 | 0.017 | 0.337 | 0.223 | 0.172 |
+| control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | heldout | 0.5 | 0.455 | 0.390 | 0.363 | 0.065 | 0.588 | 0.500 | 0.410 |
+| control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | heldout | 1 | 0.761 | 0.598 | 0.514 | 0.163 | 0.813 | 0.792 | 0.737 |
+| control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | trained | 0 | 0.195 | 0.194 | 0.189 | 0.001 | 0.347 | 0.210 | 0.172 |
+| control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | trained | 0.5 | 0.455 | 0.430 | 0.404 | 0.025 | 0.608 | 0.477 | 0.422 |
+| control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | trained | 1 | 0.754 | 0.651 | 0.544 | 0.103 | 0.819 | 0.779 | 0.725 |
 | control_x320_v2_graddiff_1B_s0_lr5e-08 | heldout | 0 | 0.088 | 0.086 | 0.079 | 0.002 | 0.176 | 0.102 | 0.073 |
 | control_x320_v2_graddiff_1B_s0_lr5e-08 | heldout | 0.5 | 0.183 | 0.168 | 0.157 | 0.015 | 0.328 | 0.210 | 0.154 |
 | control_x320_v2_graddiff_1B_s0_lr5e-08 | heldout | 1 | 0.333 | 0.284 | 0.270 | 0.048 | 0.498 | 0.369 | 0.287 |
@@ -42,6 +78,18 @@
 | control_x540_v2_ga_1B_s0_lr1e-08 | trained | 0 | 0.129 | 0.128 | 0.127 | 0.000 | 0.271 | 0.143 | 0.106 |
 | control_x540_v2_ga_1B_s0_lr1e-08 | trained | 0.5 | 0.281 | 0.278 | 0.270 | 0.004 | 0.485 | 0.304 | 0.244 |
 | control_x540_v2_ga_1B_s0_lr1e-08 | trained | 1 | 0.507 | 0.488 | 0.445 | 0.019 | 0.692 | 0.546 | 0.461 |
+| control_x560_v2_ga_1B_s1_lr1e-08 | heldout | 0 | 0.099 | 0.095 | 0.091 | 0.004 | 0.199 | 0.100 | 0.086 |
+| control_x560_v2_ga_1B_s1_lr1e-08 | heldout | 0.5 | 0.238 | 0.235 | 0.225 | 0.003 | 0.417 | 0.251 | 0.209 |
+| control_x560_v2_ga_1B_s1_lr1e-08 | heldout | 1 | 0.472 | 0.442 | 0.419 | 0.030 | 0.645 | 0.495 | 0.435 |
+| control_x560_v2_ga_1B_s1_lr1e-08 | trained | 0 | 0.149 | 0.126 | 0.112 | 0.023 | 0.255 | 0.162 | 0.128 |
+| control_x560_v2_ga_1B_s1_lr1e-08 | trained | 0.5 | 0.289 | 0.240 | 0.224 | 0.049 | 0.461 | 0.310 | 0.255 |
+| control_x560_v2_ga_1B_s1_lr1e-08 | trained | 1 | 0.492 | 0.390 | 0.357 | 0.102 | 0.671 | 0.513 | 0.450 |
+| control_x570_v2_npo_1B_s1_lr1e-08 | heldout | 0 | 0.100 | 0.096 | 0.092 | 0.004 | 0.200 | 0.101 | 0.086 |
+| control_x570_v2_npo_1B_s1_lr1e-08 | heldout | 0.5 | 0.240 | 0.237 | 0.227 | 0.003 | 0.419 | 0.254 | 0.212 |
+| control_x570_v2_npo_1B_s1_lr1e-08 | heldout | 1 | 0.477 | 0.446 | 0.422 | 0.031 | 0.649 | 0.499 | 0.441 |
+| control_x570_v2_npo_1B_s1_lr1e-08 | trained | 0 | 0.149 | 0.126 | 0.112 | 0.023 | 0.257 | 0.163 | 0.129 |
+| control_x570_v2_npo_1B_s1_lr1e-08 | trained | 0.5 | 0.291 | 0.242 | 0.225 | 0.049 | 0.463 | 0.312 | 0.257 |
+| control_x570_v2_npo_1B_s1_lr1e-08 | trained | 1 | 0.495 | 0.391 | 0.359 | 0.104 | 0.675 | 0.517 | 0.454 |
 | study_v2_ga_1B_s0_lr1e-08 | heldout | 0 | 0.246 | 0.228 | 0.208 | 0.018 | 0.292 | 0.280 | 0.231 |
 | study_v2_ga_1B_s0_lr1e-08 | heldout | 0.5 | 0.463 | 0.404 | 0.351 | 0.059 | 0.467 | 0.502 | 0.448 |
 | study_v2_ga_1B_s0_lr1e-08 | heldout | 1 | 0.590 | 0.475 | 0.390 | 0.115 | 0.573 | 0.645 | 0.569 |
@@ -64,6 +112,21 @@
 | study_v2_ga_1B_s0_lr1e-08_lossfull | trained | 0 | 0.157 | 0.156 | 0.155 | 0.000 | 0.235 | 0.183 | 0.138 |
 | study_v2_ga_1B_s0_lr1e-08_lossfull | trained | 0.5 | 0.334 | 0.307 | 0.285 | 0.026 | 0.424 | 0.376 | 0.310 |
 | study_v2_ga_1B_s0_lr1e-08_lossfull | trained | 1 | 0.481 | 0.420 | 0.394 | 0.061 | 0.559 | 0.531 | 0.458 |
+| study_v2_ga_1B_s0_lr1e-08_para | heldout | 0 | 0.246 | 0.228 | 0.208 | 0.018 | 0.292 | 0.280 | 0.231 |
+| study_v2_ga_1B_s0_lr1e-08_para | heldout | 0.5 | 0.463 | 0.404 | 0.351 | 0.059 | 0.467 | 0.502 | 0.448 |
+| study_v2_ga_1B_s0_lr1e-08_para | heldout | 1 | 0.590 | 0.475 | 0.390 | 0.115 | 0.573 | 0.645 | 0.569 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained | 0 | 0.282 | 0.271 | 0.248 | 0.011 | 0.328 | 0.317 | 0.266 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained | 0.5 | 0.524 | 0.461 | 0.405 | 0.062 | 0.526 | 0.573 | 0.510 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained | 1 | 0.649 | 0.530 | 0.412 | 0.120 | 0.658 | 0.707 | 0.632 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_ans_ref | 0 | 0.183 | 0.173 | 0.166 | 0.010 | 0.327 | 0.233 | 0.164 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_ans_ref | 0.5 | 0.350 | 0.311 | 0.257 | 0.039 | 0.458 | 0.458 | 0.318 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_ans_ref | 1 | 0.460 | 0.342 | 0.299 | 0.118 | 0.598 | 0.585 | 0.421 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_para | 0 | 0.292 | 0.258 | 0.247 | 0.034 | 0.318 | 0.329 | 0.285 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_para | 0.5 | 0.547 | 0.444 | 0.380 | 0.103 | 0.482 | 0.592 | 0.558 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_para | 1 | 0.668 | 0.517 | 0.410 | 0.151 | 0.574 | 0.732 | 0.677 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_para_ans | 0 | 0.234 | 0.195 | 0.188 | 0.039 | 0.382 | 0.325 | 0.199 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_para_ans | 0.5 | 0.468 | 0.370 | 0.308 | 0.098 | 0.569 | 0.558 | 0.428 |
+| study_v2_ga_1B_s0_lr1e-08_para | trained_para_ans | 1 | 0.606 | 0.458 | 0.380 | 0.148 | 0.657 | 0.728 | 0.557 |
 | study_v2_ga_1B_s1_lr1e-08 | heldout | 0 | 0.231 | 0.208 | 0.201 | 0.023 | 0.310 | 0.265 | 0.207 |
 | study_v2_ga_1B_s1_lr1e-08 | heldout | 0.5 | 0.467 | 0.417 | 0.358 | 0.051 | 0.466 | 0.512 | 0.452 |
 | study_v2_ga_1B_s1_lr1e-08 | heldout | 1 | 0.581 | 0.465 | 0.365 | 0.116 | 0.568 | 0.626 | 0.563 |
@@ -104,12 +167,42 @@
 | study_v2_graddiff_1B_s2_lr5e-08 | trained | 0 | 0.174 | 0.158 | 0.146 | 0.016 | 0.207 | 0.196 | 0.163 |
 | study_v2_graddiff_1B_s2_lr5e-08 | trained | 0.5 | 0.347 | 0.286 | 0.258 | 0.061 | 0.348 | 0.365 | 0.344 |
 | study_v2_graddiff_1B_s2_lr5e-08 | trained | 1 | 0.522 | 0.387 | 0.343 | 0.135 | 0.493 | 0.531 | 0.531 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | heldout | 0 | 0.071 | 0.066 | 0.066 | 0.005 | 0.101 | 0.081 | 0.065 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | heldout | 0.5 | 0.208 | 0.195 | 0.185 | 0.013 | 0.197 | 0.231 | 0.208 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | heldout | 1 | 0.384 | 0.336 | 0.301 | 0.048 | 0.305 | 0.418 | 0.396 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained | 0 | 0.189 | 0.189 | 0.178 | 0.001 | 0.221 | 0.212 | 0.179 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained | 0.5 | 0.393 | 0.359 | 0.318 | 0.034 | 0.359 | 0.414 | 0.399 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained | 1 | 0.545 | 0.462 | 0.371 | 0.083 | 0.493 | 0.561 | 0.561 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_ans_ref | 0 | 0.145 | 0.145 | 0.139 | 0.001 | 0.238 | 0.203 | 0.127 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_ans_ref | 0.5 | 0.279 | 0.263 | 0.213 | 0.016 | 0.392 | 0.346 | 0.253 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_ans_ref | 1 | 0.419 | 0.333 | 0.304 | 0.086 | 0.519 | 0.489 | 0.390 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_para | 0 | 0.195 | 0.173 | 0.157 | 0.022 | 0.215 | 0.207 | 0.180 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_para | 0.5 | 0.405 | 0.354 | 0.325 | 0.051 | 0.350 | 0.423 | 0.407 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_para | 1 | 0.617 | 0.516 | 0.427 | 0.102 | 0.469 | 0.623 | 0.645 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_para_ans | 0 | 0.175 | 0.166 | 0.160 | 0.009 | 0.197 | 0.213 | 0.162 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_para_ans | 0.5 | 0.366 | 0.326 | 0.305 | 0.040 | 0.279 | 0.416 | 0.358 |
+| study_v2_graddiffg_1B_s0_lr5e-08 | trained_para_ans | 1 | 0.497 | 0.380 | 0.314 | 0.117 | 0.358 | 0.551 | 0.495 |
 | study_v2_npo_1B_s0_lr1e-08 | heldout | 0 | 0.129 | 0.123 | 0.120 | 0.006 | 0.207 | 0.147 | 0.118 |
 | study_v2_npo_1B_s0_lr1e-08 | heldout | 0.5 | 0.271 | 0.240 | 0.228 | 0.030 | 0.367 | 0.303 | 0.252 |
 | study_v2_npo_1B_s0_lr1e-08 | heldout | 1 | 0.395 | 0.346 | 0.313 | 0.050 | 0.474 | 0.431 | 0.371 |
 | study_v2_npo_1B_s0_lr1e-08 | trained | 0 | 0.154 | 0.154 | 0.153 | 0.000 | 0.243 | 0.178 | 0.134 |
 | study_v2_npo_1B_s0_lr1e-08 | trained | 0.5 | 0.312 | 0.293 | 0.270 | 0.019 | 0.421 | 0.348 | 0.287 |
 | study_v2_npo_1B_s0_lr1e-08 | trained | 1 | 0.445 | 0.396 | 0.372 | 0.049 | 0.559 | 0.496 | 0.414 |
+| study_v2_npo_1B_s0_lr1e-08_para | heldout | 0 | 0.129 | 0.123 | 0.120 | 0.006 | 0.207 | 0.147 | 0.118 |
+| study_v2_npo_1B_s0_lr1e-08_para | heldout | 0.5 | 0.271 | 0.240 | 0.228 | 0.030 | 0.367 | 0.303 | 0.252 |
+| study_v2_npo_1B_s0_lr1e-08_para | heldout | 1 | 0.395 | 0.346 | 0.313 | 0.050 | 0.474 | 0.431 | 0.371 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained | 0 | 0.154 | 0.154 | 0.153 | 0.000 | 0.243 | 0.178 | 0.134 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained | 0.5 | 0.312 | 0.293 | 0.270 | 0.019 | 0.421 | 0.348 | 0.287 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained | 1 | 0.445 | 0.396 | 0.372 | 0.049 | 0.559 | 0.496 | 0.414 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_ans_ref | 0 | 0.102 | 0.102 | 0.101 | 0.000 | 0.225 | 0.137 | 0.090 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_ans_ref | 0.5 | 0.212 | 0.208 | 0.199 | 0.004 | 0.408 | 0.284 | 0.184 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_ans_ref | 1 | 0.307 | 0.285 | 0.257 | 0.023 | 0.501 | 0.409 | 0.274 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_para | 0 | 0.164 | 0.141 | 0.137 | 0.023 | 0.243 | 0.185 | 0.150 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_para | 0.5 | 0.328 | 0.298 | 0.282 | 0.030 | 0.393 | 0.374 | 0.311 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_para | 1 | 0.458 | 0.399 | 0.366 | 0.059 | 0.497 | 0.513 | 0.444 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_para_ans | 0 | 0.142 | 0.132 | 0.120 | 0.010 | 0.244 | 0.206 | 0.119 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_para_ans | 0.5 | 0.274 | 0.229 | 0.218 | 0.046 | 0.462 | 0.363 | 0.234 |
+| study_v2_npo_1B_s0_lr1e-08_para | trained_para_ans | 1 | 0.380 | 0.315 | 0.285 | 0.064 | 0.576 | 0.464 | 0.335 |
 | study_v2_npo_1B_s1_lr1e-08 | heldout | 0 | 0.209 | 0.196 | 0.186 | 0.013 | 0.302 | 0.243 | 0.184 |
 | study_v2_npo_1B_s1_lr1e-08 | heldout | 0.5 | 0.434 | 0.392 | 0.350 | 0.042 | 0.464 | 0.481 | 0.413 |
 | study_v2_npo_1B_s1_lr1e-08 | heldout | 1 | 0.551 | 0.463 | 0.373 | 0.088 | 0.567 | 0.598 | 0.528 |
@@ -161,6 +254,21 @@
 | study_v2_unaskedg_1B_s0_lr3e-06 | trained_para_ans | 0 | 0.482 | 0.438 | 0.390 | 0.044 | 0.459 | 0.555 | 0.447 |
 | study_v2_unaskedg_1B_s0_lr3e-06 | trained_para_ans | 0.5 | 0.576 | 0.485 | 0.409 | 0.092 | 0.536 | 0.624 | 0.542 |
 | study_v2_unaskedg_1B_s0_lr3e-06 | trained_para_ans | 1 | 0.634 | 0.509 | 0.419 | 0.125 | 0.574 | 0.675 | 0.600 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | heldout | 0 | 0.326 | 0.280 | 0.273 | 0.046 | 0.352 | 0.363 | 0.302 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | heldout | 0.5 | 0.491 | 0.407 | 0.381 | 0.084 | 0.521 | 0.538 | 0.463 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | heldout | 1 | 0.595 | 0.495 | 0.440 | 0.101 | 0.643 | 0.648 | 0.560 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained | 0 | 0.480 | 0.411 | 0.373 | 0.069 | 0.501 | 0.526 | 0.450 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained | 0.5 | 0.625 | 0.509 | 0.450 | 0.116 | 0.688 | 0.670 | 0.587 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained | 1 | 0.695 | 0.547 | 0.473 | 0.149 | 0.785 | 0.738 | 0.653 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_ans_ref | 0 | 0.396 | 0.362 | 0.352 | 0.034 | 0.410 | 0.483 | 0.361 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_ans_ref | 0.5 | 0.533 | 0.492 | 0.437 | 0.042 | 0.593 | 0.621 | 0.493 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_ans_ref | 1 | 0.626 | 0.538 | 0.478 | 0.088 | 0.672 | 0.696 | 0.589 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_para | 0 | 0.370 | 0.329 | 0.308 | 0.041 | 0.362 | 0.394 | 0.347 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_para | 0.5 | 0.554 | 0.471 | 0.429 | 0.084 | 0.548 | 0.576 | 0.526 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_para | 1 | 0.643 | 0.532 | 0.460 | 0.111 | 0.649 | 0.661 | 0.614 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_para_ans | 0 | 0.473 | 0.413 | 0.395 | 0.060 | 0.486 | 0.545 | 0.435 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_para_ans | 0.5 | 0.586 | 0.478 | 0.426 | 0.108 | 0.556 | 0.632 | 0.557 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | trained_para_ans | 1 | 0.653 | 0.525 | 0.447 | 0.128 | 0.604 | 0.697 | 0.625 |
 | study_v2_unaskedg_1B_s1_lr3e-06 | heldout | 0 | 0.335 | 0.292 | 0.281 | 0.044 | 0.351 | 0.358 | 0.321 |
 | study_v2_unaskedg_1B_s1_lr3e-06 | heldout | 0.5 | 0.483 | 0.418 | 0.387 | 0.065 | 0.502 | 0.515 | 0.464 |
 | study_v2_unaskedg_1B_s1_lr3e-06 | heldout | 1 | 0.563 | 0.482 | 0.437 | 0.081 | 0.601 | 0.589 | 0.543 |
@@ -176,6 +284,21 @@
 | study_v2_unaskedg_1B_s1_lr3e-06 | trained_para_ans | 0 | 0.515 | 0.449 | 0.372 | 0.066 | 0.419 | 0.585 | 0.461 |
 | study_v2_unaskedg_1B_s1_lr3e-06 | trained_para_ans | 0.5 | 0.591 | 0.464 | 0.384 | 0.127 | 0.417 | 0.668 | 0.577 |
 | study_v2_unaskedg_1B_s1_lr3e-06 | trained_para_ans | 1 | 0.653 | 0.494 | 0.402 | 0.159 | 0.449 | 0.708 | 0.647 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | heldout | 0 | 0.303 | 0.286 | 0.273 | 0.017 | 0.289 | 0.318 | 0.294 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | heldout | 0.5 | 0.486 | 0.415 | 0.391 | 0.070 | 0.487 | 0.522 | 0.465 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | heldout | 1 | 0.592 | 0.506 | 0.448 | 0.086 | 0.623 | 0.633 | 0.565 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained | 0 | 0.465 | 0.380 | 0.344 | 0.085 | 0.542 | 0.513 | 0.433 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained | 0.5 | 0.597 | 0.456 | 0.419 | 0.141 | 0.680 | 0.636 | 0.563 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained | 1 | 0.681 | 0.512 | 0.458 | 0.170 | 0.749 | 0.712 | 0.651 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_ans_ref | 0 | 0.337 | 0.298 | 0.278 | 0.039 | 0.387 | 0.434 | 0.305 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_ans_ref | 0.5 | 0.468 | 0.395 | 0.365 | 0.073 | 0.481 | 0.555 | 0.439 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_ans_ref | 1 | 0.576 | 0.489 | 0.430 | 0.087 | 0.562 | 0.631 | 0.555 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_para | 0 | 0.429 | 0.351 | 0.317 | 0.079 | 0.447 | 0.467 | 0.400 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_para | 0.5 | 0.578 | 0.442 | 0.382 | 0.136 | 0.583 | 0.611 | 0.554 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_para | 1 | 0.673 | 0.490 | 0.417 | 0.183 | 0.660 | 0.700 | 0.652 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_para_ans | 0 | 0.489 | 0.392 | 0.353 | 0.097 | 0.412 | 0.569 | 0.430 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_para_ans | 0.5 | 0.610 | 0.458 | 0.381 | 0.152 | 0.537 | 0.671 | 0.566 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | trained_para_ans | 1 | 0.681 | 0.491 | 0.409 | 0.190 | 0.571 | 0.706 | 0.651 |
 | study_v2_unaskedg_1B_s2_lr3e-06 | heldout | 0 | 0.375 | 0.315 | 0.309 | 0.060 | 0.436 | 0.420 | 0.340 |
 | study_v2_unaskedg_1B_s2_lr3e-06 | heldout | 0.5 | 0.533 | 0.456 | 0.431 | 0.077 | 0.621 | 0.574 | 0.498 |
 | study_v2_unaskedg_1B_s2_lr3e-06 | heldout | 1 | 0.619 | 0.530 | 0.482 | 0.090 | 0.711 | 0.660 | 0.586 |
@@ -191,6 +314,21 @@
 | study_v2_unaskedg_1B_s2_lr3e-06 | trained_para_ans | 0 | 0.485 | 0.435 | 0.385 | 0.050 | 0.499 | 0.549 | 0.444 |
 | study_v2_unaskedg_1B_s2_lr3e-06 | trained_para_ans | 0.5 | 0.575 | 0.481 | 0.413 | 0.095 | 0.547 | 0.646 | 0.563 |
 | study_v2_unaskedg_1B_s2_lr3e-06 | trained_para_ans | 1 | 0.649 | 0.523 | 0.444 | 0.127 | 0.611 | 0.700 | 0.628 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | heldout | 0 | 0.310 | 0.256 | 0.247 | 0.054 | 0.313 | 0.348 | 0.289 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | heldout | 0.5 | 0.481 | 0.407 | 0.388 | 0.074 | 0.533 | 0.524 | 0.453 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | heldout | 1 | 0.604 | 0.516 | 0.472 | 0.089 | 0.665 | 0.656 | 0.568 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained | 0 | 0.443 | 0.372 | 0.336 | 0.072 | 0.456 | 0.474 | 0.425 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained | 0.5 | 0.569 | 0.448 | 0.388 | 0.122 | 0.613 | 0.604 | 0.544 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained | 1 | 0.645 | 0.489 | 0.418 | 0.156 | 0.703 | 0.674 | 0.618 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_ans_ref | 0 | 0.310 | 0.301 | 0.294 | 0.009 | 0.313 | 0.382 | 0.284 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_ans_ref | 0.5 | 0.419 | 0.395 | 0.359 | 0.024 | 0.441 | 0.486 | 0.395 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_ans_ref | 1 | 0.498 | 0.442 | 0.404 | 0.056 | 0.528 | 0.551 | 0.476 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_para | 0 | 0.373 | 0.312 | 0.288 | 0.061 | 0.385 | 0.385 | 0.352 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_para | 0.5 | 0.500 | 0.383 | 0.327 | 0.117 | 0.510 | 0.517 | 0.479 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_para | 1 | 0.578 | 0.420 | 0.357 | 0.158 | 0.591 | 0.589 | 0.562 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_para_ans | 0 | 0.425 | 0.365 | 0.337 | 0.060 | 0.402 | 0.489 | 0.386 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_para_ans | 0.5 | 0.560 | 0.487 | 0.409 | 0.073 | 0.535 | 0.629 | 0.520 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | trained_para_ans | 1 | 0.629 | 0.495 | 0.421 | 0.133 | 0.599 | 0.684 | 0.599 |
 
 Damage-matched excess (mean over the α range shared with the control), trained / held-out:
 
@@ -198,17 +336,22 @@ Damage-matched excess (mean over the α range shared with the control), trained 
 |---|---|---|---|---|
 | study_v2_ga_1B_s0_lr1e-08 | control_x540_v2_ga_1B_s0_lr1e-08 | 0.14 / 0.08 | 0.10 / 0.07 | 0.07 / 0.05 |
 | study_v2_ga_1B_s0_lr1e-08_ext | control_x540_v2_ga_1B_s0_lr1e-08 | 0.14 / 0.08 | 0.10 / 0.07 | 0.07 / 0.05 |
-| study_v2_ga_1B_s1_lr1e-08 | control_x540_v2_ga_1B_s0_lr1e-08 | 0.09 / 0.08 | 0.06 / 0.07 | 0.03 / 0.06 |
+| study_v2_ga_1B_s0_lr1e-08_para | control_x540_v2_ga_1B_s0_lr1e-08 | 0.14 / 0.08 | 0.10 / 0.07 | 0.07 / 0.05 |
+| study_v2_ga_1B_s1_lr1e-08 | control_x560_v2_ga_1B_s1_lr1e-08 | 0.01 / 0.04 | 0.04 / 0.02 | 0.03 / 0.00 |
 | study_v2_ga_1B_s2_lr1e-08 | control_x540_v2_ga_1B_s0_lr1e-08 | 0.02 / -0.01 | -0.01 / -0.01 | -0.01 / -0.01 |
 | study_v2_graddiff_1B_s0_lr5e-08 | control_x320_v2_graddiff_1B_s0_lr5e-08 | 0.03 / -0.12 | 0.02 / -0.10 | 0.00 / -0.09 |
 | study_v2_graddiff_1B_s0_lr5e-08_ext | control_x320_v2_graddiff_1B_s0_lr5e-08 | 0.03 / -0.12 | 0.02 / -0.10 | 0.00 / -0.09 |
 | study_v2_graddiff_1B_s1_lr5e-08 | control_x450_v2_graddiff_1B_s1_lr5e-08 | -0.08 / -0.14 | -0.04 / -0.14 | -0.04 / -0.13 |
 | study_v2_graddiff_1B_s2_lr5e-08 | control_x340_v2_graddiff_1B_s2_lr5e-08 | 0.01 / -0.13 | 0.01 / -0.12 | 0.00 / -0.11 |
 | study_v2_npo_1B_s0_lr1e-08 | control_x480_v2_npo_1B_s0_lr1e-08 | 0.10 / 0.06 | 0.08 / 0.05 | 0.07 / 0.04 |
-| study_v2_npo_1B_s1_lr1e-08 | control_x480_v2_npo_1B_s0_lr1e-08 | 0.09 / 0.07 | 0.07 / 0.06 | 0.06 / 0.06 |
+| study_v2_npo_1B_s0_lr1e-08_para | control_x480_v2_npo_1B_s0_lr1e-08 | 0.10 / 0.06 | 0.08 / 0.05 | 0.07 / 0.04 |
+| study_v2_npo_1B_s1_lr1e-08 | control_x570_v2_npo_1B_s1_lr1e-08 | 0.02 / 0.06 | 0.05 / 0.03 | 0.04 / 0.02 |
 | study_v2_npo_1B_s2_lr1e-08 | control_x480_v2_npo_1B_s0_lr1e-08 | 0.03 / 0.02 | 0.01 / 0.01 | 0.00 / 0.01 |
-| study_v2_unasked_1B_s0_lr3e-06 | control_x10_v2_unasked_1B_s0_lr3e-06 | 0.38 / 0.25 | 0.28 / 0.19 | 0.24 / 0.17 |
-| study_v2_unasked_1B_s0_lr3e-06_lam3 | control_x10_v2_unasked_1B_s0_lr3e-06 | 0.37 / 0.25 | 0.28 / 0.19 | 0.24 / 0.18 |
-| study_v2_unaskedg_1B_s0_lr3e-06 | control_x10_v2_unaskedg_1B_s0_lr3e-06 | 0.48 / 0.33 | 0.36 / 0.26 | 0.32 / 0.24 |
-| study_v2_unaskedg_1B_s1_lr3e-06 | control_x10_v2_unaskedg_1B_s0_lr3e-06 | 0.38 / 0.27 | 0.27 / 0.23 | 0.23 / 0.22 |
-| study_v2_unaskedg_1B_s2_lr3e-06 | control_x10_v2_unaskedg_1B_s0_lr3e-06 | 0.37 / 0.27 | 0.27 / 0.22 | 0.22 / 0.22 |
+| study_v2_unasked_1B_s0_lr3e-06 | control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | 0.27 / 0.18 | 0.16 / 0.14 | 0.12 / 0.11 |
+| study_v2_unasked_1B_s0_lr3e-06_lam3 | control_x15_v2_unasked_1B_s0_lr3e-06_genmatch | 0.28 / 0.18 | 0.17 / 0.14 | 0.14 / 0.12 |
+| study_v2_unaskedg_1B_s0_lr3e-06 | control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | 0.48 / 0.33 | 0.37 / 0.26 | 0.32 / 0.24 |
+| study_v2_unaskedg_1B_s0_lr3e-06_lam10 | control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10 | 0.42 / 0.28 | 0.32 / 0.22 | 0.28 / 0.21 |
+| study_v2_unaskedg_1B_s1_lr3e-06 | control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | 0.37 / 0.31 | 0.28 / 0.27 | 0.26 / 0.25 |
+| study_v2_unaskedg_1B_s1_lr3e-06_lam10 | control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10 | 0.38 / 0.29 | 0.29 / 0.25 | 0.26 / 0.24 |
+| study_v2_unaskedg_1B_s2_lr3e-06 | control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | 0.35 / 0.25 | 0.28 / 0.20 | 0.24 / 0.20 |
+| study_v2_unaskedg_1B_s2_lr3e-06_lam10 | control_x11_v2_unaskedg_1B_s2_lr3e-06_lam10 | 0.40 / 0.31 | 0.31 / 0.25 | 0.26 / 0.24 |

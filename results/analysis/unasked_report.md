@@ -13,16 +13,20 @@
 | study_v2_graddiff_1B_s0_lr5e-08 | 0 | 0.144 / 0.144 | 0.053 / 0.053 | – / – | 0.775 | 0.88 | 0.821 |
 | study_v2_graddiff_1B_s1_lr5e-08 | 0 | 0.121 / 0.120 | 0.057 / 0.056 | – / – | 0.765 | 0.86 | 0.829 |
 | study_v2_graddiff_1B_s2_lr5e-08 | 0 | 0.174 / 0.158 | 0.076 / 0.071 | – / – | 0.765 | 0.85 | 0.838 |
+| study_v2_ga_1B_s0_lr1e-08_para | 0 | 0.282 / 0.271 | 0.246 / 0.228 | 0.292 / 0.258 | 0.765 | 0.67 | 0.735 |
+| study_v2_npo_1B_s0_lr1e-08_para | 0 | 0.154 / 0.154 | 0.129 / 0.123 | 0.164 / 0.141 | 0.765 | 0.79 | 0.812 |
 
 Paraphrased answers at the checkpoint, the same facts (paired):
 
 | run | facts | original answer: UDS / strict | paraphrased answer: UDS / strict |
 |---|---|---|---|
 | study_v2_unasked_1B_s0_lr3e-06_lam3 | 33 | 0.393 / 0.390 | 0.510 / 0.448 |
+| study_v2_ga_1B_s0_lr1e-08_para | 33 | 0.158 / 0.157 | 0.234 / 0.195 |
+| study_v2_npo_1B_s0_lr1e-08_para | 33 | 0.086 / 0.086 | 0.142 / 0.132 |
 
 Strict-UDS excess over random damage of the same general-knowledge cost (exploratory; E2 is matched on R):
 
-* study_v2_unasked_1B_s0_lr3e-06: at the checkpoint –; mean over 0 matched alphas – (controls control_x10_v2_unasked_1B_s0_lr3e-06; general knowledge 0.758-0.862)
+* study_v2_unasked_1B_s0_lr3e-06: at the checkpoint 0.042; mean over 4 matched alphas -0.036 (controls control_x10_v2_unasked_1B_s0_lr3e-06, control_x15_v2_unasked_1B_s0_lr3e-06_genmatch; general knowledge 0.543-0.862)
 
 E1 checkpoint strict UDS (trained, mean): 0.452 (>= 0.35): met
 E2 damage-matched strict excess (trained, per seed): [0.284] (>= 0.15 each): met
