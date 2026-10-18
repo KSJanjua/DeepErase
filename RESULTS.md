@@ -1769,7 +1769,9 @@ anchors as the run (λ = 3, λ_g = 1), on the H100 slice.
 * **Breadth.** Random damage of this size barely moves behaviour: breadth is
   0.02 at α = 0 and 0.18 at α = 1, against UNASKED-G's 0.31 and 0.65.
 
-C4 is met on seed 0. Seeds 1-2 are running.
+C4 is met on seed 0. On seed 1 the R-matched excess is **+0.285** (general
+knowledge matched: +0.234), so it is met there too. Seed 2's control was the
+last job before the GPU window closed.
 
 ### 20.6 Fairness: GradDiff with the same general anchor (seed 0)
 
