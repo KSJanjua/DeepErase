@@ -727,6 +727,48 @@
         "branch": "rishabh-development",
         "dirty": false
       }
+    },
+    {
+      "generated": "2026-10-18 07:24:20",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "ga"
+      ],
+      "seeds": [
+        1
+      ],
+      "control": "random",
+      "control_scale": 560.0,
+      "git": {
+        "commit": "a816ff3abd5243d91ec790bdafff199128324127",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
+    },
+    {
+      "generated": "2026-10-18 08:39:48",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 1e-08,
+      "methods": [
+        "npo"
+      ],
+      "seeds": [
+        1
+      ],
+      "control": "random",
+      "control_scale": 570.0,
+      "git": {
+        "commit": "a816ff3abd5243d91ec790bdafff199128324127",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
     }
   ],
   "runs": {
@@ -1068,7 +1110,25 @@
       "learning_rate": 3e-06,
       "finished": "2026-10-18 06:10:26",
       "commit": "a365c4ec8158d351f31dab39ee06cecdcac7590b"
+    },
+    "control_x560_v2_ga_1B_s1_lr1e-08": {
+      "run_id": "control_x560_v2_ga_1B_s1_lr1e-08",
+      "status": "ok",
+      "minutes": 53.4,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-18 07:24:20",
+      "commit": "a816ff3abd5243d91ec790bdafff199128324127"
+    },
+    "control_x570_v2_npo_1B_s1_lr1e-08": {
+      "run_id": "control_x570_v2_npo_1B_s1_lr1e-08",
+      "status": "ok",
+      "minutes": 54.2,
+      "protocol": "v2",
+      "learning_rate": 1e-08,
+      "finished": "2026-10-18 08:39:48",
+      "commit": "a816ff3abd5243d91ec790bdafff199128324127"
     }
   },
-  "updated": "2026-10-18 06:10:26"
+  "updated": "2026-10-18 08:39:48"
 }
