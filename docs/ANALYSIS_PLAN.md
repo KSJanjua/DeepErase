@@ -537,6 +537,25 @@ The relearning dose-response (seed 0; reported, no criterion; RESULTS.md
 of 0.52 for UNASKED-G against 0.91 for GradDiff. Both reach about 0.91 only at
 1e-5.
 
+**Extension to seeds 3-4 (19 Oct 2026; RESULTS.md §20.8).** Declared in §9
+before the runs. It is reported beside the verdict above, which stays the
+seed 1-2 one.
+* **Seed 4 meets C1-C4.** Strict UDS 0.383, breadth 0.412, R 0.8075, RA 0.890,
+  WF 0.855, and an excess of +0.426 over its control.
+* **Seed 3 meets C1, C3 and C4 but misses C2.**
+  * It meets C1 with strict UDS 0.348, C3 with R 0.8025, RA 0.870 and WF
+    0.838, and C4 with +0.318.
+  * Its breadth is 0.216, under the per-seed bar of 0.32.
+* **Five-seed means.** Strict UDS 0.379, breadth 0.354, R 0.796, RA 0.880 and
+  WF 0.851.
+  * C1, C3 and C4 hold in every seed.
+  * C2 holds on the mean (0.354 ≥ 0.338) but not per seed.
+* **GradDiff on five seeds.** Strict UDS 0.160, breadth 0.210, R 0.769, RA
+  0.866 and WF 0.833.
+* **At equal general knowledge.** UNASKED-G is broader and deeper than GradDiff
+  of the same seed in all five seeds: +0.25 to +0.52 breadth and +0.18 to
+  +0.32 strict UDS.
+
 **What each outcome means (stated now).**
 * **C1-C4 met on seeds 1-2:** a configuration, chosen on one seed and
   confirmed on two more, that is deeper and broader than GradDiff, at least
@@ -650,6 +669,12 @@ had been seen at the time.
   * **Reporting:** C1-C4 per seed and five-seed means, beside the
     pre-registered verdict, which stays the seed 1-2 one. No threshold
     changes.
+  * **Outcome (RESULTS.md §20.8).**
+    * Seed 4 meets C1-C4.
+    * Seed 3 meets C1, C3 and C4 but misses C2: breadth 0.216, against 0.32.
+    * Five-seed means: strict UDS 0.379, breadth 0.354, R 0.796, RA 0.880 and
+      WF 0.851.
+    * The pre-registered verdict is unchanged.
 * **18 Oct 2026: component ablations of UNASKED-G (exploratory, seed 0,
   before any of them ran).** H9b's result had been seen. Three runs each
   remove one part of UNASKED-G (TOFU anchor 10), all else as H9b:

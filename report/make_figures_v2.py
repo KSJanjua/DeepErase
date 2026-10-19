@@ -198,12 +198,23 @@ def _strict_path(runs, split="trained"):
 
 
 def _depth_vs_general(method: str, label: str, fname: str, title: str,
-                      label_at=(-6, 9, "right"), config: str = ""):
-    """Strict depth against general knowledge: one of our methods beside the baselines' paths."""
+                      label_at=(-6, 9, "right"), config: str = "",
+                      base_seeds=(0, 1, 2), legend_below: bool = False):
+    """Strict depth against general knowledge: one of our methods beside the baselines' paths.
+
+    ``base_seeds`` are the baseline seeds to average; a seed a baseline does not
+    have is skipped, and the legend gives each baseline's count.
+    ``legend_below`` moves the legend under the axes, for when the damage paths
+    fill the lower right.
+    """
     fig, ax = plt.subplots(figsize=(5.0, 3.3))
     marks = {"ga": "o", "npo": "s", "graddiff": "^"}
+    counts = {}
     for m in ("ga", "npo", "graddiff"):
-        x, y = _strict_path([STUDIES / f"study_v2_{m}_1B_s{s}_lr{LR[m]}" for s in (0, 1, 2)])
+        dirs = [STUDIES / f"study_v2_{m}_1B_s{s}_lr{LR[m]}" for s in base_seeds]
+        dirs = [d for d in dirs if d.is_dir()]
+        counts[m] = len(dirs)
+        x, y = _strict_path(dirs)
         ax.plot(x, y, "-", color=GRAY, lw=1.6, zorder=2)
         ax.plot(x[0], y[0], marks[m], color=GRAY, ms=5.5, zorder=3,
                 markeredgecolor="#fcfcfb", markeredgewidth=1.0)
@@ -266,11 +277,17 @@ def _depth_vs_general(method: str, label: str, fname: str, title: str,
     h_base = tuple(plt.Line2D([], [], ls="", marker=marks[m], color=GRAY, ms=5)
                    for m in ("ga", "npo", "graddiff"))
     h_path = plt.Line2D([], [], color=GRAY, lw=1.6)
+    if len(set(counts.values())) == 1:
+        base_note = f"mean of {counts['ga']} seeds"
+    else:
+        base_note = "seeds: " + ", ".join(f"{NAME[m]} {counts[m]}" for m in ("ga", "npo", "graddiff"))
     ax.legend([h_un, h_base, h_path] + [h for h, _ in extra],
               [f"{label} checkpoint (α = 0)", "GA, NPO, GradDiff checkpoints",
-               "baselines, α 0 → 1 (mean of 3 seeds)"] + [t for _, t in extra],
+               f"baselines, α 0 → 1 ({base_note})"] + [t for _, t in extra],
               handler_map={tuple: HandlerTuple(ndivide=None, pad=0.6)},
-              frameon=False, fontsize=7, loc="lower right")
+              frameon=False, fontsize=7,
+              **({"loc": "upper center", "bbox_to_anchor": (0.5, -0.17)} if legend_below
+                 else {"loc": "lower right"}))
     ax.set_xlabel("general knowledge (mean of RA and WF knows-rate)")
     ax.set_ylabel("strict UDS, trained facts")
     ax.invert_xaxis()
@@ -289,7 +306,8 @@ def fig16_unasked_depth_vs_general():
 def fig20_unaskedg_lam10_depth_vs_general():
     _depth_vs_general("unaskedg", "UNASKED-G, anchor 10", "fig20_unaskedg_lam10_depth_vs_general.png",
                       "UNASKED-G (TOFU anchor 10): above every baseline and its own damage control",
-                      label_at=(8, -11, "left"), config="_lam10")
+                      label_at=(8, -11, "left"), config="_lam10", base_seeds=(0, 1, 2, 3, 4),
+                      legend_below=True)
 
 
 def fig19_unaskedg_depth_vs_general():

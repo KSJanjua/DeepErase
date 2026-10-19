@@ -149,6 +149,12 @@ def excess_over_control(real: dict, control: dict, key: str) -> List[Optional[fl
     None where the real utility lies outside the control path's range."""
     cu = np.asarray(control["utility"], dtype=float)
     cv = np.asarray(control[key], dtype=float)
+    # A control point missing either value cannot be placed. Left in, its NaN
+    # would sort last as the "highest utility" and void every comparison.
+    ok = np.isfinite(cu) & np.isfinite(cv)
+    cu, cv = cu[ok], cv[ok]
+    if cu.size == 0:
+        return [None] * len(real["utility"])
     # np.interp needs increasing x. A control's utility can repeat along its
     # path (R 0.800 at two alphas); an unstable sort then orders the tied
     # points differently on different machines and the result changes. The
@@ -174,8 +180,19 @@ def mean_excess(values: Sequence[Optional[float]]) -> Optional[float]:
 # Gathering the numbers from the run directories
 # ---------------------------------------------------------------------------
 
-def find_runs(studies: Path, method: str) -> Tuple[Dict[int, Path], Dict[int, Path]]:
-    """The main runs by seed, and the matched-damage control of each seed that has one."""
+#: The main study's replicates (ANALYSIS_PLAN §5: n = 3 per method). GradDiff
+#: also has seeds 3-4, run for H9b's five-seed extension (RESULTS.md §20.8).
+#: They are not replicates of H1-H6 and stay out of these verdicts.
+PREREGISTERED_SEEDS = (0, 1, 2)
+
+
+def find_runs(studies: Path, method: str, seeds: Sequence[int] = PREREGISTERED_SEEDS
+              ) -> Tuple[Dict[int, Path], Dict[int, Path]]:
+    """The main runs by seed, and the matched-damage control of each seed that has one.
+
+    Only ``seeds`` are read, so runs made later for another hypothesis cannot
+    change the pre-registered verdicts.
+    """
     registry = load_registry(studies)
     runs: Dict[int, Path] = {}
     controls: Dict[int, list] = {}
@@ -188,6 +205,8 @@ def find_runs(studies: Path, method: str) -> Tuple[Dict[int, Path], Dict[int, Pa
             continue
         status, _ = run_status(registry, d.name, cfg)
         seed = int(cfg.get("seed", 0))
+        if seed not in seeds:
+            continue
         if status == "ok":
             runs[seed] = d
         elif status == "control":
@@ -202,8 +221,9 @@ def find_runs(studies: Path, method: str) -> Tuple[Dict[int, Path], Dict[int, Pa
     return runs, chosen
 
 
-def collect(method: str, studies: Path, facts: Dict[str, dict]) -> dict:
-    runs, control_dirs = find_runs(studies, method)
+def collect(method: str, studies: Path, facts: Dict[str, dict],
+            seeds: Sequence[int] = PREREGISTERED_SEEDS) -> dict:
+    runs, control_dirs = find_runs(studies, method, seeds)
     loaded = {s: load_run(d) for s, d in runs.items()}
     controls = {s: load_run(d) for s, d in control_dirs.items()}
     ctl = controls.get(0)                  # H1's rule compares seed 0 (ANALYSIS_PLAN)
@@ -302,7 +322,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     help="reuse a fact_level_analysis JSON instead of recomputing")
     ap.add_argument("--n-boot", type=int, default=1000)
     ap.add_argument("--out", default="results/analysis/hypotheses_v2")
+    ap.add_argument("--seeds", default=",".join(map(str, PREREGISTERED_SEEDS)),
+                    help="comma-separated seeds to judge (default: the pre-registered 0,1,2)")
     args = ap.parse_args(argv)
+    seeds = tuple(int(s) for s in args.seeds.split(",") if s.strip())
 
     studies = Path(args.dir)
     facts: Dict[str, dict] = {}
@@ -312,10 +335,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     else:
         from deeperase.scripts.fact_level_analysis import analyse_run
         for m in METHODS:
-            for d in find_runs(studies, m)[0].values():
+            for d in find_runs(studies, m, seeds)[0].values():
                 facts[d.name] = analyse_run(d, n_boot=args.n_boot)
 
-    report = {m: collect(m, studies, facts) for m in METHODS}
+    report = {m: collect(m, studies, facts, seeds) for m in METHODS}
     report = {m: r for m, r in report.items() if r["runs"]}
     if not report:
         print(f"No protocol-v2 runs under {studies}")

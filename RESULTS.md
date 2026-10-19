@@ -1266,7 +1266,29 @@ controls (`control_x560_v2_ga_1B_s1`, `control_x570_v2_npo_1B_s1`).
 
 Against seed 0's control they had been +0.06 / +0.07 (GA) and +0.07 / +0.06
 (NPO). With its own control, each baseline's depth beyond damage shrinks
-further, to at most +0.05 strict. The per-seed H1 check in `hypotheses_v2.md`
+further, to at most +0.05 strict.
+
+*Addendum (19 Oct 2026).* The seed-2 controls of GA and NPO have run
+(`control_x520_v2_{ga,npo}_1B_s2_lr1e-08`). The audit
+(`results/analysis/uds_audit_v2`) now pairs every baseline seed with its own
+control.
+
+| Seed 2, against its own control | UDS, trained / held-out | Strict UDS, trained / held-out |
+|---|---|---|
+| GA | −0.05 / −0.08 | −0.04 / −0.07 |
+| NPO | −0.01 / −0.02 | −0.00 / −0.02 |
+
+With every seed against its own control, GA, GradDiff and NPO lie between
+−0.04 and +0.10 strict on trained facts. GA seed 0 is the highest, at +0.10.
+
+The audit also had a pairing defect, fixed on 19 Oct. It kept one control
+per method and seed:
+* A tagged training could be paired with another arm's control: UNASKED-G
+  with anchor 3 got anchor 10's, and UNASKED got the general-matched one.
+* Runs are now matched only with a control of their own tag. Re-measurements
+  of a main checkpoint (`ext`, `para`) share the main run's control.
+* No cited figure changes. C4 and E2 come from `h9_report` and
+  `unasked_report`, which pair by tag already. The per-seed H1 check in `hypotheses_v2.md`
 now reads: GA 2 of 2 seeds, NPO 2 of 2, GradDiff 2 of 3. Seed 2's controls
 were still running. Our own method, STRANGER, is
 pre-registered against strict UDS for this reason (ANALYSIS_PLAN H7; GA and NPO
@@ -2010,6 +2032,79 @@ checkpoint:
 That is three to five orders of magnitude above every baseline, though
 still far from 0.05, where the model would be indistinguishable from
 retain90.
+
+#### Extension to seeds 3 and 4 (19 Oct 2026): five seeds
+
+Declared before these runs (ANALYSIS_PLAN §9, 19 Oct): UNASKED-G (anchor
+10) and GradDiff on seeds 3 and 4, with UNASKED-G's R-matched controls. The
+verdict above stays the pre-registered one, and this is reported beside it.
+* **Where and how.** H100 slice, clean trees; each run records the box's head
+  when it started:
+  * UNASKED-G: `9a44680` and `c2cb5ab`, kept epoch 19 in both;
+  * GradDiff: `19ac07d` and `0ae06dd`, kept epochs 7 and 9;
+  * controls: 10× the update's norm, `0806fc0` and `8633cbc`.
+
+| Checkpoint (α = 0) | Strict UDS, trained | UDS, trained | Breadth, trained | Strict UDS, held-out | Breadth, held-out | Strict UDS, paraphrased Q | R | RA | WF | Excess over R-matched control |
+|---|---|---|---|---|---|---|---|---|---|---|
+| UNASKED-G seed 3 | 0.348 | 0.433 | **0.216** | 0.245 | 0.375 | 0.299 | 0.802 | 0.870 | 0.838 | +0.318 |
+| UNASKED-G seed 4 | 0.383 | 0.441 | 0.412 | 0.244 | 0.291 | 0.306 | 0.807 | 0.890 | 0.855 | +0.426 |
+| **UNASKED-G, mean of 5 seeds** | **0.379** | 0.453 | **0.354** | 0.262 | 0.333 | 0.319 | **0.796** | **0.880** | **0.851** | +0.285 to +0.426 |
+| GradDiff seed 3 | 0.156 | 0.159 | 0.170 | 0.086 | 0.214 | – | 0.772 | 0.880 | 0.846 | – |
+| GradDiff seed 4 | 0.220 | 0.232 | 0.371 | 0.132 | 0.214 | – | 0.765 | 0.860 | 0.829 | – |
+| GradDiff, mean of 5 seeds | 0.160 | 0.166 | 0.210 | 0.080 | 0.200 | – | 0.769 | 0.866 | 0.833 | – |
+
+**Seed 4 meets C1-C4.**
+
+**Seed 3 meets C1, C3 and C4, but misses C2.**
+* Its breadth of 0.216 is under the per-seed bar of 0.32.
+* The shortfall is in the direct-question tiers: calibrated B0 0.23 and B1
+  0.20, against 0.32-0.44 in the other seeds.
+* It is not a calibration artefact. M_full knows 0.738 of seed 3's trained
+  items and retain90 0.517, a range of 0.22, against 0.23-0.27 in the other
+  seeds.
+* The method reached its target as closely as elsewhere: the remaining gap is
+  0.245, against 0.234-0.246.
+* It is still broader than GradDiff of the same seed (0.170).
+
+**Over five seeds:**
+* **C1 met:** every seed ≥ 0.26, mean 0.379 ≥ 0.282.
+* **C2 met on the mean, not per seed:** the mean of 0.354 is ≥ 0.338, but
+  seed 3 is under its bar.
+* **C3 met:** R 0.796, RA 0.880 and WF 0.851; no seed is below a floor.
+* **C4 met in every seed:** +0.324, +0.285, +0.308, +0.318 and +0.426.
+  Matched on general knowledge instead: seed 3 +0.349, seed 4 +0.491.
+
+**Against GradDiff's five-seed means**, UNASKED-G has:
+* 2.4× the strict depth on trained facts (0.379 against 0.160) and 3.3× on
+  held-out facts;
+* 1.7× the breadth on trained facts (0.354 against 0.210) and on held-out
+  facts;
+* better R (+0.027), RA (+0.014) and WF (+0.019).
+
+The ratios are smaller than over three seeds (2.8× and 2.2×). Seed 4 is
+GradDiff's strongest run (strict UDS 0.220, breadth 0.371), and seed 3 is
+UNASKED-G's weakest on breadth. The seed-to-seed sd of breadth is 0.08
+(UNASKED-G) and 0.10 (GradDiff).
+
+**At equal general knowledge**, against GradDiff of the same seed:
+* seed 3: +0.251 breadth and +0.180 strict UDS (11 matched α);
+* seed 4: +0.410 and +0.315 (5 α).
+
+So in all five seeds, UNASKED-G is broader (+0.25 to +0.52) and deeper (+0.18
+to +0.32) at equal general knowledge. Matched on R, seed 4 has no overlap:
+UNASKED-G's R stays above GradDiff's whole path.
+
+**The other checks hold on seeds 3-4:**
+* **Paraphrased questions:** strict UDS keeps 0.86 and 0.80 of its value;
+  over five seeds, 0.84.
+* **Paraphrased answers:** the reworded answer is no less deep, paired:
+  * seed 3: 0.375 against 0.307;
+  * seed 4: 0.454 against 0.389.
+* **TOFU Forget Quality, trained split:**
+  * UNASKED-G: 2.8e-4 and 2.1e-3;
+  * GradDiff: 2.4e-8 and 6.9e-9.
+
+The relearning dose-response (§20.9) stays at seeds 0-2.
 
 ### 20.9 Relearning dose-response: UNASKED-G holds out against weak attacks; GradDiff does not
 

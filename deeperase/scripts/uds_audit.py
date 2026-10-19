@@ -20,8 +20,14 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence
 
 from deeperase.eval.uds_diagnostics import BANDS, report_diagnostics
-from deeperase.registry import arm_of, load_registry, run_status, variant_of
+from deeperase.registry import TAGGED, arm_of, load_registry, run_status, variant_of
 from deeperase.scripts.hypothesis_report import excess_over_control, mean_excess
+
+#: Tags that re-measure a main run's own checkpoint (more α, more depth sets).
+#: They share its matched-damage control. Every other tag is a different
+#: training (an anchor weight, an ablation) and is matched only with a control
+#: of its own tag.
+SAME_CHECKPOINT_TAGS = ("ext", "para")
 
 
 def audit_run(run: Path) -> Optional[dict]:
@@ -59,6 +65,37 @@ def audit_run(run: Path) -> Optional[dict]:
 
 def _path(rows: List[dict], key: str) -> dict:
     return {"utility": [r["utility"] for r in rows], key: [r[key] for r in rows]}
+
+
+def control_tag(run_id: str) -> str:
+    """A control's tag: what follows its learning rate (``lam10``,
+    ``genmatch``), or "" for the R-matched control of a main run."""
+    m = TAGGED.search(run_id)
+    return m.group(1) if m else ""
+
+
+def pairing_tag(audit: dict) -> str:
+    """The control tag a run is matched with: "" for a main run or one that
+    re-measures a main run's checkpoint, else the run's own tag."""
+    arm = audit["arm"]
+    return "" if arm == "main" or arm in SAME_CHECKPOINT_TAGS else arm
+
+
+def index_controls(audits: Sequence[dict]) -> Dict[tuple, Dict[int, dict]]:
+    """Controls by (method, variant, tag), then seed."""
+    controls: Dict[tuple, Dict[int, dict]] = {}
+    for a in audits:
+        if a["arm"] == "control":
+            key = (a["method"], a["variant"], control_tag(a["run"]))
+            controls.setdefault(key, {})[int(a["seed"])] = a
+    return controls
+
+
+def controls_for(real: dict, controls: Dict[tuple, Dict[int, dict]]) -> Dict[int, dict]:
+    """The seed-indexed controls a run may be matched with: same method,
+    variant and tag. A main run never takes a tagged control such as
+    ``genmatch``, and a tagged training never takes another arm's control."""
+    return controls.get((real["method"], real["variant"], pairing_tag(real)), {})
 
 
 def strict_excess(real: dict, controls: Dict[int, dict]) -> Optional[dict]:
@@ -124,16 +161,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"No runs with per-example depth under {studies}/{args.glob}")
         return 1
 
-    # Each seed's matched control, as hypothesis_report pairs them.
-    controls: Dict[tuple, Dict[int, dict]] = {}
-    for a in audits:
-        if a["arm"] == "control":
-            controls.setdefault((a["method"], a["variant"]), {})[int(a["seed"])] = a
+    # Each seed's matched control: same method, variant and tag (controls_for).
+    controls = index_controls(audits)
     excess = {}
     for a in audits:
         if a["arm"] == "control":
             continue
-        ex = strict_excess(a, controls.get((a["method"], a["variant"]), {}))
+        ex = strict_excess(a, controls_for(a, controls))
         if ex:
             excess[a["run"]] = ex
 

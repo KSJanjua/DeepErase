@@ -109,3 +109,13 @@ def test_excess_over_control_is_defined_at_tied_control_utilities():
     assert ea == pytest.approx(eb)
     assert ea[0] == pytest.approx(0.50 - 0.15)          # the tied values' mean
     assert ea[1] == pytest.approx(0.55 - (0.15 + 0.30) / 2)
+
+
+def test_excess_ignores_control_points_with_missing_values():
+    real = {"utility": [0.8, 0.75], "strict": [0.5, 0.6]}
+    control = {"utility": [0.8, None, 0.7], "strict": [0.1, 0.2, 0.3]}
+    ex = hr.excess_over_control(real, control, "strict")
+    assert ex[0] == pytest.approx(0.4)          # control 0.1 at R 0.80
+    assert ex[1] == pytest.approx(0.4)          # control 0.2, interpolated at R 0.75
+    assert hr.excess_over_control(real, {"utility": [None], "strict": [0.1]}, "strict") \
+        == [None, None]

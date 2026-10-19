@@ -76,3 +76,44 @@ def test_audit_reproduces_the_ga_overshoot_finding(tmp_path):
     assert rows[2.0]["strict"] == pytest.approx(0.522, abs=2e-3)    # flat past alpha 1
     assert rows[2.0]["uds"] - rows[1.0]["uds"] > 0.1                 # while UDS rises
     assert "study_v2_ga_1B_s0_lr1e-08" in d["excess"]
+
+
+def _audit(run, method="unaskedg", seed=0, arm="main"):
+    return {"run": run, "method": method, "seed": seed, "variant": "answer/float32", "arm": arm}
+
+
+def test_each_run_is_matched_with_a_control_of_its_own_tag():
+    from deeperase.scripts.uds_audit import controls_for, index_controls
+    audits = [
+        _audit("control_x10_v2_unaskedg_1B_s0_lr3e-06", arm="control"),
+        _audit("control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10", arm="control"),
+        _audit("control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10", seed=1, arm="control"),
+        _audit("control_x15_v2_unasked_1B_s0_lr3e-06_genmatch", method="unasked", arm="control"),
+        _audit("control_x10_v2_unasked_1B_s0_lr3e-06", method="unasked", arm="control"),
+        _audit("control_x540_v2_ga_1B_s0_lr1e-08", method="ga", arm="control"),
+    ]
+    idx = index_controls(audits)
+
+    def matched(run, **kw):
+        c = controls_for(_audit(run, **kw), idx)
+        seed = kw.get("seed", 0)
+        ctl = c.get(seed) or c.get(0)
+        return ctl["run"] if ctl else None
+
+    # a main run takes the untagged control, never another arm's
+    assert matched("study_v2_unaskedg_1B_s0_lr3e-06") == "control_x10_v2_unaskedg_1B_s0_lr3e-06"
+    assert matched("study_v2_unaskedg_1B_s1_lr3e-06_lam10", seed=1, arm="lam10") \
+        == "control_x11_v2_unaskedg_1B_s1_lr3e-06_lam10"
+    # the general-knowledge-matched control is never the default pairing
+    assert matched("study_v2_unasked_1B_s0_lr3e-06", method="unasked") \
+        == "control_x10_v2_unasked_1B_s0_lr3e-06"
+    # a tagged training with no control of its own tag gets none
+    assert matched("study_v2_unasked_1B_s0_lr3e-06_lam3", method="unasked", arm="lam3") is None
+    # re-measuring a main checkpoint (more alphas, paraphrases) shares its control
+    assert matched("study_v2_ga_1B_s0_lr1e-08_ext", method="ga", arm="ext") \
+        == "control_x540_v2_ga_1B_s0_lr1e-08"
+    assert matched("study_v2_ga_1B_s0_lr1e-08_para", method="ga", arm="para") \
+        == "control_x540_v2_ga_1B_s0_lr1e-08"
+    # a seed without its own control falls back to seed 0 of the same tag
+    assert matched("study_v2_unaskedg_1B_s2_lr3e-06_lam10", seed=2, arm="lam10") \
+        == "control_x11_v2_unaskedg_1B_s0_lr3e-06_lam10"

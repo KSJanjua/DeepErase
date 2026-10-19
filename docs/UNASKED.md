@@ -102,6 +102,13 @@ GradDiff and NPO reach at their checkpoint.
 > Its strict depth exceeds the R-matched random-direction control by
 > +0.29 to +0.32 in every seed (C4). **All four criteria are met.**
 >
+> **Five seeds** (19 Oct, declared extension; RESULTS.md §20.8):
+> * strict UDS 0.379 against GradDiff's 0.160, and breadth 0.354 against 0.210;
+> * R 0.796, RA 0.880 and WF 0.851, against 0.769, 0.866 and 0.833;
+> * every seed clears matched damage (+0.285 to +0.426).
+>
+> Seed 3 misses the per-seed breadth bar: 0.216, against 0.32.
+>
 > **Relearning** (RESULTS.md §20.9): it is far harder to relearn than GradDiff,
 > GA and NPO under weak attacks, on 3 seeds (latent index 0.54 against 0.90 at
 > lr 1e-7). Every method comes back at 1e-5.
