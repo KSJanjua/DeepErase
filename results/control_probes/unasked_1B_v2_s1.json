@@ -1,0 +1,158 @@
+{
+ "what": "matched-damage probe: utility of the T1 control's sweep at many scales",
+ "method": "unasked",
+ "learning_rate": 3e-06,
+ "seed": 1,
+ "size": "1B",
+ "protocol": "v2",
+ "epochs": 20,
+ "selected_epoch": 19,
+ "baseline_utility": 0.805,
+ "update_norm": 3.2586377393576433,
+ "real_path": [
+  {
+   "alpha": 0.0,
+   "utility": 0.7825,
+   "general_utility": 0.7603686635944701
+  },
+  {
+   "alpha": 1.0,
+   "utility": 0.725,
+   "general_utility": 0.45161290322580644
+  }
+ ],
+ "control": [
+  {
+   "scale": 1.0,
+   "alpha": 0.0,
+   "utility": 0.8025,
+   "general_utility": 0.8709677419354839
+  },
+  {
+   "scale": 1.0,
+   "alpha": 1.0,
+   "utility": 0.8025,
+   "general_utility": 0.8709677419354839
+  },
+  {
+   "scale": 10.0,
+   "alpha": 0.0,
+   "utility": 0.785,
+   "general_utility": 0.8709677419354839
+  },
+  {
+   "scale": 10.0,
+   "alpha": 1.0,
+   "utility": 0.7425,
+   "general_utility": 0.783410138248848
+  },
+  {
+   "scale": 30.0,
+   "alpha": 0.0,
+   "utility": 0.6525,
+   "general_utility": 0.543778801843318
+  },
+  {
+   "scale": 30.0,
+   "alpha": 1.0,
+   "utility": 0.25,
+   "general_utility": 0.25806451612903225
+  },
+  {
+   "scale": 100.0,
+   "alpha": 0.0,
+   "utility": 0.2075,
+   "general_utility": 0.2488479262672811
+  },
+  {
+   "scale": 100.0,
+   "alpha": 1.0,
+   "utility": 0.19,
+   "general_utility": 0.2857142857142857
+  },
+  {
+   "scale": 200.0,
+   "alpha": 0.0,
+   "utility": 0.19,
+   "general_utility": 0.2857142857142857
+  },
+  {
+   "scale": 200.0,
+   "alpha": 1.0,
+   "utility": 0.1925,
+   "general_utility": 0.22119815668202766
+  },
+  {
+   "scale": 300.0,
+   "alpha": 0.0,
+   "utility": 0.2175,
+   "general_utility": 0.2304147465437788
+  },
+  {
+   "scale": 300.0,
+   "alpha": 1.0,
+   "utility": 0.1975,
+   "general_utility": 0.18433179723502305
+  },
+  {
+   "scale": 500.0,
+   "alpha": 0.0,
+   "utility": 0.19,
+   "general_utility": 0.2304147465437788
+  },
+  {
+   "scale": 500.0,
+   "alpha": 1.0,
+   "utility": 0.245,
+   "general_utility": 0.2626728110599078
+  },
+  {
+   "scale": 1000.0,
+   "alpha": 0.0,
+   "utility": 0.245,
+   "general_utility": 0.2626728110599078
+  },
+  {
+   "scale": 1000.0,
+   "alpha": 1.0,
+   "utility": 0.2475,
+   "general_utility": 0.2119815668202765
+  },
+  {
+   "scale": 2000.0,
+   "alpha": 0.0,
+   "utility": 0.2475,
+   "general_utility": 0.2119815668202765
+  },
+  {
+   "scale": 2000.0,
+   "alpha": 1.0,
+   "utility": 0.2775,
+   "general_utility": 0.2672811059907834
+  }
+ ],
+ "target": {
+  "alpha": 1.0,
+  "utility": 0.725
+ },
+ "recommended_scale": 10.0,
+ "why": "between 10 (0.743) and 30 (0.250)",
+ "seconds": 1375.4,
+ "git": {
+  "commit": "d114d2de89e594e1881acc0e3b57cc11d4ea69e1",
+  "branch": "rishabh-development",
+  "dirty": false
+ },
+ "environment": {
+  "python": "3.11.17",
+  "platform": "Linux-5.15.0-1053-nvidia-x86_64-with-glibc2.35",
+  "torch": "2.6.0+cu124",
+  "transformers": "4.46.3",
+  "tokenizers": "0.20.3",
+  "datasets": "3.1.0",
+  "numpy": "1.26.4",
+  "cuda": "12.4",
+  "device": "NVIDIA H100 80GB HBM3 MIG 3g.40gb",
+  "tf32_matmul": false
+ }
+}
