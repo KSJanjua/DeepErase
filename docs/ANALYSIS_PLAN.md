@@ -640,6 +640,16 @@ had been seen at the time.
   E1-E5 and their thresholds are unchanged. Every result is labelled
   exploratory and reported with the failed gate. λ = 3 is reported beside
   λ = 1, never in its place.
+* **19 Oct 2026: H9b extended to seeds 3-4 (declared before any of these
+  runs).** *H9b's verdict on seeds 1-2 and all seed 0-2 results had been
+  seen.* The GPU stayed free, and five seeds are the usual bar for a method
+  claim.
+  * **The runs:** UNASKED-G (anchor 10) on seeds 3 and 4, with their R-matched
+    controls, and GradDiff (lr 5e-8) on seeds 3 and 4, so the comparison
+    stays seed-for-seed.
+  * **Reporting:** C1-C4 per seed and five-seed means, beside the
+    pre-registered verdict, which stays the seed 1-2 one. No threshold
+    changes.
 * **18 Oct 2026: component ablations of UNASKED-G (exploratory, seed 0,
   before any of them ran).** H9b's result had been seen. Three runs each
   remove one part of UNASKED-G (TOFU anchor 10), all else as H9b:
