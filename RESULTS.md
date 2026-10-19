@@ -2079,6 +2079,19 @@ brackets:
 
 Figure 17 shows the mean over seeds, with the seed range as a band.
 
+**Relearning resistance alone does not prove clean removal.** UNASKED with
+λ = 1 and no general anchor (seed 0; `unasked_1B_v2_s0_dose.json`) is even
+harder to relearn at the weakest attack:
+* index 0.20 with no attack, 0.23 at 1e-7, 0.50 at 3e-7, 0.76 at 1e-6 and
+  0.93 at 1e-5;
+* yet at equal general knowledge its depth is no better than random damage
+  (§19.5).
+
+A model that has been damaged can also be slow to relearn. UNASKED-G's case
+does not rest on relearning alone. It is resistant while its general
+knowledge stays intact (RA 0.880, WF 0.855) and its depth beats matched
+damage.
+
 **Caveat.** One attack set per seed (half of each author's trained facts),
 on one model.
 

@@ -303,7 +303,9 @@ def fig17_relearn_dose():
     rows = json.loads((ROOT / "results/analysis/relearn.json").read_text())["rows"]
     dose = {}
     for r in rows:
-        if "_dose" in r["record"]:
+        # UNASKED (λ = 1, no anchors) is left out: its resistance comes with general
+        # damage (RESULTS §20.9), and a second violet line would read as UNASKED-G.
+        if "_dose" in r["record"] and r["method"] != "unasked":
             dose.setdefault(r["method"], {}).setdefault(r["seed"], {})[r["attack_lr"]] = r
     if not dose:
         print("fig17: no dose-response records yet")
