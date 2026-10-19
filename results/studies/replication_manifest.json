@@ -1042,6 +1042,27 @@
         "branch": "rishabh-development",
         "dirty": false
       }
+    },
+    {
+      "generated": "2026-10-19 05:10:19",
+      "protocol": "v2",
+      "size": "1B",
+      "sampling": "random",
+      "epochs": 20,
+      "learning_rate": 3e-06,
+      "methods": [
+        "unaskedg"
+      ],
+      "seeds": [
+        3
+      ],
+      "control": "none",
+      "control_scale": 1.0,
+      "git": {
+        "commit": "9a44680bd7220fff74e030f5db94667871ca3d96",
+        "branch": "rishabh-development",
+        "dirty": false
+      }
     }
   ],
   "runs": {
@@ -1518,7 +1539,16 @@
       "learning_rate": 3e-06,
       "finished": "2026-10-19 01:55:08",
       "commit": "5b193eb5c649ef6c3e7917d92e6f5711eb532171"
+    },
+    "study_v2_unaskedg_1B_s3_lr3e-06_lam10": {
+      "run_id": "study_v2_unaskedg_1B_s3_lr3e-06_lam10",
+      "status": "ok",
+      "minutes": 66.1,
+      "protocol": "v2",
+      "learning_rate": 3e-06,
+      "finished": "2026-10-19 05:10:19",
+      "commit": "9a44680bd7220fff74e030f5db94667871ca3d96"
     }
   },
-  "updated": "2026-10-19 01:55:08"
+  "updated": "2026-10-19 05:10:19"
 }
