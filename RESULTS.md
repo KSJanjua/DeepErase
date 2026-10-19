@@ -1637,6 +1637,27 @@ recorded commit `cbe6e41` (clean tree), H100 slice.
      damage of the same general-knowledge cost would give.
 
 
+### 19.5b UNASKED over three seeds (H8-X, completed 19 Oct)
+
+Seeds 1-2 and their R-matched controls ran after the GPU window was extended.
+
+| Checkpoint | Trained: UDS / strict | Held-out: UDS / strict | Paraphrased Q: UDS / strict | R | RA | WF |
+|---|---|---|---|---|---|---|
+| seed 0 | 0.532 / 0.452 | 0.397 / 0.333 | 0.410 / 0.366 | 0.772 | 0.72 | 0.735 |
+| seed 1 | 0.472 / 0.387 | 0.340 / 0.304 | 0.430 / 0.349 | 0.782 | 0.77 | 0.752 |
+| seed 2 | 0.477 / 0.385 | 0.389 / 0.330 | 0.403 / 0.329 | 0.767 | 0.80 | 0.795 |
+
+H8-X's criteria over three seeds:
+* **E1 met:** mean strict UDS 0.408 ≥ 0.35.
+* **E2 met:** the excess over the R-matched control is +0.284, +0.249 and
+  +0.158, each ≥ 0.15.
+* **E3 met:** paraphrased/trained ratio 0.85.
+* **E4 not met:** RA 0.76, WF 0.761.
+* **E5:** held-out UDS 0.375, strict 0.322.
+
+Matched on general knowledge instead (seed 0, §19.5), the excess is about
+zero. That is why UNASKED-G (§20) adds a general anchor.
+
 ### 19.6 A stronger TOFU anchor (λ = 3), and depth on paraphrased answers
 
 Same as §19.2, but with the TOFU retain anchor at weight 3. Seed 0, commit
@@ -2097,6 +2118,21 @@ at commits `f381c61` (no general anchor), `a0cf5a9` (question only) and
    * GradDiff given the same data does not gain (§20.6), so the data does not
      do this on its own: it takes the bounded target.
 3. **Every expectation stated before the runs holds.**
+
+**The no-general-anchor ablation on seeds 1-2 (18-19 Oct)** replicates
+seed 0:
+
+| At the checkpoint | Strict UDS, trained | Breadth, trained | R | RA | WF |
+|---|---|---|---|---|---|
+| UNASKED-G (anchor 10), seeds 0 / 1 / 2 | 0.411 / 0.380 / 0.372 | 0.392 / 0.385 / 0.364 | 0.792 / 0.785 / 0.792 | 0.880 ×3 | 0.855 ×3 |
+| without the general anchor, seeds 0 / 1 / 2 | 0.392 / 0.385 / 0.384 | 0.381 / 0.275 / 0.364 | 0.792 / 0.785 / 0.787 | 0.810 / 0.790 / 0.830 | 0.821 / 0.795 / 0.829 |
+| mean, UNASKED-G | 0.388 | 0.380 | 0.790 | 0.880 | 0.855 |
+| mean, without the general anchor | 0.387 | 0.340 | 0.788 | 0.810 | 0.815 |
+
+* **Depth:** unchanged.
+* **Breadth:** 0.04 lower without the anchor, mostly from seed 1.
+* **RA and WF:** lower in every seed without the anchor, by 0.07 and 0.04 on
+  average, which takes them below GradDiff (0.863 / 0.829).
 
 **The GPU stayed available after 10:00 IST on 18 Oct.** These ran:
 * the NPO paraphrase rerun;

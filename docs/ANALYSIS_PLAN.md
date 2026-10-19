@@ -365,6 +365,14 @@ The rule said stop and report. The follow-up runs went ahead anyway, as a
 second declared deviation (§9, 17 Oct). Everything after X-G3 is exploratory,
 past a failed gate.
 
+**Final, three seeds (19 Oct 2026; RESULTS.md §19.5b):**
+* **E1 met:** 0.408.
+* **E2 met:** +0.284, +0.249 and +0.158 over the R-matched controls.
+* **E3 met:** 0.85.
+* **E4 not met:** RA 0.76, WF 0.761.
+
+Matched on general knowledge (seed 0), the excess is about zero.
+
 ### H9 — UNASKED-G: deeper and broader than GradDiff, at no extra utility cost (fixed 17 Oct 2026, before any UNASKED-G run)
 
 **Status: exploratory.** It was designed after UNASKED's seed-0 results had
@@ -654,6 +662,9 @@ had been seen at the time.
     (0.165 and 0.186), against 0.392 for the full target.
   * Without the general anchor, depth and breadth stay (0.392 / 0.381), but
     RA falls to 0.810 and WF to 0.821.
+  * On three seeds, without the general anchor: depth 0.387 (against 0.388),
+    breadth 0.340 (against 0.380), RA 0.810 (against 0.880) and WF 0.815
+    (against 0.855).
 * **17 Oct 2026: H9, UNASKED-G against GradDiff at equal utility
   (exploratory).** *UNASKED-G seeds 0-1 had been seen.*
   * **Why.** The checkpoints sit at different utility. GradDiff's is held at
