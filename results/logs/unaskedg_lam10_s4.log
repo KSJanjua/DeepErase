@@ -1,0 +1,316 @@
+==============================================================================
+Replication matrix: 1 run(s) -- 1 method(s) x 1 seed(s) at 1B
+interpreter: /workspace/Capstone_Project/.venv/bin/python
+protocol=v2  sampling=random  epochs=20  lr=3e-06  n_examples=100  n_breadth=400  control=none
+commit=c2cb5abff56a34e46d516a6bd798edcedb8d1155  dirty=False
+==============================================================================
+  unaskedg  seed=4  ->  study_v2_unaskedg_1B_s4_lr3e-06_lam10        queued
+
+------------------------------------------------------------------------------
+>> study_v2_unaskedg_1B_s4_lr3e-06_lam10   (42.0 GB free)
+   /workspace/Capstone_Project/.venv/bin/python -m deeperase.scripts.run_study --protocol v2 --method unaskedg --size 1B --seed 4 --sampling random --epochs 20 --learning-rate 3e-06 --n-examples 100 --n-breadth 400 --reference-spans reference_uds/tofu_data/forget10_filtered.json --cache-dir /workspace/Capstone_Project/hf_cache --output-dir results/studies --run-id study_v2_unaskedg_1B_s4_lr3e-06_lam10 --retain-weight 10 --paraphrase-depth --paraphrase-answer-depth
+------------------------------------------------------------------------------
+07:25:37 INFO    PyTorch version 2.6.0+cu124 available.
+07:25:38 INFO    [1/6] Preparing evaluation data (forget split: half)
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+07:25:38 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+07:25:38 WARNING Found the latest cached dataset configuration 'forget10' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/forget10/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 08:25:58 2026).
+07:25:38 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+07:25:38 INFO      reference annotations (trained): 184 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+07:25:38 INFO      depth example sampling (trained): random (seed 4)
+07:25:38 INFO      100 depth examples tokenised (trained)
+07:25:38 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+07:25:38 INFO      reference annotations (heldout): 183 candidates ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+07:25:38 INFO      depth example sampling (heldout): random (seed 5)
+07:25:38 INFO      100 depth examples tokenised (heldout)
+07:25:39 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+07:25:39 INFO      100 paraphrased-question depth examples
+07:25:39 INFO    Loaded 367 reference-annotated examples ({'records': 367, 'prefix': 346, 'unique': 21, 'search': 0, 'skipped_not_found': 0})
+07:25:39 INFO      38 of 200 trained facts have their entity verbatim in the paraphrased answer
+07:25:39 INFO      forget objective: 200 rows (answer loss)
+07:25:39 INFO    UNASKED inputs (both): {'rows': 200, 'rows_with_positions': 200, 'positions': 6375, 'layers': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], 'k': 4, 'target': 'unasked', 'question_only': False, 'names_sha256': 'f410a2103bf674859001dd84bd0aa0b3bd26eabc2caa21f17cc5d7d4fb2c7a58'}
+07:25:39 INFO      2379 breadth items from data/breadth_items_v2.json
+07:25:39 INFO    [2/6] Measuring reference models (anchors both axes)
+07:25:39 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+07:25:43 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.6s
+07:27:26 INFO      full  forget:all=0.777  R=0.805  RA=0.890  WF=0.855
+07:27:26 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 (dtype=torch.float32, device=cuda:0)
+07:27:30 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_retain90 in 3.7s
+07:29:12 INFO      retain90  forget:all=0.527  R=0.810  RA=0.880  WF=0.855
+07:29:12 INFO      TOFU forget quality, full vs retain90 (before unlearning): {'trained': '2.89e-11', 'heldout': '5.95e-11', 'all': '8.51e-19'}
+07:29:12 INFO      calibration forget:trained: floor=0.517 ceiling=0.760 range=0.243
+07:29:12 INFO      calibration forget:heldout: floor=0.537 ceiling=0.795 range=0.258
+07:29:12 INFO    [3/6] Depth Stage-1 baseline (retain90 -> full)
+07:29:14 INFO    Captured hidden states for 100 examples across 16 layers
+07:29:16 INFO    Captured hidden states for 100 examples across 16 layers
+07:29:18 INFO    Captured hidden states for 100 examples across 16 layers
+07:29:19 INFO    Captured hidden states for 38 examples across 16 layers
+07:29:19 INFO    Captured hidden states for 38 examples across 16 layers
+07:31:00 INFO      trained: 93/100 examples have a Knowledge-Encoding layer
+07:31:00 INFO      heldout: 97/100 examples have a Knowledge-Encoding layer
+07:31:00 INFO      trained_para: 96/100 examples have a Knowledge-Encoding layer
+07:31:00 INFO      trained_ans_ref: 37/38 examples have a Knowledge-Encoding layer
+07:31:00 INFO      trained_para_ans: 36/38 examples have a Knowledge-Encoding layer
+07:31:03 INFO    Freed full -- cuda:0: 4.98 GB allocated, 5.01 GB reserved, 36.58 GB free of 42.28 GB (13% used)
+07:31:05 INFO    Freed retain90 -- cuda:0: 0.03 GB allocated, 0.06 GB reserved, 41.53 GB free of 42.28 GB (2% used)
+07:31:05 INFO    [4/6] Unlearning with unaskedg (float32, answer)
+07:31:05 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+07:31:09 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 4.1s
+07:31:12 INFO      general anchor: 400 QA rows from data/general_anchor.json
+07:31:12 INFO    [3b/6] Loading retain split for unaskedg
+Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+07:31:12 WARNING Using the latest cached version of the dataset since locuslab/TOFU couldn't be found on the Hugging Face Hub (offline mode is enabled).
+Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+07:31:12 WARNING Found the latest cached dataset configuration 'retain90' at /workspace/Capstone_Project/hf_cache/locuslab___tofu/retain90/0.0.0/324592d84ae4f482ac7249b9285c2ecdb53e3a68 (last modified on Tue Oct 13 09:50:51 2026).
+07:31:12 INFO      retain split retain90: 21 authors held out of the retain term (the R tier asks about them)
+07:31:12 INFO      retain split retain90: 200 of 3180 examples (random)
+07:31:31 INFO      baseline before training: utility=0.8050 forget_nll=0.3877
+07:31:51 INFO    STRANGER targets (unasked): {'median_norm': {0: 1.6715811491012573, 1: 2.242424964904785, 2: 2.8211071491241455, 3: 3.3812763690948486, 4: 3.64377498626709, 5: 3.963555335998535, 6: 4.185987949371338, 7: 4.480488300323486, 8: 5.020214080810547, 9: 6.034599781036377, 10: 6.780059337615967, 11: 8.236470222473145, 12: 9.845183372497559, 13: 12.092000961303711, 14: 14.894735336303711, 15: 16.989765167236328}, 'sigma2': {0: 2.702518939971924, 1: 5.051812648773193, 2: 8.265555381774902, 3: 11.809057235717773, 4: 14.01742935180664, 5: 16.458276748657227, 6: 18.32968521118164, 7: 21.255380630493164, 8: 26.238813400268555, 9: 37.40193176269531, 10: 47.85789108276367, 11: 70.14300537109375, 12: 99.66112518310547, 13: 147.09634399414062, 14: 223.55662536621094, 15: 360.8724365234375}, 'gap_over_sigma2': {0: 0.04313586307714756, 1: 0.05707546940516511, 2: 0.08054343207151027, 3: 0.11719305588913043, 4: 0.14519095353624967, 5: 0.2069039227236638, 6: 0.2607222305352926, 7: 0.2851969738533253, 8: 0.3008844420843815, 9: 0.29190865964989005, 10: 0.3108568669051183, 11: 0.31799267853149477, 12: 0.341805494280966, 13: 0.3619993908780671, 14: 0.37967598404669384, 15: 0.4437934733229441}, 'forget_positions': 6375, 'forget_positions_dropped': 0, 'retain_positions': 10523, 'retain_positions_dropped': 0, 'general_positions': 7545, 'general_positions_dropped': 0}
+07:31:53 INFO      training 112 tensors (973M parameters) matching '^model\\.layers\\.\\d+\\.(self_attn|mlp)\\.'
+07:31:55 INFO      epoch 0 step 0  loss=0.4512  forget_nll=0.7266
+07:32:03 INFO      epoch 0 step 20  loss=0.3084  forget_nll=0.5592
+07:32:11 INFO      epoch 0 step 40  loss=0.2827  forget_nll=0.3539
+07:32:36 INFO      epoch 0: utility=0.8025 (floor 0.7648) forget_nll=0.5777 rep_gap=0.746  keep
+07:32:43 INFO      epoch 1 step 60  loss=0.4251  forget_nll=0.5684
+07:32:51 INFO      epoch 1 step 80  loss=0.3746  forget_nll=0.5876
+07:33:19 INFO      epoch 1: utility=0.8125 (floor 0.7648) forget_nll=0.6860 rep_gap=0.648  keep
+07:33:22 INFO      epoch 2 step 100  loss=0.4281  forget_nll=0.9318
+07:33:30 INFO      epoch 2 step 120  loss=0.3585  forget_nll=0.6508
+07:33:38 INFO      epoch 2 step 140  loss=0.3893  forget_nll=0.5231
+07:34:02 INFO      epoch 2: utility=0.8075 (floor 0.7648) forget_nll=0.7408 rep_gap=0.607  keep
+07:34:10 INFO      epoch 3 step 160  loss=0.3567  forget_nll=0.6397
+07:34:18 INFO      epoch 3 step 180  loss=0.3590  forget_nll=0.7489
+07:34:46 INFO      epoch 3: utility=0.8050 (floor 0.7648) forget_nll=0.8350 rep_gap=0.557  keep
+07:34:49 INFO      epoch 4 step 200  loss=0.3969  forget_nll=1.1177
+07:34:57 INFO      epoch 4 step 220  loss=0.2984  forget_nll=0.8608
+07:35:05 INFO      epoch 4 step 240  loss=0.3119  forget_nll=0.8231
+07:35:29 INFO      epoch 4: utility=0.8100 (floor 0.7648) forget_nll=0.9788 rep_gap=0.490  keep
+07:35:36 INFO      epoch 5 step 260  loss=0.2921  forget_nll=0.8044
+07:35:44 INFO      epoch 5 step 280  loss=0.3334  forget_nll=0.8900
+07:36:12 INFO      epoch 5: utility=0.8050 (floor 0.7648) forget_nll=1.0829 rep_gap=0.451  keep
+07:36:16 INFO      epoch 6 step 300  loss=0.3460  forget_nll=1.2553
+07:36:24 INFO      epoch 6 step 320  loss=0.2638  forget_nll=0.9575
+07:36:31 INFO      epoch 6 step 340  loss=0.2601  forget_nll=1.1484
+07:36:56 INFO      epoch 6: utility=0.8225 (floor 0.7648) forget_nll=0.9916 rep_gap=0.453  keep
+07:37:00 INFO      epoch 7 step 360  loss=0.2532  forget_nll=0.8636
+07:37:08 INFO      epoch 7 step 380  loss=0.3045  forget_nll=1.1627
+07:37:36 INFO      epoch 7: utility=0.8050 (floor 0.7648) forget_nll=1.2995 rep_gap=0.390  keep
+07:37:39 INFO      epoch 8 step 400  loss=0.3175  forget_nll=1.4850
+07:37:47 INFO      epoch 8 step 420  loss=0.2620  forget_nll=1.1242
+07:37:55 INFO      epoch 8 step 440  loss=0.2364  forget_nll=1.3824
+07:38:19 INFO      epoch 8: utility=0.8100 (floor 0.7648) forget_nll=1.1339 rep_gap=0.422  keep
+07:38:24 INFO      epoch 9 step 460  loss=0.2439  forget_nll=0.9153
+07:38:32 INFO      epoch 9 step 480  loss=0.2895  forget_nll=1.3171
+07:39:00 INFO      epoch 9: utility=0.8200 (floor 0.7648) forget_nll=1.2518 rep_gap=0.370  keep
+07:39:03 INFO      epoch 10 step 500  loss=0.2800  forget_nll=1.3969
+07:39:11 INFO      epoch 10 step 520  loss=0.2363  forget_nll=1.3067
+07:39:19 INFO      epoch 10 step 540  loss=0.2094  forget_nll=1.3949
+07:39:43 INFO      epoch 10: utility=0.8100 (floor 0.7648) forget_nll=1.4159 rep_gap=0.341  keep
+07:39:50 INFO      epoch 11 step 560  loss=0.2276  forget_nll=1.0849
+07:39:58 INFO      epoch 11 step 580  loss=0.2444  forget_nll=1.7412
+07:40:26 INFO      epoch 11: utility=0.8000 (floor 0.7648) forget_nll=1.4652 rep_gap=0.321  keep
+07:40:29 INFO      epoch 12 step 600  loss=0.2873  forget_nll=1.5933
+07:40:37 INFO      epoch 12 step 620  loss=0.2231  forget_nll=1.6549
+07:40:45 INFO      epoch 12 step 640  loss=0.2050  forget_nll=1.5341
+07:41:09 INFO      epoch 12: utility=0.8025 (floor 0.7648) forget_nll=1.4530 rep_gap=0.317  keep
+07:41:16 INFO      epoch 13 step 660  loss=0.2033  forget_nll=1.1794
+07:41:24 INFO      epoch 13 step 680  loss=0.2282  forget_nll=1.6805
+07:41:52 INFO      epoch 13: utility=0.8200 (floor 0.7648) forget_nll=1.3829 rep_gap=0.317  keep
+07:41:53 INFO      epoch 14 step 700  loss=0.2451  forget_nll=1.4942
+07:42:01 INFO      epoch 14 step 720  loss=0.1949  forget_nll=1.7097
+07:42:08 INFO      epoch 14 step 740  loss=0.2192  forget_nll=1.4173
+07:42:33 INFO      epoch 14: utility=0.8025 (floor 0.7648) forget_nll=1.6364 rep_gap=0.277  keep
+07:42:40 INFO      epoch 15 step 760  loss=0.2255  forget_nll=1.2410
+07:42:47 INFO      epoch 15 step 780  loss=0.2435  forget_nll=1.7209
+07:43:16 INFO      epoch 15: utility=0.7975 (floor 0.7648) forget_nll=1.6123 rep_gap=0.271  keep
+07:43:19 INFO      epoch 16 step 800  loss=0.2274  forget_nll=1.6548
+07:43:27 INFO      epoch 16 step 820  loss=0.1805  forget_nll=1.7522
+07:43:34 INFO      epoch 16 step 840  loss=0.1868  forget_nll=1.5342
+07:43:59 INFO      epoch 16: utility=0.8025 (floor 0.7648) forget_nll=1.5375 rep_gap=0.284  keep
+07:44:03 INFO      epoch 17 step 860  loss=0.2242  forget_nll=1.3803
+07:44:11 INFO      epoch 17 step 880  loss=0.2237  forget_nll=1.8236
+07:44:39 INFO      epoch 17: utility=0.7850 (floor 0.7648) forget_nll=1.6522 rep_gap=0.254  keep
+07:44:42 INFO      epoch 18 step 900  loss=0.2045  forget_nll=1.7280
+07:44:50 INFO      epoch 18 step 920  loss=0.1891  forget_nll=1.6424
+07:44:58 INFO      epoch 18 step 940  loss=0.2002  forget_nll=1.6762
+07:45:22 INFO      epoch 18: utility=0.8075 (floor 0.7648) forget_nll=1.6392 rep_gap=0.248  keep
+07:45:29 INFO      epoch 19 step 960  loss=0.1815  forget_nll=1.3485
+07:45:37 INFO      epoch 19 step 980  loss=0.1876  forget_nll=2.0216
+07:46:05 INFO      epoch 19: utility=0.8075 (floor 0.7648) forget_nll=1.6865 rep_gap=0.236  keep
+07:46:08 INFO      selected epoch 19 (utility 0.8075, forget_nll 1.6865)
+07:46:10 INFO    Unlearning finished: 1000 steps in 856.4s, forget NLL 0.3877 -> 1.6865 (+1.2987 over the full forget set)
+07:46:34 INFO      [OK] ||v||=2.467, forget NLL change=+1.2987, weights moved and forget-set NLL rose, as expected
+07:46:41 INFO      update vector: 147 tensors, ||v||=2.467
+07:46:41 INFO    [5/6] Sweeping alpha over 11 settings
+07:47:21 INFO    ExtrapolationReport(a_par=0, a_perp=0, modified=147, skipped=0, ||v||=2.46682, ||delta||=0)
+07:49:09 INFO    Captured hidden states for 100 examples across 16 layers
+07:49:09 INFO    Loading open-unlearning/tofu_Llama-3.2-1B-Instruct_full (dtype=torch.float32, device=cuda:0)
+07:49:12 INFO    Loaded open-unlearning/tofu_Llama-3.2-1B-Instruct_full in 3.5s
+07:49:40 INFO    Captured hidden states for 100 examples across 16 layers
+07:50:08 INFO    Captured hidden states for 100 examples across 16 layers
+07:50:34 INFO    Captured hidden states for 38 examples across 16 layers
+07:50:43 INFO    Captured hidden states for 38 examples across 16 layers
+07:50:52 INFO      alpha=0.00  TOFU forget quality {'trained': '2.08e-03', 'heldout': '6.73e-06', 'all': '5.97e-08'}
+07:50:52 INFO      alpha=0.00  [trained] breadth=0.412 depth=0.441 sel=+0.412  [heldout] breadth=0.291 depth=0.318 sel=+0.291  R=0.807  general=0.872  (252s)
+07:51:29 INFO    ExtrapolationReport(a_par=0.1, a_perp=0.1, modified=147, skipped=0, ||v||=2.46682, ||delta||=0.246682)
+07:53:17 INFO    Captured hidden states for 100 examples across 16 layers
+07:53:45 INFO    Captured hidden states for 100 examples across 16 layers
+07:54:13 INFO    Captured hidden states for 100 examples across 16 layers
+07:54:39 INFO    Captured hidden states for 38 examples across 16 layers
+07:54:49 INFO    Captured hidden states for 38 examples across 16 layers
+07:54:58 INFO      alpha=0.10  TOFU forget quality {'trained': '6.09e-03', 'heldout': '1.12e-05', 'all': '9.07e-08'}
+07:54:58 INFO      alpha=0.10  [trained] breadth=0.464 depth=0.482 sel=+0.446  [heldout] breadth=0.330 depth=0.355 sel=+0.312  R=0.800  general=0.877  (245s)
+07:55:37 INFO    ExtrapolationReport(a_par=0.2, a_perp=0.2, modified=147, skipped=0, ||v||=2.46682, ||delta||=0.493364)
+07:57:26 INFO    Captured hidden states for 100 examples across 16 layers
+07:57:54 INFO    Captured hidden states for 100 examples across 16 layers
+07:58:21 INFO    Captured hidden states for 100 examples across 16 layers
+07:58:48 INFO    Captured hidden states for 38 examples across 16 layers
+07:58:58 INFO    Captured hidden states for 38 examples across 16 layers
+07:59:07 INFO      alpha=0.20  TOFU forget quality {'trained': '8.54e-03', 'heldout': '4.75e-05', 'all': '4.58e-07'}
+07:59:07 INFO      alpha=0.20  [trained] breadth=0.515 depth=0.515 sel=+0.497  [heldout] breadth=0.350 depth=0.386 sel=+0.331  R=0.800  general=0.872  (249s)
+07:59:45 INFO    ExtrapolationReport(a_par=0.3, a_perp=0.3, modified=147, skipped=0, ||v||=2.46682, ||delta||=0.740045)
+08:01:32 INFO    Captured hidden states for 100 examples across 16 layers
+08:02:00 INFO    Captured hidden states for 100 examples across 16 layers
+08:02:28 INFO    Captured hidden states for 100 examples across 16 layers
+08:02:54 INFO    Captured hidden states for 38 examples across 16 layers
+08:03:04 INFO    Captured hidden states for 38 examples across 16 layers
+08:03:13 INFO      alpha=0.30  TOFU forget quality {'trained': '1.18e-02', 'heldout': '7.54e-05', 'all': '2.13e-06'}
+08:03:13 INFO      alpha=0.30  [trained] breadth=0.557 depth=0.544 sel=+0.485  [heldout] breadth=0.398 depth=0.415 sel=+0.326  R=0.785  general=0.862  (246s)
+08:03:51 INFO    ExtrapolationReport(a_par=0.4, a_perp=0.4, modified=147, skipped=0, ||v||=2.46682, ||delta||=0.986727)
+08:05:39 INFO    Captured hidden states for 100 examples across 16 layers
+08:06:07 INFO    Captured hidden states for 100 examples across 16 layers
+08:06:35 INFO    Captured hidden states for 100 examples across 16 layers
+08:07:02 INFO    Captured hidden states for 38 examples across 16 layers
+08:07:11 INFO    Captured hidden states for 38 examples across 16 layers
+08:07:20 INFO      alpha=0.40  TOFU forget quality {'trained': '1.63e-02', 'heldout': '1.18e-04', 'all': '4.46e-06'}
+08:07:20 INFO      alpha=0.40  [trained] breadth=0.598 depth=0.569 sel=+0.499  [heldout] breadth=0.408 depth=0.440 sel=+0.309  R=0.777  general=0.857  (247s)
+08:07:57 INFO    ExtrapolationReport(a_par=0.5, a_perp=0.5, modified=147, skipped=0, ||v||=2.46682, ||delta||=1.23341)
+08:09:45 INFO    Captured hidden states for 100 examples across 16 layers
+08:10:13 INFO    Captured hidden states for 100 examples across 16 layers
+08:10:41 INFO    Captured hidden states for 100 examples across 16 layers
+08:11:07 INFO    Captured hidden states for 38 examples across 16 layers
+08:11:17 INFO    Captured hidden states for 38 examples across 16 layers
+08:11:26 INFO      alpha=0.50  TOFU forget quality {'trained': '2.97e-02', 'heldout': '4.31e-04', 'all': '1.30e-05'}
+08:11:26 INFO      alpha=0.50  [trained] breadth=0.701 depth=0.591 sel=+0.602  [heldout] breadth=0.466 depth=0.463 sel=+0.367  R=0.777  general=0.857  (246s)
+08:12:03 INFO    ExtrapolationReport(a_par=0.6, a_perp=0.6, modified=147, skipped=0, ||v||=2.46682, ||delta||=1.48009)
+08:13:50 INFO    Captured hidden states for 100 examples across 16 layers
+08:14:17 INFO    Captured hidden states for 100 examples across 16 layers
+08:14:45 INFO    Captured hidden states for 100 examples across 16 layers
+08:15:11 INFO    Captured hidden states for 38 examples across 16 layers
+08:15:21 INFO    Captured hidden states for 38 examples across 16 layers
+08:15:30 INFO      alpha=0.60  TOFU forget quality {'trained': '2.97e-02', 'heldout': '6.49e-04', 'all': '1.83e-05'}
+08:15:30 INFO      alpha=0.60  [trained] breadth=0.773 depth=0.610 sel=+0.683  [heldout] breadth=0.544 depth=0.484 sel=+0.454  R=0.780  general=0.842  (244s)
+08:16:06 INFO    ExtrapolationReport(a_par=0.7, a_perp=0.7, modified=147, skipped=0, ||v||=2.46682, ||delta||=1.72677)
+08:17:53 INFO    Captured hidden states for 100 examples across 16 layers
+08:18:21 INFO    Captured hidden states for 100 examples across 16 layers
+08:18:48 INFO    Captured hidden states for 100 examples across 16 layers
+08:19:15 INFO    Captured hidden states for 38 examples across 16 layers
+08:19:24 INFO    Captured hidden states for 38 examples across 16 layers
+08:19:34 INFO      alpha=0.70  TOFU forget quality {'trained': '5.21e-02', 'heldout': '4.31e-04', 'all': '2.57e-05'}
+08:19:34 INFO      alpha=0.70  [trained] breadth=0.763 depth=0.628 sel=+0.655  [heldout] breadth=0.544 depth=0.504 sel=+0.436  R=0.775  general=0.842  (244s)
+08:20:10 INFO    ExtrapolationReport(a_par=0.8, a_perp=0.8, modified=147, skipped=0, ||v||=2.46682, ||delta||=1.97345)
+08:21:57 INFO    Captured hidden states for 100 examples across 16 layers
+08:22:25 INFO    Captured hidden states for 100 examples across 16 layers
+08:22:52 INFO    Captured hidden states for 100 examples across 16 layers
+08:23:19 INFO    Captured hidden states for 38 examples across 16 layers
+08:23:28 INFO    Captured hidden states for 38 examples across 16 layers
+08:23:37 INFO      alpha=0.80  TOFU forget quality {'trained': '6.80e-02', 'heldout': '9.67e-04', 'all': '5.00e-05'}
+08:23:37 INFO      alpha=0.80  [trained] breadth=0.773 depth=0.644 sel=+0.656  [heldout] breadth=0.602 depth=0.523 sel=+0.485  R=0.772  general=0.837  (244s)
+08:24:14 INFO    ExtrapolationReport(a_par=0.9, a_perp=0.9, modified=147, skipped=0, ||v||=2.46682, ||delta||=2.22014)
+08:26:01 INFO    Captured hidden states for 100 examples across 16 layers
+08:26:28 INFO    Captured hidden states for 100 examples across 16 layers
+08:26:56 INFO    Captured hidden states for 100 examples across 16 layers
+08:27:22 INFO    Captured hidden states for 38 examples across 16 layers
+08:27:32 INFO    Captured hidden states for 38 examples across 16 layers
+08:27:41 INFO      alpha=0.90  TOFU forget quality {'trained': '8.78e-02', 'heldout': '2.08e-03', 'all': '1.78e-04'}
+08:27:41 INFO      alpha=0.90  [trained] breadth=0.784 depth=0.660 sel=+0.675  [heldout] breadth=0.650 depth=0.540 sel=+0.542  R=0.775  general=0.817  (243s)
+08:28:17 INFO    ExtrapolationReport(a_par=1, a_perp=1, modified=147, skipped=0, ||v||=2.46682, ||delta||=2.46682)
+08:30:03 INFO    Captured hidden states for 100 examples across 16 layers
+08:30:30 INFO    Captured hidden states for 100 examples across 16 layers
+08:30:58 INFO    Captured hidden states for 100 examples across 16 layers
+08:31:25 INFO    Captured hidden states for 38 examples across 16 layers
+08:31:34 INFO    Captured hidden states for 38 examples across 16 layers
+08:31:43 INFO      alpha=1.00  TOFU forget quality {'trained': '6.80e-02', 'heldout': '3.01e-03', 'all': '3.25e-04'}
+08:31:43 INFO      alpha=1.00  [trained] breadth=0.835 depth=0.675 sel=+0.700  [heldout] breadth=0.680 depth=0.557 sel=+0.544  R=0.767  general=0.812  (242s)
+08:31:49 INFO    Freed full -- cuda:0: 8.90 GB allocated, 9.98 GB reserved, 31.54 GB free of 42.28 GB (25% used)
+08:31:49 INFO    [6/6] Analysis
+08:31:49 INFO    Wrote 22 plane points to results/studies/study_v2_unaskedg_1B_s4_lr3e-06_lam10/plane.json
+08:31:50 INFO    Wrote figure to results/studies/study_v2_unaskedg_1B_s4_lr3e-06_lam10/plane.png
+============================================================================
+DEPTH-BREADTH STUDY  |  method=unaskedg  size=1B  protocol=v2
+run=study_v2_unaskedg_1B_s4_lr3e-06_lam10
+============================================================================
+
+[FITS] strategy=all_resident  peak weights=20.77 GB  headroom=8.42 GB
+  training dominates: 4.94 GB weights x 4 (weights + grads + 2 AdamW moments) + 1.0 GB activations = 20.77 GB, within 29.20 GB usable (41.7 GB free minus 30% safety margin).
+  WARNING: Planning at fp32 (4 bytes/param). Use bf16 or fp16 to halve weight memory.
+
+
+============================================================================
+RESULTS
+============================================================================
+trajectory               alpha  breadth   depth      R  select.  note
+----------------------------------------------------------------------------
+tofu-forget10:heldout     0.00    0.291   0.318  0.807   +0.291  
+tofu-forget10:heldout     0.10    0.330   0.355  0.800   +0.312  
+tofu-forget10:heldout     0.20    0.350   0.386  0.800   +0.331  
+tofu-forget10:heldout     0.30    0.398   0.415  0.785   +0.326  
+tofu-forget10:heldout     0.40    0.408   0.440  0.777   +0.309  
+tofu-forget10:heldout     0.50    0.466   0.463  0.777   +0.367  
+tofu-forget10:heldout     0.60    0.544   0.484  0.780   +0.454  
+tofu-forget10:heldout     0.70    0.544   0.504  0.775   +0.436  
+tofu-forget10:heldout     0.80    0.602   0.523  0.772   +0.485  
+tofu-forget10:heldout     0.90    0.650   0.540  0.775   +0.542  
+tofu-forget10:heldout     1.00    0.680   0.557  0.767   +0.544  
+tofu-forget10:trained     0.00    0.412   0.441  0.807   +0.412  
+tofu-forget10:trained     0.10    0.464   0.482  0.800   +0.446  
+tofu-forget10:trained     0.20    0.515   0.515  0.800   +0.497  
+tofu-forget10:trained     0.30    0.557   0.544  0.785   +0.485  
+tofu-forget10:trained     0.40    0.598   0.569  0.777   +0.499  
+tofu-forget10:trained     0.50    0.701   0.591  0.777   +0.602  
+tofu-forget10:trained     0.60    0.773   0.610  0.780   +0.683  
+tofu-forget10:trained     0.70    0.763   0.628  0.775   +0.655  
+tofu-forget10:trained     0.80    0.773   0.644  0.772   +0.656  
+tofu-forget10:trained     0.90    0.784   0.660  0.775   +0.675  
+tofu-forget10:trained     1.00    0.835   0.675  0.767   +0.700  
+
+----------------------------------------------------------------------------
+TRADE-OFF  [tofu-forget10:trained]
+----------------------------------------------------------------------------
+  Spearman rho : 0.9841   p = 0.0 (NOT a significance test -- the points are one continuous path, not independent samples)
+  usable points: 11
+  utility stable across sweep: True
+
+  breadth span : 0.423 (41 of 400 items; one item = 0.0103)
+  depth span   : 0.234 (retain90 oracle = 1.000, so peak is 67.5% of full erasure)
+
+AXES AGREE: breadth and depth rise together across a substantial span of both axes. This runs against the hypothesis and is equally worth reporting -- now replicate across methods and seeds.
+
+----------------------------------------------------------------------------
+TRADE-OFF  [tofu-forget10:heldout]
+----------------------------------------------------------------------------
+  Spearman rho : 0.9977   p = 0.0 (NOT a significance test -- the points are one continuous path, not independent samples)
+  usable points: 11
+  utility stable across sweep: True
+
+  breadth span : 0.388 (40 of 400 items; one item = 0.0097)
+  depth span   : 0.238 (retain90 oracle = 1.000, so peak is 55.7% of full erasure)
+
+AXES AGREE: breadth and depth rise together across a substantial span of both axes. This runs against the hypothesis and is equally worth reporting -- now replicate across methods and seeds.
+
+Saved to results/studies/study_v2_unaskedg_1B_s4_lr3e-06_lam10
+
+NOTE: one unlearning method, one model, one seed. A single trajectory is not a finding -- repeat across methods and seeds before drawing any conclusion.
+============================================================================
+
+==============================================================================
+SUMMARY
+==============================================================================
+  study_v2_unaskedg_1B_s4_lr3e-06_lam10        ok                           66.3 min
+
+manifest: results/studies/replication_manifest.json (merged)
+
+Next: python gpu/summarize.py. Before drawing any depth/breadth
+conclusion, check selectivity (the forget tiers must fall further than
+the retain tier) and that the utility control holds within each run.
